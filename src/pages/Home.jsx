@@ -54,7 +54,7 @@ function Home() {
       </div>
 
       {/* Decorative train image at the bottom of the page. */}
-      <div className="h-[80px] sm:h-[120px]  md:h-[160px] w-full flex justify-end items-center overflow-hidden">
+      <div className="h-[100px] sm:h-[120px]  md:h-[160px] w-full flex justify-end items-center overflow-hidden">
         <img
           src={train}
           className="w-[120%] md:w-[80%] object-cover animate-[moveTrain_6s_linear_infinite]"

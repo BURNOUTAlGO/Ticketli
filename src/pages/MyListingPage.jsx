@@ -147,7 +147,7 @@ const MyListingsPage = () => {
           <div>
             <KineticText
               text="Your Listings"
-              className="text-[4.5rem] tracking-[-5%] flex items-start justify-start"
+              className="text-[2.25rem] sm:text-[3.25rem] md:text-[4.5rem] tracking-[-5%] flex items-start justify-start"
             />
             <p className="text-sm text-gray-500  mt-1 break-all sm:break-normal">
               {tickets.length} listing{tickets.length !== 1 ? "s" : ""} ·{" "}

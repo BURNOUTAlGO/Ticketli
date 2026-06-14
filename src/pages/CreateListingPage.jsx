@@ -275,7 +275,7 @@ const Step4 = ({ formData }) => (
       <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Contact</p>
       <div className="grid grid-cols-2 gap-2 text-sm">
         <div><span className="text-gray-500">Name</span><p className="font-medium text-gray-900">{formData.fullName || "—"}</p></div>
-        <div><span className="text-gray-500">Email</span><p className="font-medium text-gray-900">{formData.email || "—"}</p></div>
+       
         <div><span className="text-gray-500">Phone</span><p className="font-medium text-gray-900">{formData.phone || "—"}</p></div>
       </div>
     </div>
@@ -364,7 +364,7 @@ const CreateListingPage = () => {
 
           <KineticText
             text="List Your Ticket"
-            className="text-[4.5rem] tracking-[-5%] flex items-center justify-center"
+            className="text-[2.65rem] sm:text-[3.25rem] md:text-[4.5rem] tracking-[-5%] flex items-center justify-center "
           />
 
           <ProgressBar step={step} />

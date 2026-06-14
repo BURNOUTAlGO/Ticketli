@@ -29,7 +29,6 @@ const BrowseTicketsPage = () => {
   const [filterTo, setFilterTo] = useState("");
   const [filterDate, setFilterDate] = useState("");
   const [filterClass, setFilterClass] = useState("Any class");
-  const [filterMinPrice, setFilterMinPrice] = useState(0);
   const [filterMaxPrice, setFilterMaxPrice] = useState(5000);
   const [filterMinSeats, setFilterMinSeats] = useState("1+");
 
@@ -74,7 +73,6 @@ const BrowseTicketsPage = () => {
     setFilterTo("");
     setFilterDate("");
     setFilterClass("Any class");
-    setFilterMinPrice(0);
     setFilterMaxPrice(5000);
     setFilterMinSeats("1+");
   };
@@ -105,7 +103,6 @@ const BrowseTicketsPage = () => {
       if (filterDate && t.journeyDate !== filterDate) return false;
       if (filterClass !== "Any class" && t.trainClass !== filterClass)
         return false;
-      if (Number(t.price) < filterMinPrice) return false;
       if (Number(t.price) > filterMaxPrice) return false;
       if (seatCount(t.seats) < minSeatsNumber) return false;
       return true;
@@ -132,7 +129,6 @@ const BrowseTicketsPage = () => {
     filterTo,
     filterDate,
     filterClass,
-    filterMinPrice,
     filterMaxPrice,
     minSeatsNumber,
     sortBy,
@@ -246,19 +242,17 @@ const BrowseTicketsPage = () => {
         </div>
       </div>
       <div className="mb-4">
-        <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
-          Price Range: ₹{filterMinPrice.toLocaleString()} – ₹
-          {filterMaxPrice.toLocaleString()}
+        <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">
+          Price Range: ₹0 – ₹{filterMaxPrice.toLocaleString()}
         </label>
-        <DualRangeSlider
+        <input
+          type="range"
           min={0}
           max={5000}
           step={100}
-          value={[filterMinPrice, filterMaxPrice]}
-          onChange={([lo, hi]) => {
-            setFilterMinPrice(lo);
-            setFilterMaxPrice(hi);
-          }}
+          value={filterMaxPrice}
+          onChange={(e) => setFilterMaxPrice(Number(e.target.value))}
+          className="w-full accent-black"
         />
       </div>
       <div>
@@ -283,7 +277,6 @@ const BrowseTicketsPage = () => {
       </div>
     </>
   );
-  
 
   return (
     <>
@@ -296,7 +289,7 @@ const BrowseTicketsPage = () => {
         .compact-filters input, .compact-filters select { padding-top: 0.4rem !important; padding-bottom: 0.4rem !important; }
       `}</style>
 
-      <div className="h-screen  flex flex-col overflow-hidden">
+      <div className="h-screen flex flex-col overflow-hidden">
         {/* ─────────────────────────────────────────────
             SEARCH BAR  — same on all screen sizes
             Row 1 (mobile): [From] [⇄] [To]
@@ -413,9 +406,10 @@ const BrowseTicketsPage = () => {
           {/* ══════════ MOBILE LAYOUT ══════════ */}
           <div className="h-full flex flex-col md:hidden overflow-y-auto hide-scrollbar">
             {/* Sticky bar: "N listings found"  |  [Filters]  [Sort ▾] */}
-            <div className="sticky top-0 z-10 bg-white border-b border-gray-100 px-2 py-2.5 flex items-center justify-between gap-2">
-              <p className="text-xs sm:text-sm pl-3.5 text-black font-medium whitespace-nowrap flex-shrink-0">
-                {filtered.length} listing{filtered.length !== 1 ? "s" : ""}
+            <div className="sticky top-0 z-10 bg-white border-b border-gray-100 px-3 py-2.5 flex items-center justify-between gap-2">
+              <p className="text-xs pl-3.5 sm:text-sm text-black font-medium whitespace-nowrap flex-shrink-0">
+                {filtered.length} listing{filtered.length !== 1 ? "s" : ""}{" "}
+                
               </p>
 
               <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -486,17 +480,17 @@ const BrowseTicketsPage = () => {
               <div className="fixed inset-0 z-40 flex items-center justify-center p-4">
                 {/* Backdrop */}
                 <div
-                  className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+                  className="absolute w-100vw h-[100vh] inset-0 bg-black/30 backdrop-blur-sm"
                   onClick={() => setShowFilters(false)}
                 />
 
                 {/* Popup card */}
-                <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-sm max-h-[80vh] flex flex-col overflow-hidden">
+                <div className="relative mt-15 bg-white rounded-2xl shadow-xl w-full max-w-sm max-h-[80vh] flex flex-col overflow-hidden">
                   {/* Header */}
                   <div className="flex-shrink-0 px-4 pt-4 pb-3 border-b border-gray-100 flex items-center justify-between">
                     <KineticText
                       text="Filter Tickets"
-                      className="text-[2.65rem] sm:text-[3.25rem] md:text-[4.5rem] tracking-[-5%] flex items-center justify-center "
+                      className="text-[2.25rem] sm:text-[3.25rem] md:text-[4.5rem] tracking-[-5%] flex items-start justify-start"
                     />
                     <button
                       onClick={() => setShowFilters(false)}
@@ -508,7 +502,10 @@ const BrowseTicketsPage = () => {
 
                   {/* Scrollable filter body */}
                   <div className="flex-1 overflow-y-auto px-4 pt-3 pb-3 hide-scrollbar">
-                    <div className="flex justify-end items-center mb-3">
+                    <div className="flex items-center justify-end mb-3">
+                      {/* <h3 className="text-sm  text-gray-900">
+                        Filters
+                      </h3> */}
                       <button
                         onClick={handleReset}
                         className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800 transition"
@@ -571,7 +568,7 @@ const BrowseTicketsPage = () => {
             <aside className="w-64 flex-shrink-0 overflow-y-auto hide-scrollbar">
               <div className="border border-gray-200 rounded-2xl p-5">
                 <div className="flex items-center justify-between mb-5">
-                  <h2 className="text-base  text-gray-900">Filters</h2>
+                  <h2 className="text-base font-semibold text-gray-900">Filters</h2>
                   <button
                     onClick={handleReset}
                     className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800 transition"
@@ -587,7 +584,8 @@ const BrowseTicketsPage = () => {
             <div className="flex-1 min-w-0 overflow-y-auto hide-scrollbar">
               <div className="flex items-center justify-between mb-4">
                 <p className="text-sm text-black font-medium">
-                  {filtered.length} Listing{filtered.length !== 1 ? "s" : ""}
+                  {filtered.length} listing{filtered.length !== 1 ? "s" : ""}{" "}
+      
                 </p>
                 <div className="relative">
                   <button
@@ -673,112 +671,7 @@ const BrowseTicketsPage = () => {
   );
 };
 
-/* ── Dual-handle range slider ── */
-const DualRangeSlider = ({ min, max, step = 1, value, onChange }) => {
-  const [lo, hi] = value;
-  const [activeThumb, setActiveThumb] = useState(null); // 'lo' | 'hi' | null
-
-  useEffect(() => {
-    if (!activeThumb) return;
-    const clear = () => setActiveThumb(null);
-    window.addEventListener("mouseup", clear);
-    window.addEventListener("touchend", clear);
-    return () => {
-      window.removeEventListener("mouseup", clear);
-      window.removeEventListener("touchend", clear);
-    };
-  }, [activeThumb]);
-
-  const pctLo = ((lo - min) / (max - min)) * 100;
-  const pctHi = ((hi - min) / (max - min)) * 100;
-
-  const handleLoChange = (e) => {
-    const next = Math.min(Number(e.target.value), hi);
-    onChange([next, hi]);
-  };
-
-  const handleHiChange = (e) => {
-    const next = Math.max(Number(e.target.value), lo);
-    onChange([lo, next]);
-  };
-
-  // Default stacking: whichever handle is closer to the right edge sits on top,
-  // but once a thumb is actively being dragged it takes priority so the
-  // pointer doesn't "fall through" to the other input mid-drag.
-  let zLo = pctLo > pctHi ? 4 : 3;
-  let zHi = pctLo > pctHi ? 3 : 4;
-  if (activeThumb === "lo") zLo = 5;
-  if (activeThumb === "hi") zHi = 5;
-
-  return (
-    <div className="relative h-5 flex items-center">
-      {/* Track background */}
-      <div className="absolute left-0 right-0 h-1.5 rounded-full bg-gray-200" />
-      {/* Filled range between handles */}
-      <div
-        className="absolute h-1.5 rounded-full bg-black"
-        style={{ left: `${pctLo}%`, right: `${100 - pctHi}%` }}
-      />
-      {/* Min handle */}
-      <input
-        type="range"
-        min={min}
-        max={max}
-        step={step}
-        value={lo}
-        onChange={handleLoChange}
-        onMouseDown={() => setActiveThumb("lo")}
-        onTouchStart={() => setActiveThumb("lo")}
-        onMouseUp={() => setActiveThumb(null)}
-        onTouchEnd={() => setActiveThumb(null)}
-        className="dual-range-input absolute w-full h-5 appearance-none bg-transparent pointer-events-none"
-        style={{ zIndex: zLo }}
-      />
-      {/* Max handle */}
-      <input
-        type="range"
-        min={min}
-        max={max}
-        step={step}
-        value={hi}
-        onChange={handleHiChange}
-        onMouseDown={() => setActiveThumb("hi")}
-        onTouchStart={() => setActiveThumb("hi")}
-        onMouseUp={() => setActiveThumb(null)}
-        onTouchEnd={() => setActiveThumb(null)}
-        className="dual-range-input absolute w-full h-5 appearance-none bg-transparent pointer-events-none"
-        style={{ zIndex: zHi }}
-      />
-
-      <style>{`
-        .dual-range-input::-webkit-slider-thumb {
-          pointer-events: auto;
-          appearance: none;
-          width: 18px;
-          height: 18px;
-          border-radius: 50%;
-          background: #ffffff;
-          border: 2px solid #000000;
-          cursor: pointer;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.15);
-        }
-        .dual-range-input::-moz-range-thumb {
-          pointer-events: auto;
-          width: 18px;
-          height: 18px;
-          border-radius: 50%;
-          background: #ffffff;
-          border: 2px solid #000000;
-          cursor: pointer;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.15);
-        }
-        .dual-range-input::-webkit-slider-runnable-track { background: transparent; }
-        .dual-range-input::-moz-range-track { background: transparent; }
-      `}</style>
-    </div>
-  );
-};
-
+/* ── Shared ticket card ── */
 const TicketCard = ({ ticket, duration, initials }) => (
   <div className="border border-gray-200 rounded-2xl p-5 hover:shadow-md transition bg-white">
     <div className="flex items-start justify-between mb-3">
@@ -837,7 +730,7 @@ const TicketCard = ({ ticket, duration, initials }) => (
 
     <div className="border-t border-gray-100 pt-3 flex items-center justify-between">
       <div className="flex items-center gap-2">
-        <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-black">
+        <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600">
           {initials}
         </div>
         <p className="text-sm font-medium text-gray-900">

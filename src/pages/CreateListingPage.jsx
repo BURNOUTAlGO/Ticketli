@@ -47,6 +47,7 @@ const validateStep = (step, formData) => {
     if (!formData.from.trim())          errors.from          = "Starting city is required";
     if (!formData.to.trim())            errors.to            = "Destination city is required";
     if (!formData.trainName.trim())     errors.trainName     = "Train name is required";
+    if (!formData.trainNumber.trim())   errors.trainNumber   = "Train number is required";
     if (!formData.journeyDate)          errors.journeyDate   = "Journey date is required";
     if (!formData.departureTime)        errors.departureTime = "Departure time is required";
     if (!formData.arrivalTime)          errors.arrivalTime   = "Arrival time is required";
@@ -73,7 +74,7 @@ const validateStep = (step, formData) => {
 // ── Step panels ────────────────────────────────────────────────────────────
 const Step1 = ({ formData, handleChange, errors }) => (
   <div className="border border-gray-200 rounded-xl p-4 md:p-6">
-    <h2 className="text-base md:text-lg font-bold text-gray-900">Journey Details</h2>
+    <h2 className="text-base md:text-lg font-semibold text-gray-900">Journey Details</h2>
     <p className="text-xs md:text-sm text-gray-500 mt-1 mb-4 md:mb-6">
       Enter your train journey information.
     </p>
@@ -110,6 +111,18 @@ const Step1 = ({ formData, handleChange, errors }) => (
         />
       </div>
       <div>
+        <Label required>Train Number</Label>
+        <Input
+          placeholder="e.g. 12951"
+          value={formData.trainNumber}
+          onChange={handleChange("trainNumber")}
+          error={errors.trainNumber}
+        />
+      </div>
+    </div>
+
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 mb-3 md:mb-4">
+      <div>
         <Label required>Journey Date</Label>
         <Input
           type="date"
@@ -118,6 +131,7 @@ const Step1 = ({ formData, handleChange, errors }) => (
           error={errors.journeyDate}
         />
       </div>
+      <div></div>
     </div>
 
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
@@ -249,6 +263,7 @@ const Step4 = ({ formData }) => (
         <div><span className="text-gray-500">From</span><p className="font-medium text-gray-900">{formData.from || "—"}</p></div>
         <div><span className="text-gray-500">To</span><p className="font-medium text-gray-900">{formData.to || "—"}</p></div>
         <div><span className="text-gray-500">Train</span><p className="font-medium text-gray-900">{formData.trainName || "—"}</p></div>
+        <div><span className="text-gray-500">Train No.</span><p className="font-medium text-gray-900">{formData.trainNumber || "—"}</p></div>
         <div><span className="text-gray-500">Date</span><p className="font-medium text-gray-900">{formData.journeyDate || "—"}</p></div>
         <div><span className="text-gray-500">Departure</span><p className="font-medium text-gray-900">{formData.departureTime || "—"}</p></div>
         <div><span className="text-gray-500">Arrival</span><p className="font-medium text-gray-900">{formData.arrivalTime || "—"}</p></div>
@@ -275,7 +290,6 @@ const Step4 = ({ formData }) => (
       <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Contact</p>
       <div className="grid grid-cols-2 gap-2 text-sm">
         <div><span className="text-gray-500">Name</span><p className="font-medium text-gray-900">{formData.fullName || "—"}</p></div>
-       
         <div><span className="text-gray-500">Phone</span><p className="font-medium text-gray-900">{formData.phone || "—"}</p></div>
       </div>
     </div>
@@ -291,14 +305,14 @@ const CreateListingPage = () => {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    from: "", to: "", trainName: "", journeyDate: "",
+    from: "", to: "", trainName: "", trainNumber: "", journeyDate: "",
     departureTime: "", arrivalTime: "",
     trainClass: "Economy", seats: "1 seat",
     price: "", description: "",
     fullName: "", email: "", phone: "",
   });
 
-  // Prefill email (and name if available) from the logged-in Auth0 user.
+  // Prefill email from the logged-in Auth0 user.
   // This ensures the saved ticket's email always matches user.email exactly,
   // which MyListingsPage relies on for its where("email", "==", ...) query.
   useEffect(() => {
@@ -306,7 +320,6 @@ const CreateListingPage = () => {
       setFormData((prev) => ({
         ...prev,
         email: user.email ? user.email.toLowerCase() : prev.email,
-        
       }));
     }
   }, [user]);

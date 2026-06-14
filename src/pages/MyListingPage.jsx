@@ -191,15 +191,13 @@ const MyListingsPage = () => {
                 >
                   {/* Top */}
                   <div className="flex items-start justify-between mb-3 gap-2">
-                    <div className="min-w-0">
+                    <div className="min-w-0 ">
                       <h3 className="font-bold text-gray-900 text-sm truncate">
                         {ticket.trainName || "—"}
+
                       </h3>
-                      <div className="flex items-center gap-1 text-xs text-gray-400 mt-0.5">
-                        <span className="truncate">{ticket.from || "—"}</span>
-                        <ArrowRight size={11} className="flex-shrink-0" />
-                        <span className="truncate">{ticket.to || "—"}</span>
-                      </div>
+                      <p className="text-gray-400 text-[13px]">{ticket.trainNumber}</p>
+
                     </div>
                     <div className="flex items-center gap-1.5 flex-shrink-0">
                       <span className="text-xs border border-gray-200 text-gray-600 px-2.5 py-1 rounded-full whitespace-nowrap">

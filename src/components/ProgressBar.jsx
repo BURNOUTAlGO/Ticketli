@@ -13,7 +13,7 @@ const steps = [
   { label: "Journey Details", Icon: RouteIcon },
   { label: "Ticket Details", Icon: TicketIcon },
   { label: "Contact Info", Icon: UserIcon },
-  { label: "Review & Publish", Icon: ClipboardListIcon },
+  { label: "Review", Icon: ClipboardListIcon },
 ];
 
 const ProgressBar = ({ step }) => {

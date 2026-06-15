@@ -143,11 +143,11 @@ function Navbar() {
             </Link>
           ))}
                   {/* Auth buttons */}
-        <div className="px-4 mt-[1rem] pb-8 pt-4 flex flex-col gap-3 flex-shrink-0">
+        <div className="px-4 mt-[1rem] pb-8 pt-4 flex flex-col justify-center items-center gap-3 flex-shrink-0">
           {isAuthenticated ? (
             <button
               onClick={() => { setMenuOpen(false); logout(); }}
-              className="w-full rounded-xl h-12 flex items-center justify-center bg-slate-950 text-sm font-semibold text-white transition duration-200 hover:bg-slate-800"
+              className="w-full rounded-[9px] h-11 flex items-center justify-center bg-slate-950 text-sm font-semibold text-white transition duration-200 hover:bg-slate-800"
             >
               Logout
             </button>
@@ -155,13 +155,13 @@ function Navbar() {
             <>
               <button
                 onClick={() => { setMenuOpen(false); login(); }}
-                className="w-full rounded-xl h-12 flex items-center justify-center border border-slate-200 bg-white text-sm font-semibold text-slate-900 transition duration-200 hover:bg-slate-50"
+                className="w-full rounded-[9px] h-11 flex items-center justify-center border border-slate-200 bg-white text-sm font-semibold text-slate-900 transition duration-200 hover:bg-slate-50"
               >
                 Log In
               </button>
               <button
                 onClick={() => { setMenuOpen(false); login({ authorizationParams: { screen_hint: "signup" } }); }}
-                className="w-full rounded-xl h-12 flex items-center justify-center bg-slate-950 text-sm font-semibold text-white transition duration-200 hover:bg-slate-800"
+                className="w-full rounded-[9px] h-11 flex items-center justify-center bg-slate-950 text-sm font-semibold text-white transition duration-200 hover:bg-slate-800"
               >
                 Sign Up
               </button>

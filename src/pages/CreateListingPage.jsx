@@ -400,16 +400,16 @@ const Step3 = ({ formData, handleChange, errors }) => (
 
 // ── Step4: Review & Publish ────────────────────────────────────────────────
 const ReviewRow = ({ label, value, muted = false }) => (
-  <div className="flex items-center justify-between gap-3 py-2.5  border-gray-100 last:border-b-0">
-    <span className="text-sm text-gray-350 flex-shrink-0">{label}</span>
-    <span className={`text-sm text-right break-words ${muted ? "text-white" : "font-semibold text-white"}`}>
+  <div className="flex items-center justify-between gap-3 py-2.5 border-b border-gray-100 last:border-b-0">
+    <span className="text-sm text-gray-500 flex-shrink-0">{label}</span>
+    <span className={`text-sm text-right break-words ${muted ? "text-gray-900" : "font-semibold text-gray-900"}`}>
       {value}
     </span>
   </div>
 );
 
 const Step4 = ({ formData }) => (
-  <div className="border border-gray  text-white w-[100%] rounded-xl p-2 md:p-6">
+  <div className="border border-gray-200  text-white w-[100%] rounded-xl p-4 md:p-6">
     <h2 className="text-base md:text-lg font-bold text-gray-900">Review Your Listing</h2>
     <p className="text-xs md:text-sm text-gray-500 mt-1 mb-4 md:mb-6">
       Confirm all details before publishing.
@@ -420,8 +420,8 @@ const Step4 = ({ formData }) => (
         <Train size={16} className="text-gray-700 flex-shrink-0" />
         <h3 className="text-sm font-bold text-gray-900">Journey Details</h3>
       </div>
-      <div className="border bg-black  rounded-lg px-3 sm:px-4">
-        <ReviewRow
+      <div className="border border-gray-200  rounded-lg px-3 sm:px-4">
+        <ReviewRow className=""
           label="Train"
           value={
             formData.trainName || formData.trainNumber
@@ -440,7 +440,7 @@ const Step4 = ({ formData }) => (
         <Ticket size={16} className="text-gray-700 flex-shrink-0" />
         <h3 className="text-sm font-bold text-gray-900">Ticket Details</h3>
       </div>
-      <div className="border bg-black rounded-lg px-3 sm:px-4">
+      <div className="border border-gray-200 rounded-lg px-3 sm:px-4">
         <ReviewRow label="Class" value={formData.trainClass || "—"} />
         <ReviewRow label="Seats" value={formData.seats || "—"} />
         <ReviewRow label="Price" value={formData.price ? `₹${formData.price} / seat` : "—"} />
@@ -455,7 +455,7 @@ const Step4 = ({ formData }) => (
         <User size={16} className="text-gray-700 flex-shrink-0" />
         <h3 className="text-sm font-bold text-gray-900">Contact Info</h3>
       </div>
-      <div className="border bg-black rounded-lg px-3 sm:px-4">
+      <div className="border border-gray-200 rounded-lg px-3 sm:px-4">
         <ReviewRow label="Name" value={formData.fullName || "—"} />
         
         <ReviewRow label="Phone" value={formData.phone || "Not provided"} muted={!formData.phone} />

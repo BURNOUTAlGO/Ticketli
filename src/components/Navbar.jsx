@@ -61,7 +61,7 @@ function Navbar() {
             <TramFront />
             <KineticText
               text="TicketLi"
-              className="text-[20px] font-figtree tracking-[-5%] leading-tight flex items-center justify-center text-center"
+              className="text-[20px] font-figtree  tracking-[-5%] leading-tight flex items-center justify-center text-center"
             />
           </Link>
 
@@ -144,7 +144,7 @@ function Navbar() {
       {/* ── Backdrop ── */}
       <div
         onClick={closeDrawer}
-        className={`fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm transition-opacity duration-300 md:hidden
+        className={`fixed inset-0 h-[100vh] z-[60] bg-black/70 backdrop-blur-sm transition-opacity duration-300 md:hidden
           ${menuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
       />
 
@@ -154,7 +154,7 @@ function Navbar() {
           left-1/2 -translate-x-1/2
           w-[92vw] max-w-[420px]
           rounded-2xl flex flex-col overflow-hidden
-          bg-neutral-950 
+          bg-neutral-900 
           h-[75vh]
           transition-all duration-300 ease-out
           ${menuOpen
@@ -181,7 +181,7 @@ function Navbar() {
               <TramFront size={18} className="text-white" />
               <KineticText
                 text="TicketLi"
-                className="text-[17px] font-figtree tracking-[-5%] leading-tight text-white"
+                className="text-[17px] font-figtree  tracking-[-5%] leading-tight text-white"
               />
             </Link>
           )}
@@ -206,7 +206,7 @@ function Navbar() {
                     key={link.to}
                     to={link.to}
                     onClick={closeDrawer}
-                    className={`flex items-center  gap-3 px-3 py-[11px] rounded-xl transition-colors duration-150 group
+                    className={`flex items-center  gap-3 px-3 py-[11px] rounded-xl transition-colors duration-150 group font-figtree 
                       ${isActive
                         ? "bg-white/10 text-white"
                         : "text-neutral-400 hover:bg-white/5 hover:text-white"
@@ -214,7 +214,7 @@ function Navbar() {
                   >
                     <Icon
                       size={17}
-                      className={`flex-shrink-0 transition-colors duration-150 ${isActive ? "text-white" : "text-neutral-600 group-hover:text-neutral-300"}`}
+                      className={`flex-shrink-0 transition-colors duration-150 ${isActive ? "text-white" : "text-neutral-400 group-hover:text-neutral-300"}`}
                     />
                     <span className="text-[14px] font-medium">{link.label}</span>
                   </Link>

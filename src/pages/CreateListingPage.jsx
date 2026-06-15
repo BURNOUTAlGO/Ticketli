@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 import { db } from "../firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import ProgressBar from "../components/ProgressBar";
-import { ChevronLeft, ChevronRight, Save } from "lucide-react";
+import { ChevronLeft, ChevronRight, Save, Train, Ticket, User, ChevronDown, Check } from "lucide-react";
 import { KineticText } from "@/components/ui/kinetic-text";
 
 // ── Reusable components ────────────────────────────────────────────────────
@@ -13,17 +14,6 @@ const Label = ({ children, required }) => (
     {children}
     {required && <span className="text-red-500 ml-1">*</span>}
   </label>
-);
-
-const Select = ({ options, ...props }) => (
-  <select
-    className="w-full border border-gray-200 rounded-lg px-3 md:px-4 py-2.5 text-sm text-gray-800 appearance-none focus:outline-none focus:ring-2 focus:ring-black/10"
-    {...props}
-  >
-    {options.map((o) => (
-      <option key={o}>{o}</option>
-    ))}
-  </select>
 );
 
 const Input = ({ error, hint, ...props }) => (
@@ -39,33 +29,197 @@ const Input = ({ error, hint, ...props }) => (
   </div>
 );
 
-// validateStep checks the current step of the form and returns any validation errors.
+// ── Portal-based custom dropdown ───────────────────────────────────────────
+const CustomSelect = ({ value, onChange, options }) => {
+  const [open, setOpen] = useState(false);
+  const [menuStyle, setMenuStyle] = useState({});
+  const btnRef = useRef(null);
+  const menuRef = useRef(null);
+
+  const calcPosition = useCallback(() => {
+    if (!btnRef.current) return;
+    const rect = btnRef.current.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    const spaceBelow = viewportHeight - rect.bottom;
+    const menuHeight = Math.min(options.length * 38 + 8, 220);
+    const openUpward = spaceBelow < menuHeight + 8 && rect.top > menuHeight + 8;
+
+    setMenuStyle({
+      position: "fixed",
+      left: rect.left,
+      width: rect.width,
+      zIndex: 9999,
+      ...(openUpward
+        ? { bottom: viewportHeight - rect.top + 5 }
+        : { top: rect.bottom + 5 }),
+    });
+  }, [options.length]);
+
+  const handleOpen = () => {
+    if (!open) calcPosition();
+    setOpen((v) => !v);
+  };
+
+  useEffect(() => {
+    if (!open) return;
+    const onScroll = () => calcPosition();
+    const onResize = () => calcPosition();
+    window.addEventListener("scroll", onScroll, true);
+    window.addEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("scroll", onScroll, true);
+      window.removeEventListener("resize", onResize);
+    };
+  }, [open, calcPosition]);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e) => {
+      if (
+        btnRef.current && !btnRef.current.contains(e.target) &&
+        menuRef.current && !menuRef.current.contains(e.target)
+      ) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  return (
+    <div className="relative">
+      <button
+        ref={btnRef}
+        type="button"
+        onClick={handleOpen}
+        className={`
+          w-full flex items-center justify-between gap-2
+          border rounded-lg px-3 md:px-4 py-2.5 text-sm text-left
+          bg-gray-50 transition-all
+          focus:outline-none focus:ring-2 focus:ring-black/10
+          hover:bg-white hover:border-gray-300
+          ${open ? "border-gray-400 bg-white" : "border-gray-200"}
+        `}
+      >
+        <span className="text-gray-800 truncate">{value}</span>
+        <ChevronDown
+          size={13}
+          className={`text-gray-400 flex-shrink-0 transition-transform duration-150 ${
+            open ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+
+      {open &&
+        createPortal(
+          <div
+            ref={menuRef}
+            style={menuStyle}
+            className="bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden py-1"
+          >
+            {options.map((opt) => (
+              <button
+                key={opt}
+                type="button"
+                onClick={() => {
+                  onChange(opt);
+                  setOpen(false);
+                }}
+                className="w-full flex items-center justify-between gap-2 px-3 py-2 text-sm text-left hover:bg-gray-50 transition"
+              >
+                <span className={value === opt ? "font-semibold text-gray-900" : "text-gray-600"}>
+                  {opt}
+                </span>
+                {value === opt && <Check size={13} className="text-gray-900 flex-shrink-0" />}
+              </button>
+            ))}
+          </div>,
+          document.body
+        )}
+    </div>
+  );
+};
+
+const classOptions = ["Economy", "Sleeper", "AC 3-Tier", "AC 2-Tier", "First AC"];
+const seatOptions = ["1 seat", "2 seats", "3 seats", "4 seats"];
+
+// ── validateStep ───────────────────────────────────────────────────────────
 const validateStep = (step, formData) => {
   const errors = {};
 
   if (step === 1) {
-    if (!formData.from.trim())          errors.from          = "Starting city is required";
-    if (!formData.to.trim())            errors.to            = "Destination city is required";
-    if (!formData.trainName.trim())     errors.trainName     = "Train name is required";
-    if (!formData.trainNumber.trim())   errors.trainNumber   = "Train number is required";
-    if (!formData.journeyDate)          errors.journeyDate   = "Journey date is required";
-    if (!formData.departureTime)        errors.departureTime = "Departure time is required";
-    if (!formData.arrivalTime)          errors.arrivalTime   = "Arrival time is required";
+    if (!formData.from.trim())
+      errors.from = "Starting city is required";
+    else if (!/^[a-zA-Z\s]+$/.test(formData.from.trim()))
+      errors.from = "City name should contain only letters";
+
+    if (!formData.to.trim())
+      errors.to = "Destination city is required";
+    else if (!/^[a-zA-Z\s]+$/.test(formData.to.trim()))
+      errors.to = "City name should contain only letters";
+
+    if (
+      formData.from.trim() &&
+      formData.to.trim() &&
+      formData.from.trim().toLowerCase() === formData.to.trim().toLowerCase()
+    )
+      errors.to = "Destination must be different from starting city";
+
+    if (!formData.trainName.trim())
+      errors.trainName = "Train name is required";
+    else if (!/^[a-zA-Z\s]+$/.test(formData.trainName.trim()))
+      errors.trainName = "Train name should contain only letters";
+
+    if (!formData.trainNumber.trim())
+      errors.trainNumber = "Train number is required";
+    else if (!/^\d+$/.test(formData.trainNumber.trim()))
+      errors.trainNumber = "Train number should contain only digits";
+
+    if (!formData.journeyDate)
+      errors.journeyDate = "Journey date is required";
+    else {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const selectedDate = new Date(formData.journeyDate);
+      if (selectedDate < today)
+        errors.journeyDate = "Journey date cannot be in the past";
+    }
+
+    if (!formData.departureTime)
+      errors.departureTime = "Departure time is required";
+
+    if (!formData.arrivalTime)
+      errors.arrivalTime = "Arrival time is required";
   }
 
   if (step === 2) {
-    if (!formData.price || Number(formData.price) <= 0)
-      errors.price = "Valid price is required";
+    if (!formData.price)
+      errors.price = "Price is required";
+    else if (!/^\d+$/.test(formData.price.toString().trim()))
+      errors.price = "Price should be a whole number";
+    else if (Number(formData.price) <= 0)
+      errors.price = "Price must be greater than 0";
+    else if (Number(formData.price) > 50000)
+      errors.price = "Price seems too high, please check";
   }
 
   if (step === 3) {
-    if (!formData.fullName.trim())  errors.fullName = "Full name is required";
-    if (!formData.email.trim())     errors.email    = "Email is required";
+    if (!formData.fullName.trim())
+      errors.fullName = "Full name is required";
+    else if (!/^[a-zA-Z\s]+$/.test(formData.fullName.trim()))
+      errors.fullName = "Name should contain only letters";
+    else if (formData.fullName.trim().length < 3)
+      errors.fullName = "Name must be at least 3 characters";
+
+    if (!formData.email.trim())
+      errors.email = "Email is required";
     else if (!/\S+@\S+\.\S+/.test(formData.email))
-                                    errors.email    = "Enter a valid email";
-    if (!formData.phone.trim())     errors.phone    = "Phone number is required";
+      errors.email = "Enter a valid email";
+
+    if (!formData.phone.trim())
+      errors.phone = "Phone number is required";
     else if (!/^\d{10}$/.test(formData.phone.trim()))
-                                    errors.phone    = "Enter a valid 10-digit phone number";
+      errors.phone = "Phone number must be exactly 10 digits";
   }
 
   return errors;
@@ -74,7 +228,7 @@ const validateStep = (step, formData) => {
 // ── Step panels ────────────────────────────────────────────────────────────
 const Step1 = ({ formData, handleChange, errors }) => (
   <div className="border border-gray-200 rounded-xl p-4 md:p-6">
-    <h2 className="text-base md:text-lg font-semibold text-gray-900">Journey Details</h2>
+    <h2 className="text-base md:text-lg font-bold text-gray-900">Journey Details</h2>
     <p className="text-xs md:text-sm text-gray-500 mt-1 mb-4 md:mb-6">
       Enter your train journey information.
     </p>
@@ -166,25 +320,19 @@ const Step2 = ({ formData, handleChange, errors }) => (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 mb-4 md:mb-5">
       <div>
         <Label required>Train Class</Label>
-        <div className="relative">
-          <Select
-            options={["Economy", "Sleeper", "AC 3-Tier", "AC 2-Tier", "First AC"]}
-            value={formData.trainClass}
-            onChange={handleChange("trainClass")}
-          />
-          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">▼</span>
-        </div>
+        <CustomSelect
+          value={formData.trainClass}
+          onChange={(val) => handleChange("trainClass")({ target: { value: val } })}
+          options={classOptions}
+        />
       </div>
       <div>
         <Label required>Number of Seats</Label>
-        <div className="relative">
-          <Select
-            options={["1 seat", "2 seats", "3 seats", "4 seats"]}
-            value={formData.seats}
-            onChange={handleChange("seats")}
-          />
-          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">▼</span>
-        </div>
+        <CustomSelect
+          value={formData.seats}
+          onChange={(val) => handleChange("seats")({ target: { value: val } })}
+          options={seatOptions}
+        />
       </div>
     </div>
     <div className="mb-4 md:mb-5">
@@ -250,47 +398,67 @@ const Step3 = ({ formData, handleChange, errors }) => (
   </div>
 );
 
+// ── Step4: Review & Publish ────────────────────────────────────────────────
+const ReviewRow = ({ label, value, muted = false }) => (
+  <div className="flex items-center justify-between gap-3 py-2.5 border-b border-gray-100 last:border-b-0">
+    <span className="text-sm text-gray-500 flex-shrink-0">{label}</span>
+    <span className={`text-sm text-right break-words ${muted ? "text-gray-900" : "font-semibold text-gray-900"}`}>
+      {value}
+    </span>
+  </div>
+);
+
 const Step4 = ({ formData }) => (
   <div className="border border-gray-200 rounded-xl p-4 md:p-6">
-    <h2 className="text-base md:text-lg font-bold text-gray-900">Review & Publish</h2>
+    <h2 className="text-base md:text-lg font-bold text-gray-900">Review Your Listing</h2>
     <p className="text-xs md:text-sm text-gray-500 mt-1 mb-4 md:mb-6">
-      Review all details before publishing.
+      Confirm all details before publishing.
     </p>
 
-    <div className="mb-4">
-      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Journey</p>
-      <div className="grid grid-cols-2 gap-2 text-sm">
-        <div><span className="text-gray-500">From</span><p className="font-medium text-gray-900">{formData.from || "—"}</p></div>
-        <div><span className="text-gray-500">To</span><p className="font-medium text-gray-900">{formData.to || "—"}</p></div>
-        <div><span className="text-gray-500">Train</span><p className="font-medium text-gray-900">{formData.trainName || "—"}</p></div>
-        <div><span className="text-gray-500">Train No.</span><p className="font-medium text-gray-900">{formData.trainNumber || "—"}</p></div>
-        <div><span className="text-gray-500">Date</span><p className="font-medium text-gray-900">{formData.journeyDate || "—"}</p></div>
-        <div><span className="text-gray-500">Departure</span><p className="font-medium text-gray-900">{formData.departureTime || "—"}</p></div>
-        <div><span className="text-gray-500">Arrival</span><p className="font-medium text-gray-900">{formData.arrivalTime || "—"}</p></div>
+    <div className="mb-5">
+      <div className="flex items-center gap-2 mb-2">
+        <Train size={16} className="text-gray-700 flex-shrink-0" />
+        <h3 className="text-sm font-bold text-gray-900">Journey Details</h3>
+      </div>
+      <div className="border border-gray-200 rounded-lg px-3 sm:px-4">
+        <ReviewRow
+          label="Train"
+          value={
+            formData.trainName || formData.trainNumber
+              ? `${formData.trainName || "—"}${formData.trainNumber ? ` (${formData.trainNumber})` : ""}`
+              : "—"
+          }
+        />
+        <ReviewRow label="Route" value={`${formData.from || "—"} → ${formData.to || "—"}`} />
+        <ReviewRow label="Date" value={formData.journeyDate || "—"} />
+        <ReviewRow label="Timing" value={`${formData.departureTime || "—"} → ${formData.arrivalTime || "—"}`} />
       </div>
     </div>
 
-    <div className="border-t border-gray-100 my-4" />
-
-    <div className="mb-4">
-      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Ticket</p>
-      <div className="grid grid-cols-2 gap-2 text-sm">
-        <div><span className="text-gray-500">Class</span><p className="font-medium text-gray-900">{formData.trainClass}</p></div>
-        <div><span className="text-gray-500">Seats</span><p className="font-medium text-gray-900">{formData.seats}</p></div>
-        <div><span className="text-gray-500">Price/seat</span><p className="font-medium text-gray-900">{formData.price ? `₹${formData.price}` : "—"}</p></div>
+    <div className="mb-5">
+      <div className="flex items-center gap-2 mb-2">
+        <Ticket size={16} className="text-gray-700 flex-shrink-0" />
+        <h3 className="text-sm font-bold text-gray-900">Ticket Details</h3>
+      </div>
+      <div className="border border-gray-200 rounded-lg px-3 sm:px-4">
+        <ReviewRow label="Class" value={formData.trainClass || "—"} />
+        <ReviewRow label="Seats" value={formData.seats || "—"} />
+        <ReviewRow label="Price" value={formData.price ? `₹${formData.price} / seat` : "—"} />
       </div>
       {formData.description && (
         <p className="text-sm text-gray-600 mt-2">{formData.description}</p>
       )}
     </div>
 
-    <div className="border-t border-gray-100 my-4" />
-
     <div>
-      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Contact</p>
-      <div className="grid grid-cols-2 gap-2 text-sm">
-        <div><span className="text-gray-500">Name</span><p className="font-medium text-gray-900">{formData.fullName || "—"}</p></div>
-        <div><span className="text-gray-500">Phone</span><p className="font-medium text-gray-900">{formData.phone || "—"}</p></div>
+      <div className="flex items-center gap-2 mb-2">
+        <User size={16} className="text-gray-700 flex-shrink-0" />
+        <h3 className="text-sm font-bold text-gray-900">Contact Info</h3>
+      </div>
+      <div className="border border-gray-200 rounded-lg px-3 sm:px-4">
+        <ReviewRow label="Name" value={formData.fullName || "—"} />
+        <ReviewRow label="Email" value={formData.email || "—"} />
+        <ReviewRow label="Phone" value={formData.phone || "Not provided"} muted={!formData.phone} />
       </div>
     </div>
   </div>
@@ -312,9 +480,6 @@ const CreateListingPage = () => {
     fullName: "", email: "", phone: "",
   });
 
-  // Prefill email from the logged-in Auth0 user.
-  // This ensures the saved ticket's email always matches user.email exactly,
-  // which MyListingsPage relies on for its where("email", "==", ...) query.
   useEffect(() => {
     if (user) {
       setFormData((prev) => ({
@@ -324,10 +489,11 @@ const CreateListingPage = () => {
     }
   }, [user]);
 
-  const handleChange = (field) => (e) => {
-    setFormData((prev) => ({ ...prev, [field]: e.target.value }));
+  const handleChange = useCallback((field) => (e) => {
+    const value = e.target.value;
+    setFormData((prev) => ({ ...prev, [field]: value }));
     setErrors((prev) => ({ ...prev, [field]: undefined }));
-  };
+  }, []);
 
   const handleNext = () => {
     const stepErrors = validateStep(step, formData);
@@ -340,16 +506,23 @@ const CreateListingPage = () => {
   };
 
   const handlePublish = async () => {
-    const stepErrors = validateStep(3, formData);
-    if (Object.keys(stepErrors).length > 0) {
-      setErrors(stepErrors);
+    const step1Errors = validateStep(1, formData);
+    const step2Errors = validateStep(2, formData);
+    const step3Errors = validateStep(3, formData);
+    const allErrors = { ...step1Errors, ...step2Errors, ...step3Errors };
+
+    if (Object.keys(allErrors).length > 0) {
+      setErrors(allErrors);
+      if (Object.keys(step1Errors).length > 0) setStep(1);
+      else if (Object.keys(step2Errors).length > 0) setStep(2);
+      else setStep(3);
       return;
     }
+
     setPublishing(true);
     try {
       await addDoc(collection(db, "tickets"), {
         ...formData,
-        // store the Auth0 user id too, as a more reliable backup identifier
         uid: user?.sub || null,
         createdAt: serverTimestamp(),
         status: "active",
@@ -363,13 +536,6 @@ const CreateListingPage = () => {
     }
   };
 
-  const panels = [
-    <Step1 formData={formData} handleChange={handleChange} errors={errors} />,
-    <Step2 formData={formData} handleChange={handleChange} errors={errors} />,
-    <Step3 formData={formData} handleChange={handleChange} errors={errors} />,
-    <Step4 formData={formData} />,
-  ];
-
   return (
     <div className="min-h-screen flex justify-center px-4 py-6 md:py-10">
       <div className="w-full max-w-2xl mt-9">
@@ -377,12 +543,15 @@ const CreateListingPage = () => {
 
           <KineticText
             text="List Your Ticket"
-            className="text-[2.65rem] sm:text-[3.25rem] md:text-[4.5rem] tracking-[-5%] flex items-center justify-center "
+            className="text-[2.65rem] sm:text-[3.25rem] md:text-[4.5rem] tracking-[-5%] flex items-center justify-center"
           />
 
           <ProgressBar step={step} />
 
-          {panels[step - 1]}
+          {step === 1 && <Step1 formData={formData} handleChange={handleChange} errors={errors} />}
+          {step === 2 && <Step2 formData={formData} handleChange={handleChange} errors={errors} />}
+          {step === 3 && <Step3 formData={formData} handleChange={handleChange} errors={errors} />}
+          {step === 4 && <Step4 formData={formData} />}
 
           {/* Navigation */}
           <div className="flex items-center justify-between">

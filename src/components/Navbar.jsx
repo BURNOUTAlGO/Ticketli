@@ -262,9 +262,9 @@ function Navbar() {
         </div>
 
         {/* Bottom search bar */}
-        <div className="px-3 pb-3 pt-2 flex-shrink-0 flex items-center gap-2 border-t border-neutral-800 bg-neutral-950">
+        <div className="px-3 pb-3 pt-2 flex-shrink-0 flex items-center gap-2 border-t border-neutral-800 bg-neutral-900">
           <div className="flex items-center  gap-2 flex-1  rounded-full px-4 h-10  border border-neutral-800">
-            <Search size={14} className="text-neutral-500  flex-shrink-0" />
+            <Search size={14} className="text-neutral-500   flex-shrink-0" />
             <input
               type="text"
               placeholder="Find..."

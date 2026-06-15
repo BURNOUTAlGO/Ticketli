@@ -127,7 +127,7 @@ const CustomSelect = ({ value, onChange, options }) => {
                 }}
                 className="w-full flex items-center justify-between gap-2 px-3 py-2 text-sm text-left hover:bg-gray-50 transition"
               >
-                <span className={value === opt ? "font-semibold text-gray-900" : "text-gray-600"}>
+                <span className={value === opt ? "font-figtree text-gray-900" : "text-gray-600"}>
                   {opt}
                 </span>
                 {value === opt && <Check size={13} className="text-gray-900 flex-shrink-0" />}
@@ -228,7 +228,7 @@ const validateStep = (step, formData) => {
 // ── Step panels ────────────────────────────────────────────────────────────
 const Step1 = ({ formData, handleChange, errors }) => (
   <div className="border border-gray-200 rounded-xl p-4 md:p-6">
-    <h2 className="text-base md:text-lg font-bold text-gray-900">Journey Details</h2>
+    <h2 className="text-base md:text-lg font-bold font-figtree text-gray-900">Journey Details</h2>
     <p className="text-xs md:text-sm text-gray-500 mt-1 mb-4 md:mb-6">
       Enter your train journey information.
     </p>

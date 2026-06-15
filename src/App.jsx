@@ -6,9 +6,11 @@ import BrowseTicketsPage from "./pages/BrowseTicketsPage";
 import CreateListing from "./pages/CreateListingPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import MyListingsPage from "./pages/MyListingPage";
+import { ThemeProvider } from "./components/ThemeProvider";
 
 function App() {
   return (
+    <ThemeProvider>
     <BrowserRouter>
       <Navbar />
 
@@ -37,6 +39,7 @@ function App() {
         } />
       </Routes>
     </BrowserRouter>
+    </ThemeProvider>
   );
 }
 

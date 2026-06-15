@@ -2,6 +2,7 @@ import train from "../assets/train.png";
 
 import { useNavigate } from "react-router";
 
+
 import { RainbowButton } from "@/components/ui/rainbow-button";
 import { AnimatedShinyText } from "@/components/ui/animated-shiny-text";
 import { cn } from "@/lib/utils";
@@ -37,16 +38,16 @@ function Home() {
               text="Wanna Sell Tickets? Or Buy Tickets?"
               className="text-[2.25rem] sm:text-[3.25rem] md:text-[4.5rem] tracking-[-5%] leading-tight flex items-center justify-center text-center"
             />
-            <h1 className="text-[#969696] text-sm sm:text-base max-w-xl">
+            <h1 className="text-[#969696] font-figtree text-sm sm:text-base max-w-xl">
               Can't make your journey? List your train ticket and connect with
               travelers who need it. Simple, safe, and community-driven.
             </h1>
           </div>
           <div className="flex flex-col sm:flex-row justify-center items-center gap-3 mt-5 w-full sm:w-auto px-6 sm:px-0">
-            <RainbowButton className="w-full sm:w-[150px]" onClick={() => navigate("/browse")}>
+            <RainbowButton className="w-full text-white dark:text-black sm:w-[150px]" onClick={() => navigate("/browse")}>
               Browse Tickets
             </RainbowButton>
-            <RainbowButton variant="outline" className="w-full sm:w-[150px]" onClick={() => navigate("/create-listing")}>
+            <RainbowButton  className="w-full text-white dark:text-black sm:w-[150px]" onClick={() => navigate("/create-listing")}>
               List My Ticket
             </RainbowButton>
           </div>

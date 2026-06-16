@@ -409,7 +409,7 @@ const BrowseTicketsPage = () => {
               />
               <button
                 onClick={handleSearch}
-                className="flex items-center justify-center gap-1.5 bg-black dark:bg-white text-white dark:text-black text-sm font-medium px-5 py-2.5 rounded-xl hover:bg-[var(--color-surface-hover-switch)] hover:dark:bg-gray-200 transition flex-shrink-0"
+                className="flex items-center justify-center gap-1.5 bg-black dark:bg-white text-white dark:text-black text-sm font-medium px-5 py-2.5 rounded-xl hover:bg-gray-800 hover:dark:bg-gray-200 transition flex-shrink-0"
               >
                 <Search size={14} />
                 Search
@@ -498,7 +498,7 @@ const BrowseTicketsPage = () => {
                   {sortOpen && (
                     <>
                       <div className="fixed inset-0 z-20" onClick={() => setSortOpen(false)} />
-                      <div className="absolute right-0 mt-1.5 w-52 bg-[var(--color-bg)] border border-[var(--color-border)] rounded-xl shadow-lg z-30 overflow-hidden">
+                      <div className="absolute right-0 mt-1.5 w-52 bg-[#ffff] border border-[var(--color-border)] rounded-xl shadow-lg z-30 overflow-hidden">
                         {sortOptions.map((opt) => (
                           <button
                             key={opt}
@@ -619,7 +619,7 @@ const BrowseTicketsPage = () => {
                   {sortOpen && (
                     <>
                       <div className="fixed inset-0 z-20" onClick={() => setSortOpen(false)} />
-                      <div className="absolute right-0 mt-1.5 w-56 bg-[var(--color-bg)] border border-[var(--color-border)] rounded-xl shadow-lg z-30 overflow-hidden">
+                      <div className="absolute right-0 mt-1.5 w-56 bg-[#ffff] border border-[var(--color-border)] rounded-xl shadow-lg z-30 overflow-hidden">
                         {sortOptions.map((opt) => (
                           <button
                             key={opt}

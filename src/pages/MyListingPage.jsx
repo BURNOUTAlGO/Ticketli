@@ -177,9 +177,9 @@ const MyListingsPage = () => {
 
         {/* Empty state */}
         {tickets.length === 0 ? (
-          <div className="text-center py-16 md:py-24 text-gray-400 border border-gray-100 rounded-2xl px-4">
+          <div className="text-center py-16 md:py-24 bg-[var(--color-surface)] text-gray-400 border border-[var(--color-border)] rounded-2xl px-4">
             <Train size={36} className="mx-auto mb-3 opacity-20" />
-            <p className="text-sm font-medium text-gray-600">
+            <p className="text-sm font-medium ">
               You haven't listed any tickets yet
             </p>
             <p className="text-xs mt-1">

@@ -78,7 +78,7 @@ body {
   --ds-background-100: hsla(0, 0%, 0%, 1);
   --ds-background-200: rgb(5, 5, 5);
  
-  --ds-gray-100: rgb(14, 14, 14);
+  --ds-gray-100: rgb(15, 15, 15);
   --ds-gray-200: hsla(0, 0%, 13.6%, 1);
   --ds-gray-300: hsla(0, 0%, 16.5%, 1);
   --ds-gray-400: hsla(0, 0%, 21%, 1);
@@ -103,9 +103,6 @@ body {
   --color-surface: var(--ds-gray-100);
   --color-surface-hover: var(--ds-gray-200);
   --color-surface-hover-switch:var(--ds-gray-switch-200);
-
-  --card-border: var(--ds-gray-200);
-  --card-backround:var( --ds-background-200);
 }
 html {
   background-color: var(--color-bg);

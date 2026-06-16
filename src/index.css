@@ -35,7 +35,7 @@ body {
   --ds-gray-800: lab(52.44% 0 0);
   --ds-gray-900: lab(32.72% -.0000149012 0);
   --ds-gray-1000: lab(2.74% 0 0);
-  --ds-gray-switch-200: hsla(0, 0%, 13.6%, 1);
+  --ds-gray-switch-200: lab(13.71% 0 0);
  
   /* Semantic aliases used throughout components */
   --color-bg: var(--ds-background-100);

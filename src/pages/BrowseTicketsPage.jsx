@@ -449,7 +449,8 @@ const BrowseTicketsPage = () => {
             </div>
             <div className="relative flex-1">
               <input
-                type="Choose date"
+                type="date"
+                placeholder="Choose Date"
                 value={searchDate}
                 onChange={(e) => setSearchDate(e.target.value)}
                 className="w-full px-4 py-2.5 text-sm border border-[var(--color-border)] rounded-xl bg-[var(--color-surface)] placeholder:text-[var(--color-text-subtle)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-black/10"
@@ -471,7 +472,7 @@ const BrowseTicketsPage = () => {
           {/* ══ MOBILE ══ */}
           <div className="h-full flex flex-col md:hidden overflow-y-auto hide-scrollbar">
             {/* Sticky bar */}
-            <div className="sticky top-0 z-10 bg-yellow-400 dark:bg-black border-b border-[var(--color-border)] px-3 py-2.5 flex items-center justify-between gap-2">
+            <div className="sticky top-0 z-10 bg-[#ffffff] dark:bg-black border-b border-[var(--color-border)] px-3 py-2.5 flex items-center justify-between gap-2">
               <p className="text-xs pl-3.5 sm:text-sm text-[var(--color-text)] font-medium whitespace-nowrap flex-shrink-0">
                 {filtered.length} listing{filtered.length !== 1 ? "s" : ""}
               </p>
@@ -590,7 +591,7 @@ const BrowseTicketsPage = () => {
                   <h2 className="text-base font-figtree text-[var(--color-text)]">Filters</h2>
                   <button
                     onClick={handleReset}
-                    className="flex items-center gap-1 text-xs text-gray-400 dark:text-neutral-400 hover:text-[var(--color-text)] transition"
+                    className="flex items-center gap-1 text-xs text-gray-400 dark:text-neutral-400 hover:dark:text-white hover:text-black transition"
                   >
                     <RotateCcw size={12} /> Reset
                   </button>
@@ -727,7 +728,7 @@ const TicketCard = ({ ticket, duration, initials }) => (
         </div>
         <a
           href={`mailto:${ticket.email}`}
-          className="bg-black dark:bg-white text-white dark:text-black text-xs font-medium px-4 py-2 rounded-lg hover:bg-[var(--color-surface-hover-switch)] hover:dark:bg-gray-200 transition"
+          className="bg-black dark:bg-white text-white dark:text-black text-xs font-medium px-4 py-2 rounded-lg hover:bg-gray-800 hover:dark:bg-gray-100 hover:dark:bg-gray-200 transition "
         >
           View
         </a>

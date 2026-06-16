@@ -77,6 +77,8 @@ body {
   --ds-white: hsla(0, 0%, 100%, 1);
   --ds-background-100: hsla(0, 0%, 0%, 1);
   --ds-background-200: rgb(5, 5, 5);
+
+  
  
   --ds-gray-100: rgb(10, 10, 10);
   --ds-gray-200: hsla(0, 0%, 13.6%, 1);

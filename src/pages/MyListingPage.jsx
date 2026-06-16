@@ -149,7 +149,7 @@ const MyListingsPage = () => {
               text="Your Listings"
               className="text-[2.25rem] sm:text-[3.25rem] md:text-[4.5rem] tracking-[-5%] flex items-start justify-start"
             />
-            <p className="text-sm text-gray-500  mt-1 break-all sm:break-normal">
+            <p className="text-sm text-neutral-400  mt-1 break-all sm:break-normal">
               {tickets.length} listing{tickets.length !== 1 ? "s" : ""} ·{" "}
               {user.name}
             </p>
@@ -177,14 +177,12 @@ const MyListingsPage = () => {
 
         {/* Empty state */}
         {tickets.length === 0 ? (
-          <div className="text-center py-16 md:py-24 bg-[var(--color-surface)] text-gray-400 border border-[var(--color-border)] rounded-2xl px-4">
-            <Train size={36} className="mx-auto mb-3 opacity-20" />
-            <p className="text-sm font-medium ">
+          <div className="text-center py-16 md:py-24 bg-[var(--color-surface)] text-gray-400 border border-[var(--color-border)] rounded-[10px] px-4">
+            <Train size={36} className="mx-auto mb-3 opacity-20 text-neutral-400" />
+            <p className="text-sm text-neutral-400 font-geist ">
               You haven't listed any tickets yet
             </p>
-            <p className="text-xs mt-1">
-              Click "List a Ticket" to create your first listing
-            </p>
+  
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -199,23 +197,24 @@ const MyListingsPage = () => {
               return (
                 <div
                   key={ticket.id}
-                  className="relative bg-white border border-gray-200 rounded-2xl p-4 sm:p-5 hover:shadow-md hover:border-gray-300 transition"
+                  className="relative bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[10px] p-4 sm:p-5 hover:shadow-md  transition"
                 >
                   {/* Top */}
                   <div className="flex items-start justify-between mb-3 gap-2">
                     <div className="min-w-0 ">
-                      <h3 className="font-bold text-gray-900 text-sm truncate">
+                      <h3 className="font-figtree font-semibold  text-sm truncate">
                         {ticket.trainName || "—"}
 
                       </h3>
-                      <p className="text-gray-400 text-[13px]">{ticket.trainNumber}</p>
+                      <p className="text-neutral-400 text-[13px]">{ticket.trainNumber}</p>
 
                     </div>
                     <div className="flex items-center gap-1.5 flex-shrink-0">
-                      <span className="text-xs border border-gray-200 text-gray-600 px-2.5 py-1 rounded-full whitespace-nowrap">
+                      <span className="text-xs border border-[var(--color-border)]
+                       text-gray-600 dark:text-neutral-400 px-2.5 py-1 rounded-full whitespace-nowrap">
                         {ticket.trainClass}
                       </span>
-                      <span className="text-xs bg-black text-white px-2.5 py-1 rounded-full whitespace-nowrap">
+                      <span className="text-xs bg-black dark:bg-[var(--color-3)] text-white px-2.5 py-1 rounded-full whitespace-nowrap">
                         {ticket.status || "Active"}
                       </span>
                     </div>
@@ -224,61 +223,61 @@ const MyListingsPage = () => {
                   {/* Time row */}
                   <div className="flex items-center gap-2 sm:gap-3 mb-3">
                     <div>
-                      <p className="text-lg sm:text-xl font-bold text-gray-900">
+                      <p className="text-lg sm:text-xl font-geist font-semibold ">
                         {ticket.departureTime || "—"}
                       </p>
-                      <p className="text-xs text-gray-500 truncate">
+                      <p className="text-xs font-mono  truncate">
                         {ticket.from || "—"}
                       </p>
                     </div>
                     <div className="flex-1 flex flex-col items-center gap-0.5 min-w-0">
                       {duration && (
-                        <span className="text-xs text-gray-400 whitespace-nowrap">
+                        <span className="text-xs text-gray-400 dark:text-neutral-400 whitespace-nowrap">
                           {duration}
                         </span>
                       )}
                       <div className="flex items-center w-full gap-1">
-                        <div className="flex-1 h-px bg-gray-200" />
-                        <span className="text-gray-300 text-xs">→</span>
-                        <div className="flex-1 h-px bg-gray-200" />
+                        <div className="flex-1 h-px bg-black dark:bg-[var(--color-border)]" />
+                        <span className=" text-black dark:text-white text-xl">→</span>
+                        <div className="flex-1 h-px bg-black dark:bg-[var(--color-border)]" />
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-lg sm:text-xl font-bold text-gray-900">
+                      <p className="text-lg sm:text-xl font-figtree font-semibold ">
                         {ticket.arrivalTime || "—"}
                       </p>
-                      <p className="text-xs text-gray-500 truncate">
+                      <p className="text-xs  font-mono truncate">
                         {ticket.to || "—"}
                       </p>
                     </div>
                   </div>
 
                   {/* Date + seats */}
-                  <div className="flex items-center gap-3 text-xs text-gray-400 mb-4 flex-wrap">
-                    <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-3 text-xs text-gray-400 dark:text-neutral-400 mb-4 flex-wrap font-mono">
+                    <div className="flex items-center gap-1 ">
                       <Clock size={12} />
                       <span>{ticket.journeyDate || "—"}</span>
                     </div>
                     <span>·</span>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 ">
                       <Users size={12} />
                       <span>{ticket.seats} available</span>
                     </div>
                   </div>
 
                   {/* Footer */}
-                  <div className="border-t border-gray-100 pt-3 flex items-center justify-between gap-2">
-                    <p className="text-xs text-gray-400 truncate">
+                  <div className="border-t border-[var(--color-border)] pt-3 flex items-center justify-between gap-2">
+                    <p className="text-xs text-gray-400 dark:text-neutral-400 font-mono truncate">
                       Listed{" "}
                       {ticket.createdAt?.toDate
                         ? ticket.createdAt.toDate().toLocaleDateString()
                         : "—"}
                     </p>
                     <div className="text-right flex-shrink-0">
-                      <p className="text-base font-bold text-gray-900">
+                      <p className="text-base font-mono">
                         ₹{ticket.price}
                       </p>
-                      <p className="text-[10px] text-gray-400">per seat</p>
+                      <p className="text-[10px] text-gray-400 dark:text-neutral-400 font-figtree">per seat</p>
                     </div>
                   </div>
 

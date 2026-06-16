@@ -150,7 +150,7 @@ const FilterFields = ({
   filterMinSeats, setFilterMinSeats,
 }) => (
   <>
-    <div className="mb-4">
+    <div className="mb-4 ">
       <label className="block text-xs font-semibold text-gray-400 dark:text-neutral-400 uppercase tracking-wide mb-1.5">
         From
       </label>
@@ -180,9 +180,10 @@ const FilterFields = ({
       </label>
       <input
         type="date"
+        placeholder="Choose Date"
         value={filterDate}
         onChange={(e) => setFilterDate(e.target.value)}
-        className="w-full border border-[var(--color-border)] rounded-lg px-3 py-2 text-sm bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-black/10"
+        className="w-full border border-[var(--color-border)] placeholder:text-[var(--color-text-subtle)] rounded-lg px-3 py-2 text-sm bg-[var(--color-surface)] text-[var(--color-text)]  focus:outline-none focus:ring-2 focus:ring-black/10"
       />
     </div>
 
@@ -218,7 +219,7 @@ const FilterFields = ({
     </div>
 
     <div>
-      <label className="block text-xs font-semibold text-[var(--color-text-subtle)] uppercase tracking-wide mb-1.5">
+      <label className="block text-xs font-semibold text-gray-400 dark:text-neutral-400 uppercase tracking-wide mb-1.5">
         Min. Seats Available
       </label>
       <CustomSelect
@@ -377,7 +378,7 @@ const BrowseTicketsPage = () => {
                   placeholder="From"
                   value={searchFrom}
                   onChange={(e) => setSearchFrom(e.target.value)}
-                  className="w-full pl-8 pr-3 py-2.5 text-sm border border-[var(--color-border)] rounded-xl bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-subtle)] focus:outline-none focus:ring-2 focus:ring-black/10"
+                  className="w-full pl-8 pr-3 py-2.5 text-sm border border-[var(--color-border)] rounded-xl bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-subtle)] focus:outline-none focus:ring-2 focus:ring-black/10 "
                 />
               </div>
               <button
@@ -401,9 +402,10 @@ const BrowseTicketsPage = () => {
             <div className="flex items-center gap-2">
               <input
                 type="date"
+                placeholder="Choose Date"
                 value={searchDate}
                 onChange={(e) => setSearchDate(e.target.value)}
-                className="flex-1 px-3 py-2.5 text-sm border border-[var(--color-border)] rounded-xl bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-black/10 "
+                className="flex-1 px-3 py-2.5 text-sm border border-[var(--color-border)] rounded-xl bg-[var(--color-surface)] placeholder:text-[var(--color-text-subtle)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-black/10 "
               />
               <button
                 onClick={handleSearch}
@@ -447,10 +449,10 @@ const BrowseTicketsPage = () => {
             </div>
             <div className="relative flex-1">
               <input
-                type="date"
+                type="Choose date"
                 value={searchDate}
                 onChange={(e) => setSearchDate(e.target.value)}
-                className="w-full px-4 py-2.5 text-sm border border-[var(--color-border)] rounded-xl bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-black/10"
+                className="w-full px-4 py-2.5 text-sm border border-[var(--color-border)] rounded-xl bg-[var(--color-surface)] placeholder:text-[var(--color-text-subtle)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-black/10"
               />
             </div>
             <button
@@ -517,13 +519,13 @@ const BrowseTicketsPage = () => {
 
             {/* Mobile filter popup */}
             {showFilters && (
-              <div className="fixed inset-0 z-40 flex items-center justify-center p-4">
+              <div className="fixed inset-0 z-40  flex items-center font-mono justify-center p-4">
                 <div
-                  className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+                  className="absolute inset-0 bg-black/30 h-[100vh] backdrop-blur-sm"
                   onClick={() => setShowFilters(false)}
                 />
-                <div className="relative mt-15 bg-[var(--color-bg)] rounded-2xl shadow-xl w-full max-w-sm max-h-[80vh] flex flex-col overflow-hidden">
-                  <div className="flex-shrink-0 px-4 pt-4 pb-3 border-b border-[var(--color-border)] flex items-center justify-between">
+                <div className="relative mt-15 bg-white dark:bg-black  rounded-2xl shadow-xl w-full max-w-sm max-h-[80vh] flex flex-col overflow-hidden">
+                  <div className="flex-shrink-0 px-4 pt-4 pb-3 border-b border-[var(--color-border)] flex items-center justify-between font-figtree">
                     <KineticText
                       text="Filter Tickets"
                       className="text-[2.25rem] sm:text-[3.25rem] md:text-[4.5rem] tracking-[-5%] flex items-start justify-start"

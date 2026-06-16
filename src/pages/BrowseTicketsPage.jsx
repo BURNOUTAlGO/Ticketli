@@ -471,7 +471,7 @@ const BrowseTicketsPage = () => {
           {/* ══ MOBILE ══ */}
           <div className="h-full flex flex-col md:hidden overflow-y-auto hide-scrollbar">
             {/* Sticky bar */}
-            <div className="sticky top-0 z-10 bg-white dark:bg-black border-b border-[var(--color-border)] px-3 py-2.5 flex items-center justify-between gap-2">
+            <div className="sticky top-0 z-10 bg-yellow-400 dark:bg-black border-b border-[var(--color-border)] px-3 py-2.5 flex items-center justify-between gap-2">
               <p className="text-xs pl-3.5 sm:text-sm text-[var(--color-text)] font-medium whitespace-nowrap flex-shrink-0">
                 {filtered.length} listing{filtered.length !== 1 ? "s" : ""}
               </p>
@@ -562,7 +562,7 @@ const BrowseTicketsPage = () => {
             {/* Ticket cards */}
             <div className="px-4 py-4">
               {filtered.length === 0 ? (
-                <div className="text-center py-20 text-[var(--color-text-subtle)] border border-[var(--color-border)] rounded-[10px] bg-[var(--color-surface)]">
+                <div className="text-center py-20  border border-[var(--color-border)] rounded-[10px] bg-[var(--color-surface)]">
                   <Search size={36} className="mx-auto mb-3 opacity-20" />
                   <p className="text-sm font-medium">No tickets match your search</p>
                   <p className="text-xs mt-1">Try adjusting filters or search terms</p>
@@ -638,7 +638,7 @@ const BrowseTicketsPage = () => {
               </div>
 
               {filtered.length === 0 ? (
-                <div className="text-center py-24 text-[var(--color-text-subtle)] border border-[var(--color-border)] rounded-2xl bg-[var(--color-surface)]">
+                <div className="text-center py-24  border border-[var(--color-border)] rounded-2xl bg-[var(--color-surface)]">
                   <Search size={36} className="mx-auto mb-3 opacity-20" />
                   <p className="text-sm font-medium">No tickets match your search</p>
                   <p className="text-xs mt-1">Try adjusting filters or search terms</p>
@@ -668,7 +668,7 @@ const TicketCard = ({ ticket, duration, initials }) => (
   <div className="border border-[var(--color-border)] rounded-[10px] p-5 hover:shadow-md transition bg-[var(--color-surface)]">
     <div className="flex items-start justify-between mb-3 gap-2">
       <div className="min-w-0">
-        <h3 className="font-semibold text-black dark:text-white text-sm truncate">{ticket.trainName || "—"}</h3>
+        <h3 className="font-mono font-semibold text-black dark:text-white text-sm truncate">{ticket.trainName || "—"}</h3>
         <p className="text-neutral-400 font-mono text-[13px]">{ticket.trainNumber || ""}</p>
       </div>
       <div className="flex items-center gap-1.5 flex-shrink-0">

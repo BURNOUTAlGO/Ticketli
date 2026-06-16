@@ -53,7 +53,7 @@ function Navbar() {
   return (
     <>
       {/* ── Top Navbar ── */}
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-[var(--color-border)] bg-white dark:bg-black">
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-[var(--color-border)] bg-[var(--color-bg)]">
         <div className="flex h-[60px] font-inter w-full items-center justify-between px-4 sm:px-6">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 flex-shrink-0">
@@ -78,20 +78,23 @@ function Navbar() {
           </nav>
 
           {/* Desktop auth */}
-          <div className="hidden md:flex items-center gap-3">
-            <ThemeToggle />
+          <div className="hidden md:flex items-center gap-3 ">
+            <ThemeToggle className="bg-[var(--color-surface)] border-[var(--color-border)]
+        hover:bg-[var(--color-surface-hover)]
+        text-[var(--color-text)]" />
             {isAuthenticated ? (
               <>
                 <button
                   className="rounded-[8px] h-9 px-4 flex items-center justify-center text-sm transition duration-200 
+                  bg-[var(--color-surface)]
+                   border
+                   border-[var(--color-border)]
                    hover:dark:bg-white
                    hover:dark:text-black
                    hover:bg-black
                    hover:text-white  
-                   border
-                   bg-[var(--color-surface)]
-                   border-[var(--color-border)]
-                   hover:bg-[var(--color-surface-hover)]"
+                 
+                   hover:bg-[var(--color-r)]"
                   onClick={logout}
                 >
                   Logout
@@ -107,14 +110,15 @@ function Navbar() {
             ) : (
               <button
                 className="rounded-[8px] h-9 px-4 flex items-center justify-center text-sm transition duration-200 
+                  bg-[var(--color-surface)]
+                   border
+                   border-[var(--color-border)]
                    hover:dark:bg-white
                    hover:dark:text-black
                    hover:bg-black
                    hover:text-white  
-                   border
-                   bg-[var(--color-surface)]
-                   border-[var(--color-border)]
-                   hover:bg-[var(--color-surface-hover)]"
+                 
+                   hover:bg-[var(--color-r)]"
                 onClick={login}
               >
                 Login

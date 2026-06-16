@@ -104,7 +104,7 @@ const CustomSelect = ({ value, onChange, options }) => {
           <div
             ref={menuRef}
             style={menuStyle}
-            className="bg-[var(--color-bg)] border border-[var(--color-border)] rounded-xl shadow-xl overflow-hidden py-1"
+            className="bg-[#ffff] dark:bg-black border border-[var(--color-border)] rounded-xl shadow-xl overflow-hidden py-1"
           >
             {options.map((opt) => (
               <button
@@ -498,7 +498,7 @@ const BrowseTicketsPage = () => {
                   {sortOpen && (
                     <>
                       <div className="fixed inset-0 z-20" onClick={() => setSortOpen(false)} />
-                      <div className="absolute right-0 mt-1.5 w-52 bg-[#ffff] border border-[var(--color-border)] rounded-xl shadow-lg z-30 overflow-hidden">
+                      <div className="absolute right-0 mt-1.5 w-52 bg-[#ffff] dark:bg-black border border-[var(--color-border)] rounded-xl shadow-lg z-30 overflow-hidden">
                         {sortOptions.map((opt) => (
                           <button
                             key={opt}
@@ -619,7 +619,7 @@ const BrowseTicketsPage = () => {
                   {sortOpen && (
                     <>
                       <div className="fixed inset-0 z-20" onClick={() => setSortOpen(false)} />
-                      <div className="absolute right-0 mt-1.5 w-56 bg-[#ffff] border border-[var(--color-border)] rounded-xl shadow-lg z-30 overflow-hidden">
+                      <div className="absolute right-0 mt-1.5 w-56 bg-[var(--color-bg)] border border-[var(--color-border)] rounded-xl shadow-lg z-30 overflow-hidden">
                         {sortOptions.map((opt) => (
                           <button
                             key={opt}

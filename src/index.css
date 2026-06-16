@@ -99,12 +99,7 @@
   --color-surface-hover-switch: var(--ds-gray-switch-200);
 }
 
-/* ── 6. Base element styles ── */
-html {
-  background-color: var(--color-bg);
-  color: var(--color-text);
-  transition: background-color 0.2s ease, color 0.2s ease;
-}
+
 
 body {
   font-family: 'Geist', sans-serif;

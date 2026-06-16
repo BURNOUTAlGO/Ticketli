@@ -53,8 +53,9 @@ function Navbar() {
   return (
     <>
       {/* ── Top Navbar ── */}
-      <header className="fixed inset-x-0 top-0 z-50 border-b dark:border-[var(--color-border)] bg-[var(--color-bg)] ">
-        <div className="flex h-[60px] bg-[var(--color-bg)] font-inter w-full items-center justify-between px-4 sm:px-6">
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-[var(--color-border)] 
+  bg-[var(--color-bg)] backdrop-blur-md supports-[backdrop-filter]:bg-[var(--color-bg)]/90">
+        <div className="flex h-[60px] font-inter w-full items-center justify-between px-4 sm:px-6">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 flex-shrink-0">
             <TramFront />

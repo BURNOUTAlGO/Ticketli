@@ -471,7 +471,7 @@ const BrowseTicketsPage = () => {
           {/* ══ MOBILE ══ */}
           <div className="h-full flex flex-col md:hidden overflow-y-auto hide-scrollbar">
             {/* Sticky bar */}
-            <div className="sticky top-0 z-10 bg-[var(--color-bg)] border-b border-[var(--color-border)] px-3 py-2.5 flex items-center justify-between gap-2">
+            <div className="sticky top-0 z-10 bg-white dark:bg-black border-b border-[var(--color-border)] px-3 py-2.5 flex items-center justify-between gap-2">
               <p className="text-xs pl-3.5 sm:text-sm text-[var(--color-text)] font-medium whitespace-nowrap flex-shrink-0">
                 {filtered.length} listing{filtered.length !== 1 ? "s" : ""}
               </p>
@@ -668,7 +668,7 @@ const TicketCard = ({ ticket, duration, initials }) => (
   <div className="border border-[var(--color-border)] rounded-[10px] p-5 hover:shadow-md transition bg-[var(--color-surface)]">
     <div className="flex items-start justify-between mb-3 gap-2">
       <div className="min-w-0">
-        <h3 className="font-semibold text-[var(--color-text)] text-sm truncate">{ticket.trainName || "—"}</h3>
+        <h3 className="font-semibold text-black dark:text-white text-sm truncate">{ticket.trainName || "—"}</h3>
         <p className="text-neutral-400 font-mono text-[13px]">{ticket.trainNumber || ""}</p>
       </div>
       <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -684,7 +684,7 @@ const TicketCard = ({ ticket, duration, initials }) => (
 
     <div className="flex items-center gap-3 mb-3">
       <div>
-        <p className="text-xl font-bold text-[var(--color-text)] font-geist">{ticket.departureTime || "—"}</p>
+        <p className="text-xl font-bold text-black dark:text-white font-geist">{ticket.departureTime || "—"}</p>
         <p className="text-xs dark:text-white text-black font-mono truncate">{ticket.from || "—"}</p>
       </div>
       <div className="flex-1 flex flex-col items-center gap-0.5 min-w-0">
@@ -696,7 +696,7 @@ const TicketCard = ({ ticket, duration, initials }) => (
         </div>
       </div>
       <div className="text-right">
-        <p className="text-xl font-bold text-[var(--color-text)] font-geist">{ticket.arrivalTime || "—"}</p>
+        <p className="text-xl font-bold text-black dark:text-white font-geist">{ticket.arrivalTime || "—"}</p>
         <p className="text-xs dark:text-white text-black font-mono">{ticket.to || "—"}</p>
       </div>
     </div>
@@ -718,11 +718,11 @@ const TicketCard = ({ ticket, duration, initials }) => (
         <div className="w-8 h-8 rounded-full bg-[var(--color-surface)] bg-neutral-200 dark:bg-black flex items-center justify-center text-xs font-bold text-[var(--color-text-muted)] dark:bg-red-600 dark:text-white">
           {initials}
         </div>
-        <p className="text-sm font-medium text-[var(--color-text)]">{ticket.fullName || "—"}</p>
+        <p className="text-sm font-medium text-black dark:text-white">{ticket.fullName || "—"}</p>
       </div>
       <div className="flex items-center gap-3">
         <div className="text-right">
-          <p className="text-base font-bold text-[var(--color-text)] font-mono">₹{ticket.price}</p>
+          <p className="text-base font-bold text-black dark:text-white font-mono">₹{ticket.price}</p>
           <p className="text-[10px] text-gray-400 dark:text-neutral-400 font-figtree">per seat</p>
         </div>
         <a

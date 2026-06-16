@@ -458,7 +458,7 @@ const BrowseTicketsPage = () => {
             </div>
             <button
               onClick={handleSearch}
-              className="flex items-center justify-center gap-2 bg-black dark:bg-white text-white dark:text-black text-sm font-medium px-6 py-2.5 rounded-xl hover:bg-[var(--color-surface-hover-switch)] hover:dark:bg-gray-200 transition flex-shrink-0"
+              className="flex items-center justify-center gap-2 bg-black dark:bg-white text-white dark:text-black text-sm font-medium px-6 py-2.5 rounded-xl hover:bg-[#181818] hover:dark:bg-gray-200 transition flex-shrink-0"
             >
               <Search size={15} />
               Search
@@ -608,7 +608,7 @@ const BrowseTicketsPage = () => {
                 <div className="relative">
                   <button
                     onClick={() => setSortOpen((v) => !v)}
-                    className="flex items-center gap-2 border border-[var(--color-border)] rounded-xl px-4 py-2 text-sm bg-[var(--color-surface)] text-[var(--color-text)] font-medium min-w-[180px] justify-between hover:bg-[var(--color-surface-hover)] transition"
+                    className="flex items-center gap-2 border border-[var(--color-border)] rounded-xl px-4 py-2 text-sm bg-white dark:bg-black text-[var(--color-text)] font-medium min-w-[180px] justify-between hover:bg-[var(--color-surface-hover)] transition"
                   >
                     <span>{sortBy}</span>
                     <ChevronDown

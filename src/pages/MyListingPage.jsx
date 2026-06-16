@@ -161,9 +161,10 @@ const MyListingsPage = () => {
             bg-black
             text-white
             dark:bg-white
-            hover:bg-[var(--color-surface-hover-switch)]
+            hover:bg-[#181818]
             hover:dark:bg-gray-200
             duration-200
+            
            
             dark:text-black
             "

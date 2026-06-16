@@ -206,7 +206,7 @@ const MyListingsPage = () => {
                         {ticket.trainName || "—"}
 
                       </h3>
-                      <p className="text-neutral-400 text-[13px]">{ticket.trainNumber}</p>
+                      <p className="text-neutral-400 font-mono text-[13px]">{ticket.trainNumber}</p>
 
                     </div>
                     <div className="flex items-center gap-1.5 flex-shrink-0">

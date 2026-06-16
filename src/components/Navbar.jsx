@@ -39,11 +39,10 @@ function Navbar() {
     { to: "/create-listing", label: "List", icon: PlusSquare },
     { to: "/my-listings", label: "My Listings", icon: List },
     { to: "/how-it-works", label: "How It Works", icon: HelpCircle },
-
   ];
 
   const filteredLinks = navLinks.filter((l) =>
-    l.label.toLowerCase().includes(search.toLowerCase())
+    l.label.toLowerCase().includes(search.toLowerCase()),
   );
 
   const closeDrawer = () => {
@@ -84,18 +83,38 @@ function Navbar() {
             {isAuthenticated ? (
               <>
                 <button
-                  className="rounded-[8px] h-9 px-4 flex items-center justify-center text-sm transition duration-200 bg-[var(--color-surface-hover)] dark:bg-[var(--color-bg-secondary)] hover:dark:bg-white hover:dark:text-black hover:bg-black hover:text-white"
+                  className="rounded-[8px] h-9 px-4 flex items-center justify-center text-sm transition duration-200 
+                   hover:dark:bg-white
+                   hover:dark:text-black
+                   hover:bg-black
+                   hover:text-white  
+                   border
+                   bg-[var(--color-surface)]
+                   border-[var(--color-border)]
+                   hover:bg-[var(--color-surface-hover)]"
                   onClick={logout}
                 >
                   Logout
                 </button>
                 <div className="bg-black h-9 w-9 rounded-full overflow-hidden flex-shrink-0">
-                  <img src={user.picture} className="w-full h-full object-cover" alt={user.name || "User"} />
+                  <img
+                    src={user.picture}
+                    className="w-full h-full object-cover"
+                    alt={user.name || "User"}
+                  />
                 </div>
               </>
             ) : (
               <button
-                className="rounded-[8px] h-9 px-4 flex items-center justify-center text-sm transition duration-200 bg-[var(--color-surface-hover)] hover:dark:bg-white hover:dark:text-black hover:bg-black hover:text-white dark:bg-[var(--color-bg-secondary)]"
+                className="rounded-[8px] h-9 px-4 flex items-center justify-center text-sm transition duration-200 
+                   hover:dark:bg-white
+                   hover:dark:text-black
+                   hover:bg-black
+                   hover:text-white  
+                   border
+                   bg-[var(--color-surface)]
+                   border-[var(--color-border)]
+                   hover:bg-[var(--color-surface-hover)]"
                 onClick={login}
               >
                 Login
@@ -108,7 +127,11 @@ function Navbar() {
             <ThemeToggle />
             {isAuthenticated && (
               <div className="bg-black h-8 w-8 rounded-full overflow-hidden flex-shrink-0">
-                <img src={user.picture} className="w-full h-full object-cover" alt={user.name || "User"} />
+                <img
+                  src={user.picture}
+                  className="w-full h-full object-cover"
+                  alt={user.name || "User"}
+                />
               </div>
             )}
           </div>
@@ -132,7 +155,7 @@ function Navbar() {
 
           {/* Toggle button */}
           <button
-            onClick={() => menuOpen ? closeDrawer() : setMenuOpen(true)}
+            onClick={() => (menuOpen ? closeDrawer() : setMenuOpen(true))}
             className="flex items-center justify-center w-11 h-full text-white  transition"
             aria-label="Toggle menu"
           >
@@ -157,9 +180,10 @@ function Navbar() {
           bg-neutral-900 
           h-[75vh]
           transition-all duration-300 ease-out
-          ${menuOpen
-            ? "bottom-[72px] opacity-100 translate-y-0"
-            : "bottom-[56px] opacity-0 translate-y-4 pointer-events-none"
+          ${
+            menuOpen
+              ? "bottom-[72px] opacity-100 translate-y-0"
+              : "bottom-[56px] opacity-0 translate-y-4 pointer-events-none"
           }`}
       >
         {/* Header */}
@@ -167,17 +191,32 @@ function Navbar() {
           {isAuthenticated ? (
             <div className="flex items-center gap-2.5">
               <div className="h-6 w-6 rounded-full overflow-hidden bg-neutral-800 flex-shrink-0">
-                <img src={user.picture} className="w-full h-full object-cover" alt={user.name || "User"} />
+                <img
+                  src={user.picture}
+                  className="w-full h-full object-cover"
+                  alt={user.name || "User"}
+                />
               </div>
               <span className="text-[13px] font-medium text-white truncate max-w-[180px]">
                 {user.name || user.email}
               </span>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2">
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#555"
+                strokeWidth="2"
+              >
                 <path d="M7 10l5 5 5-5" />
               </svg>
             </div>
           ) : (
-            <Link to="/" onClick={closeDrawer} className="flex items-center gap-2">
+            <Link
+              to="/"
+              onClick={closeDrawer}
+              className="flex items-center gap-2"
+            >
               <TramFront size={18} className="text-white" />
               <KineticText
                 text="TicketLi"
@@ -206,17 +245,20 @@ function Navbar() {
                     key={link.to}
                     to={link.to}
                     onClick={closeDrawer}
-                    className={`flex items-center  gap-3 px-3 py-[11px] rounded-xl transition-colors duration-150 group font-figtree 
-                      ${isActive
-                        ? "bg-white/10 text-white"
-                        : "text-neutral-400 hover:bg-white/5 hover:text-white"
+                    className={`flex items-center  gap-3 px-3 py-[11px] rounded-xl transition-colors duration-200 group font-figtree 
+                      ${
+                        isActive
+                          ? "bg-white/10 text-white"
+                          : "text-neutral-400 hover:bg-white/5 hover:text-white"
                       }`}
                   >
                     <Icon
                       size={17}
-                      className={`flex-shrink-0 transition-colors duration-150 ${isActive ? "text-white" : "text-neutral-400 group-hover:text-neutral-300"}`}
+                      className={`flex-shrink-0 transition-colors duration-200 ${isActive ? "text-white" : "text-neutral-400 group-hover:text-neutral-300"}`}
                     />
-                    <span className="text-[14px] font-medium">{link.label}</span>
+                    <span className="text-[14px] font-medium">
+                      {link.label}
+                    </span>
                   </Link>
                 );
               })
@@ -231,26 +273,44 @@ function Navbar() {
             {/* Auth rows */}
             {isAuthenticated ? (
               <button
-                onClick={() => { closeDrawer(); logout(); }}
-                className="flex items-center gap-3 px-3 py-[11px] rounded-xl text-neutral-400 hover:bg-white/5 hover:text-white transition-colors duration-150 group w-full text-left"
+                onClick={() => {
+                  closeDrawer();
+                  logout();
+                }}
+                className="flex items-center gap-3 px-3 py-[11px] rounded-xl text-neutral-400 hover:bg-white/5 hover:text-white transition-colors duration-200 group w-full text-left"
               >
-                <LogOut size={17} className="text-neutral-600 group-hover:text-neutral-300 flex-shrink-0" />
+                <LogOut
+                  size={17}
+                  className="text-neutral-600 group-hover:text-neutral-300 flex-shrink-0"
+                />
                 <span className="text-[14px] font-medium">Logout</span>
               </button>
             ) : (
               <>
                 <button
-                  onClick={() => { closeDrawer(); login(); }}
-                  className="flex items-center gap-3 px-3 py-[11px] rounded-xl text-neutral-400 hover:bg-white/5 hover:text-white transition-colors duration-150 group w-full text-left"
+                  onClick={() => {
+                    closeDrawer();
+                    login();
+                  }}
+                  className="flex items-center gap-3 px-3 py-[11px] rounded-xl text-neutral-400 hover:bg-white/5 hover:text-white transition-colors duration-200 group w-full text-left"
                 >
-                  <LogIn size={17} className="text-neutral-600 group-hover:text-neutral-300 flex-shrink-0" />
+                  <LogIn
+                    size={17}
+                    className="text-neutral-600 group-hover:text-neutral-300 flex-shrink-0"
+                  />
                   <span className="text-[14px] font-medium">Log In</span>
                 </button>
                 <button
-                  onClick={() => { closeDrawer(); login({ authorizationParams: { screen_hint: "signup" } }); }}
-                  className="flex items-center gap-3 px-3 py-[11px] rounded-xl text-neutral-400 hover:bg-white/5 hover:text-white transition-colors duration-150 group w-full text-left"
+                  onClick={() => {
+                    closeDrawer();
+                    login({ authorizationParams: { screen_hint: "signup" } });
+                  }}
+                  className="flex items-center gap-3 px-3 py-[11px] rounded-xl text-neutral-400 hover:bg-white/5 hover:text-white transition-colors duration-200 group w-full text-left"
                 >
-                  <UserPlus size={17} className="text-neutral-600 group-hover:text-neutral-300 flex-shrink-0" />
+                  <UserPlus
+                    size={17}
+                    className="text-neutral-600 group-hover:text-neutral-300 flex-shrink-0"
+                  />
                   <span className="text-[14px] font-medium">Sign Up</span>
                 </button>
               </>
@@ -258,7 +318,6 @@ function Navbar() {
           </nav>
 
           {/* Inner fade shadow at bottom of scroll area */}
-
         </div>
 
         {/* Bottom search bar */}

@@ -23,7 +23,6 @@ body {
   --ds-white: lab(100% 0 0);
   --ds-background-100: lab(100% 0 0);
   --ds-background-200: lab(98.144% 0 -.0000119209);
- 
   --ds-gray-100: lab(95.476% -.0000298023 0);
   --ds-gray-200: lab(93.04% .0000298023 -.0000119209);
   --ds-gray-300: lab(91.3% 0 -.0000119209);
@@ -33,20 +32,23 @@ body {
   --ds-gray-700: lab(59.4% 0 0);
   --ds-gray-800: lab(52.44% 0 0);
   --ds-gray-900: lab(32.72% -.0000149012 0);
-  --ds-gray-1000: lab(7.78201% -.0000149012 0);
+  --ds-gray-1000: lab(2.74% 0 0);
+  --ds-gray-switch-200: hsla(0, 0%, 13.6%, 1);
  
   /* Semantic aliases used throughout components */
   --color-bg: var(--ds-background-100);
   --color-bg-secondary: var(--ds-background-200);
   --color-border: var(--ds-gray-300);
+  --color-border-switch:var();
   --color-text: var(--ds-gray-1000);
   --color-text-hover:var(--ds-gray-900);
   --border:var(--ds-gray-500);
   --color-text-muted: var(--ds-gray-700);
-
   --color-text-subtle: var(--ds-gray-500);
   --color-surface: var(--ds-gray-100);
   --color-surface-hover: var(--ds-gray-200);
+  --color-surface-hover-switch:var(--ds-gray-switch-200);
+
   
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.147 0.004 49.3);
@@ -74,9 +76,9 @@ body {
 [data-theme="dark"] {
   --ds-white: hsla(0, 0%, 100%, 1);
   --ds-background-100: hsla(0, 0%, 0%, 1);
-  --ds-background-200: hsla(0, 0%, 7%, 1);
+  --ds-background-200: rgb(5, 5, 5);
  
-  --ds-gray-100: hsla(0, 0%, 10%, 1);
+  --ds-gray-100: rgb(14, 14, 14);
   --ds-gray-200: hsla(0, 0%, 13.6%, 1);
   --ds-gray-300: hsla(0, 0%, 16.5%, 1);
   --ds-gray-400: hsla(0, 0%, 21%, 1);
@@ -86,18 +88,24 @@ body {
   --ds-gray-800: hsla(0, 0%, 63.1%, 1);
   --ds-gray-900: hsla(0, 0%, 80.8%, 1);
   --ds-gray-1000: hsla(0, 0%, 93%, 1);
+  --ds-gray-switch-200: lab(93.04% .0000298023 -.0000119209);
+  --ds-gray-switch-300: lab(91.3% 0 -.0000119209);
  
   --color-bg: var(--ds-background-100);
   --color-bg-secondary: var(--ds-background-200);
   --color-border: var(--ds-gray-300);
+  --color-border-switch:var(--ds-gray-switch-300);
   --color-text: var(--ds-gray-1000);
   --color-text-muted: var(--ds-gray-700);
   --color-text-hover:var(--ds-gray-900);
   --border:var(--ds-gray-300);
-  
   --color-text-subtle: var(--ds-gray-500);
   --color-surface: var(--ds-gray-100);
   --color-surface-hover: var(--ds-gray-200);
+  --color-surface-hover-switch:var(--ds-gray-switch-200);
+
+  --card-border: var(--ds-gray-200);
+  --card-backround:var( --ds-background-200);
 }
 html {
   background-color: var(--color-bg);

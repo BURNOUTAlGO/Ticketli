@@ -139,7 +139,7 @@ const MyListingsPage = () => {
 
   // ── Logged in ──
   return (
-    <div className="min-h-screen bg-white px-4 sm:px-6 py-8 md:py-12 mt-[60px]">
+    <div className="min-h-screen bg-[var(--color-bg)] px-4 sm:px-6 py-8 md:py-12 mt-[60px]">
       <div className="max-w-5xl mx-auto">
         {/* Header */}
 
@@ -156,7 +156,19 @@ const MyListingsPage = () => {
           </div>
           <button
             onClick={() => navigate("/create-listing")}
-            className="flex items-center justify-center gap-1.5 text-sm font-medium bg-black text-white px-4 py-2.5 rounded-xl hover:bg-gray-800 transition flex-shrink-0 w-full sm:w-auto"
+            className="flex items-center justify-center gap-1.5 text-sm font-medium  px-4 py-2.5 rounded-[10px]  transition flex-shrink-0 w-full sm:w-auto 
+            border
+            bg-black
+            text-white
+            dark:bg-white
+            hover:bg-[var(--color-surface-hover-switch)]
+            hover:dark:bg-gray-200
+            duration-200
+           
+            dark:text-black
+            "
+            
+            
           >
             <Plus size={16} />
             List a Ticket

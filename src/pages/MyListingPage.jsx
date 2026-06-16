@@ -202,7 +202,7 @@ const MyListingsPage = () => {
                   {/* Top */}
                   <div className="flex items-start justify-between mb-3 gap-2">
                     <div className="min-w-0 ">
-                      <h3 className="font-figtree font-semibold  text-sm truncate">
+                      <h3 className="font-figtree font-mono font-semibold  text-sm truncate">
                         {ticket.trainName || "—"}
 
                       </h3>
@@ -327,7 +327,16 @@ const MyListingsPage = () => {
                       <button
                         onClick={() => setConfirmId(null)}
                         disabled={isDeleting}
-                        className="flex-1 text-xs font-medium text-gray-600 border border-gray-200 px-3 py-2 rounded-lg hover:bg-gray-50 disabled:opacity-60 transition"
+                        className="flex-1 text-xs font-medium    border border-gray-200 px-3 py-2 rounded-lg  disabled:opacity-60 transition
+                                    bg-black
+            text-white
+            dark:bg-white
+            dark:text-black
+            hover:bg-[var(--color-surface-hover-switch)]
+            hover:dark:bg-gray-200
+            duration-200
+           
+           "
                       >
                         Cancel
                       </button>

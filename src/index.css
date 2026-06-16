@@ -21,7 +21,7 @@ body {
 
 :root {
   --ds-white: lab(100% 0 0);
-  --ds-background-100: lab(100% 0 0);
+  --ds-background-100: lab(100% 0.01 -0.01);
   --ds-background-200: lab(98.144% 0 -.0000119209);
   --ds-gray-100: lab(95.476% -.0000298023 0);
   --ds-gray-200: lab(93.04% .0000298023 -.0000119209);

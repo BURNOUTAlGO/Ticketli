@@ -202,7 +202,7 @@ const MyListingsPage = () => {
                   {/* Top */}
                   <div className="flex items-start justify-between mb-3 gap-2">
                     <div className="min-w-0 ">
-                      <h3 className="font-figtree font-mono font-semibold  text-sm truncate">
+                      <h3 className=" font-mono font-semibold  text-sm truncate">
                         {ticket.trainName || "—"}
 
                       </h3>

@@ -234,3 +234,15 @@ html {
     transform: translateX(-110vw);
   }
 }
+/* Light mode — dark icon */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0.4;
+  cursor: pointer;
+}
+
+/* Dark mode — invert to white */
+[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 0.4;
+  cursor: pointer;
+}

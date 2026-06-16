@@ -53,8 +53,7 @@ function Navbar() {
   return (
     <>
       {/* ── Top Navbar ── */}
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-[var(--color-border)] 
-  bg-[var(--color-bg)] backdrop-blur-md supports-[backdrop-filter]:bg-[var(--color-bg)]/90">
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-[var(--color-border)] bg-white dark:bg-black">
         <div className="flex h-[60px] font-inter w-full items-center justify-between px-4 sm:px-6">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 flex-shrink-0">

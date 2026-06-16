@@ -1,8 +1,6 @@
 /* ── 1. Imports ── */
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "shadcn/tailwind.css";
-@import "@fontsource-variable/noto-sans";
 @import "@fontsource-variable/playfair-display";
 @import url('https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&family=Geist:ital,wght@0,100..900;1,100..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
 
@@ -16,47 +14,7 @@
   --font-figtree: 'Figtree', sans-serif;
 }
 
-@theme inline {
-  --animate-orbit: orbit calc(var(--duration)*1s) linear infinite;
-  --animate-shimmer-slide: shimmer-slide var(--speed) ease-in-out infinite alternate;
-  --animate-spin-around: spin-around calc(var(--speed) * 2) infinite linear;
-  --animate-rainbow: rainbow var(--speed, 2s) infinite linear;
-  --animate-shiny-text: shiny-text 8s infinite;
 
-  --color-color-1: var(--color-1);
-  --color-color-2: var(--color-2);
-  --color-color-3: var(--color-3);
-  --color-color-4: var(--color-4);
-  --color-color-5: var(--color-5);
-
-  @keyframes orbit {
-    0% {
-      transform: rotate(calc(var(--angle) * 1deg)) translateY(calc(var(--radius) * 1px)) rotate(calc(var(--angle) * -1deg));
-    }
-    100% {
-      transform: rotate(calc(var(--angle) * 1deg + 360deg)) translateY(calc(var(--radius) * 1px)) rotate(calc((var(--angle) * -1deg) - 360deg));
-    }
-  }
-  @keyframes shimmer-slide {
-    to {
-      transform: translate(calc(100cqw - 100%), 0);
-    }
-  }
-  @keyframes spin-around {
-    0%       { transform: translateZ(0) rotate(0); }
-    15%, 35% { transform: translateZ(0) rotate(90deg); }
-    65%, 85% { transform: translateZ(0) rotate(270deg); }
-    100%     { transform: translateZ(0) rotate(360deg); }
-  }
-  @keyframes rainbow {
-    0%   { background-position: 0%; }
-    100% { background-position: 200%; }
-  }
-  @keyframes shiny-text {
-    0%, 90%, 100% { background-position: calc(-100% - var(--shiny-width)) 0; }
-    30%, 60%      { background-position: calc(100% + var(--shiny-width)) 0; }
-  }
-}
 
 /* ── 4. Light mode variables ── */
 :root {
@@ -89,21 +47,7 @@
   --color-surface-hover: var(--ds-gray-200);
   --color-surface-hover-switch: var(--ds-gray-switch-200);
 
-  /* Shadcn tokens */
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.147 0.004 49.3);
-  --primary: oklch(0.214 0.009 43.1);
-  --primary-foreground: oklch(0.986 0.002 67.8);
-  --secondary: oklch(0.96 0.002 17.2);
-  --secondary-foreground: oklch(0.214 0.009 43.1);
-  --muted: oklch(0.96 0.002 17.2);
-  --muted-foreground: oklch(0.547 0.021 43.1);
-  --accent: oklch(0.96 0.002 17.2);
-  --accent-foreground: oklch(0.214 0.009 43.1);
-  --destructive: oklch(0.577 0.245 27.325);
-  --input: oklch(0.922 0.005 34.3);
-  --ring: oklch(0.714 0.014 41.2);
-  --radius: 0.625rem;
+
 }
 
 /* ── 5. Dark mode variables ── */

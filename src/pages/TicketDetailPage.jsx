@@ -91,6 +91,7 @@ const TicketDetailPage = () => {
         sellerUid: ticket.uid || null,
         status: "pending",
         sellerPhone: ticket.phone || null,
+        sellerName:ticket.fullName || null,
         createdAt: serverTimestamp(),
       });
       setRequestSent(true);
@@ -333,7 +334,7 @@ const TicketDetailPage = () => {
                     ) : (
                       <MessageCircle size={16} />
                     )}
-                    {requesting ? "Sending..." : "Contact Seller"}
+                    {requesting ? "Sending..." : "Request Seller"}
                   </button>
                 )}
 

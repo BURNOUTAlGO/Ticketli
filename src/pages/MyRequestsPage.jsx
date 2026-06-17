@@ -14,6 +14,7 @@ const MyRequestsPage = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+
   // Load dismissed map from localStorage: { [requestId]: firstSeenTimestamp }
   const getDismissedMap = () => {
     try {
@@ -22,6 +23,8 @@ const MyRequestsPage = () => {
       return {};
     }
   };
+  const getInitials = (name) =>
+    (name || "?").split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2);
 
   const markAsSeen = (rejectedIds) => {
     const map = getDismissedMap();
@@ -141,7 +144,7 @@ const MyRequestsPage = () => {
                         <Train size={12} />
                         <span>{req.trainNumber}</span>
                       </div>
-                      <p className="text-sm font-semibold text-gray-900">{req.ticketName}</p>
+                      
                       <p className="text-xs text-gray-500 mt-0.5">
                         {req.from} → {req.to} · {req.journeyDate} · ₹{req.price}/seat
                       </p>
@@ -161,7 +164,15 @@ const MyRequestsPage = () => {
                         Seller contact
                       </p>
                       <div className="flex flex-col gap-2">
+                        <div  className="flex items-center gap-2.5 ">
+                          <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600 flex-shrink-0">
+                            {getInitials(req.sellerName)}
+                          </div>
 
+                          <p className="text-sm  text-gray-900">{req.sellerName}</p>
+                        </div>
+                        
+                        
                         {/* Email */}
                         {req.sellerEmail && (
                           <a

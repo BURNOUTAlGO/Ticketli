@@ -1,15 +1,44 @@
 import { useEffect, useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { db } from "../firebase";
-import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { Bell, Train, CheckCircle, XCircle, Clock, Mail, Phone } from "lucide-react";
+
+const DISMISSED_KEY = "rejectedRequestsDismissed"; // localStorage key
+const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
 
 const MyRequestsPage = () => {
   const { user, isAuthenticated, isLoading: authLoading, loginWithRedirect } = useAuth0();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  // Load dismissed map from localStorage: { [requestId]: firstSeenTimestamp }
+  const getDismissedMap = () => {
+    try {
+      return JSON.parse(localStorage.getItem(DISMISSED_KEY) || "{}");
+    } catch {
+      return {};
+    }
+  };
+
+  const markAsSeen = (rejectedIds) => {
+    const map = getDismissedMap();
+    let changed = false;
+    rejectedIds.forEach((id) => {
+      if (!map[id]) {
+        map[id] = Date.now();
+        changed = true;
+      }
+    });
+    if (changed) localStorage.setItem(DISMISSED_KEY, JSON.stringify(map));
+  };
+
+  const isExpired = (id) => {
+    const map = getDismissedMap();
+    return map[id] && Date.now() - map[id] > TWENTY_FOUR_HOURS;
+  };
 
   useEffect(() => {
     if (authLoading) return;
@@ -20,10 +49,23 @@ const MyRequestsPage = () => {
         const q = query(
           collection(db, "contactRequests"),
           where("buyerEmail", "==", user.email.toLowerCase()),
-          orderBy("createdAt", "desc"),
         );
         const snap = await getDocs(q);
-        setRequests(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+        const all = snap.docs
+          .map((d) => ({ id: d.id, ...d.data() }))
+          .sort((a, b) => b.createdAt?.toMillis() - a.createdAt?.toMillis());
+
+        // Mark all rejected ones as "seen" with current timestamp if not already
+        const rejectedIds = all.filter((r) => r.status === "rejected").map((r) => r.id);
+        markAsSeen(rejectedIds);
+
+        // Filter out rejected cards that were first seen more than 24hrs ago
+        const visible = all.filter((r) => {
+          if (r.status === "rejected") return !isExpired(r.id);
+          return true;
+        });
+
+        setRequests(visible);
       } catch (err) {
         console.error("Error fetching requests:", err);
       } finally {
@@ -57,9 +99,9 @@ const MyRequestsPage = () => {
     );
 
   const statusConfig = {
-    pending:  { icon: Clock,       label: "Pending",  bg: "bg-yellow-50 border-yellow-200", text: "text-yellow-700" },
-    approved: { icon: CheckCircle, label: "Approved", bg: "bg-green-50 border-green-200",   text: "text-green-700" },
-    rejected: { icon: XCircle,     label: "Rejected", bg: "bg-red-50 border-red-100",       text: "text-red-500"   },
+    pending:  { icon: Clock,        label: "Pending",  bg: "bg-yellow-50 border-yellow-200", text: "text-yellow-700" },
+    approved: { icon: CheckCircle,  label: "Approved", bg: "bg-green-50 border-green-200",   text: "text-green-700" },
+    rejected: { icon: XCircle,      label: "Rejected", bg: "bg-red-50 border-red-100",       text: "text-red-500"   },
   };
 
   return (
@@ -86,6 +128,7 @@ const MyRequestsPage = () => {
             {requests.map((req) => {
               const { icon: Icon, label, bg, text } = statusConfig[req.status] || statusConfig.pending;
               const isApproved = req.status === "approved";
+              const isRejected = req.status === "rejected";
 
               return (
                 <div key={req.id}
@@ -111,37 +154,55 @@ const MyRequestsPage = () => {
                     </span>
                   </div>
 
-                  {/* Seller contact — only shown when approved */}
+                  {/* Seller contact — approved only */}
                   {isApproved && (
                     <div className="mt-3 border-t border-gray-100 pt-3">
                       <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
                         Seller contact
                       </p>
-                      <div className="flex flex-col sm:flex-row gap-2">
+                      <div className="flex flex-col gap-2">
+
+                        {/* Email */}
                         {req.sellerEmail && (
-                          <a href={`mailto:${req.sellerEmail}?subject=Re: ${req.ticketName} from ${req.from} to ${req.to}`}
-                            className="flex items-center gap-2 bg-black text-white text-xs font-medium px-3 py-2 rounded-lg hover:bg-gray-800 transition">
+                          <a
+                            href={`mailto:${req.sellerEmail}?subject=Re: ${req.ticketName} from ${req.from} to ${req.to}`}
+                            className="flex items-center gap-2 bg-black text-white text-xs font-medium px-3 py-2.5 rounded-lg hover:bg-gray-800 transition"
+                          >
                             <Mail size={13} />
                             {req.sellerEmail}
                           </a>
                         )}
+
+                        {/* Phone — email + call buttons side by side */}
                         {req.sellerPhone && (
-                          <a href={`tel:${req.sellerPhone}`}
-                            className="flex items-center gap-2 border border-gray-200 text-gray-700 text-xs font-medium px-3 py-2 rounded-lg hover:bg-gray-50 transition">
-                            <Phone size={13} />
-                            {req.sellerPhone}
-                          </a>
+                          <div className="flex items-center gap-2">
+                            <span className="flex-1 flex items-center gap-2 border border-gray-200 text-gray-700 text-xs font-medium px-3 py-2.5 rounded-lg">
+                              <Phone size={13} className="text-gray-400 flex-shrink-0" />
+                              {req.sellerPhone}
+                            </span>
+
+                            <a
+                              href={`tel:${req.sellerPhone}`}
+                              className="flex items-center gap-1.5 bg-green-600 text-white text-xs font-medium px-4 py-2.5 rounded-lg hover:bg-green-700 transition flex-shrink-0"
+                            >
+                              <Phone size={13} />
+                              Call
+                            </a>
+                          </div>
                         )}
+
                       </div>
                     </div>
                   )}
 
-                  {req.status === "rejected" && (
+                  {/* Rejected message */}
+                  {isRejected && (
                     <p className="mt-2 text-xs text-gray-400">
-                      The seller declined this request. Try another listing.
+                      The seller declined this request. This notice will disappear in 24 hours.
                     </p>
                   )}
 
+                  {/* Pending message */}
                   {req.status === "pending" && (
                     <p className="mt-2 text-xs text-gray-400">
                       Waiting for the seller to review your request.

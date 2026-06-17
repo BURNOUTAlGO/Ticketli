@@ -90,6 +90,7 @@ const TicketDetailPage = () => {
         sellerEmail: ticket.email,
         sellerUid: ticket.uid || null,
         status: "pending",
+        sellerPhone: ticket.phone || null,
         createdAt: serverTimestamp(),
       });
       setRequestSent(true);

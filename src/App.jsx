@@ -7,6 +7,8 @@ import CreateListing from "./pages/CreateListingPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import MyListingsPage from "./pages/MyListingPage";
 import { ThemeProvider } from "./components/ThemeProvider";
+import TicketDetailPage from "./pages/TicketDetailPage";
+import MyRequestsPage from "./pages/MyRequestsPage";
 
 function App() {
   return (
@@ -37,6 +39,9 @@ function App() {
             <MyListingsPage />
           </ProtectedRoute>
         } />
+        <Route path="/ticket/:id" element={<TicketDetailPage />} />
+        <Route path="/my-requests" element={
+          <ProtectedRoute><MyRequestsPage /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
     </ThemeProvider>

@@ -15,6 +15,7 @@ import {
   Search,
   AlignJustify,
   House,
+  Bell,
 } from "lucide-react";
 import { KineticText } from "@/components/ui/kinetic-text";
 import { ThemeToggle } from "../components/ThemeToggle";
@@ -39,7 +40,7 @@ function Navbar() {
     { to: "/browse", label: "Browse", icon: Ticket },
     { to: "/create-listing", label: "List", icon: PlusSquare },
     { to: "/my-listings", label: "My Listings", icon: List },
-    { to: "/how-it-works", label: "How It Works", icon: HelpCircle },
+    { to: "/my-requests", label: "Notification", icon: Bell},
   ];
 
   const filteredLinks = navLinks.filter((l) =>

@@ -662,73 +662,78 @@ const BrowseTicketsPage = () => {
 };
 
 /* ── Ticket card ── */
-const TicketCard = ({ ticket, duration, initials }) => (
-  <div className="border border-gray-200 rounded-2xl p-5 hover:shadow-md transition bg-white">
-    <div className="flex items-start justify-between mb-3">
-      <div>
-        <h3 className="font-bold text-gray-900 text-sm">{ticket.trainName || "—"}</h3>
-        <p className="text-xs text-gray-400 mt-0.5">{ticket.trainNumber || ""}</p>
-      </div>
-      <div className="flex items-center gap-1.5">
-        <span className="text-xs border border-gray-200 text-gray-600 px-2.5 py-1 rounded-full">
-          {ticket.trainClass}
-        </span>
-        <span className="text-xs bg-black text-white px-2.5 py-1 rounded-full">Active</span>
-      </div>
-    </div>
+const TicketCard = ({ ticket, duration, initials }) => {
+  const navigate = useNavigate();
 
-    <div className="flex items-center gap-3 mb-3">
-      <div>
-        <p className="text-xl font-bold text-gray-900">{ticket.departureTime || "—"}</p>
-        <p className="text-xs text-gray-500">{ticket.from || "—"}</p>
-      </div>
-      <div className="flex-1 flex flex-col items-center gap-0.5">
-        {duration && <span className="text-xs text-gray-400">{duration}</span>}
-        <div className="flex items-center w-full gap-1">
-          <div className="flex-1 h-px bg-gray-200" />
-          <span className="text-gray-300 text-xs">→</span>
-          <div className="flex-1 h-px bg-gray-200" />
+  return (
+    <div className="border border-gray-200 rounded-2xl p-5 hover:shadow-md transition bg-white">
+      <div className="flex items-start justify-between mb-3">
+        <div>
+          <h3 className="font-bold text-gray-900 text-sm">{ticket.trainName || "—"}</h3>
+          <p className="text-xs text-gray-400 mt-0.5">{ticket.trainNumber || ""}</p>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs border border-gray-200 text-gray-600 px-2.5 py-1 rounded-full">
+            {ticket.trainClass}
+          </span>
+          <span className="text-xs bg-black text-white px-2.5 py-1 rounded-full">Active</span>
         </div>
       </div>
-      <div className="text-right">
-        <p className="text-xl font-bold text-gray-900">{ticket.arrivalTime || "—"}</p>
-        <p className="text-xs text-gray-500">{ticket.to || "—"}</p>
-      </div>
-    </div>
 
-    <div className="flex items-center gap-3 text-xs text-gray-400 mb-4">
-      <div className="flex items-center gap-1">
-        <Clock size={12} />
-        <span>{ticket.journeyDate || "—"}</span>
-      </div>
-      <span>·</span>
-      <div className="flex items-center gap-1">
-        <Users size={12} />
-        <span>{ticket.seats} available</span>
-      </div>
-    </div>
-
-    <div className="border-t border-gray-100 pt-3 flex items-center justify-between">
-      <div className="flex items-center gap-2">
-        <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600">
-          {initials}
+      <div className="flex items-center gap-3 mb-3">
+        <div>
+          <p className="text-xl font-bold text-gray-900">{ticket.departureTime || "—"}</p>
+          <p className="text-xs text-gray-500">{ticket.from || "—"}</p>
         </div>
-        <p className="text-sm font-medium text-gray-900">{ticket.fullName || "—"}</p>
-      </div>
-      <div className="flex items-center gap-2">
+        <div className="flex-1 flex flex-col items-center gap-0.5">
+          {duration && <span className="text-xs text-gray-400">{duration}</span>}
+          <div className="flex items-center w-full gap-1">
+            <div className="flex-1 h-px bg-gray-200" />
+            <span className="text-gray-300 text-xs">→</span>
+            <div className="flex-1 h-px bg-gray-200" />
+          </div>
+        </div>
         <div className="text-right">
-          <p className="text-base font-bold text-gray-900">₹{ticket.price}</p>
-          <p className="text-[10px] text-gray-400">per seat</p>
+          <p className="text-xl font-bold text-gray-900">{ticket.arrivalTime || "—"}</p>
+          <p className="text-xs text-gray-500">{ticket.to || "—"}</p>
         </div>
-        <a
-          href={`mailto:${ticket.email}`}
-          className="bg-black text-white text-xs font-medium px-4 py-2 rounded-lg hover:bg-gray-800 transition"
-        >
-          View
-        </a>
+      </div>
+
+      <div className="flex items-center gap-3 text-xs text-gray-400 mb-4">
+        <div className="flex items-center gap-1">
+          <Clock size={12} />
+          <span>{ticket.journeyDate || "—"}</span>
+        </div>
+        <span>·</span>
+        <div className="flex items-center gap-1">
+          <Users size={12} />
+          <span>{ticket.seats} available</span>
+        </div>
+      </div>
+
+      <div className="border-t border-gray-100 pt-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600">
+            {initials}
+          </div>
+          <p className="text-sm font-medium text-gray-900">{ticket.fullName || "—"}</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="text-right">
+            <p className="text-base font-bold text-gray-900">₹{ticket.price}</p>
+            <p className="text-[10px] text-gray-400">per seat</p>
+          </div>
+          {/* ✅ Changed from <a> to navigate button */}
+          <button
+            onClick={() => navigate(`/ticket/${ticket.id}`)}
+            className="bg-black text-white text-xs font-medium px-4 py-2 rounded-lg hover:bg-gray-800 transition"
+          >
+            View
+          </button>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default BrowseTicketsPage;

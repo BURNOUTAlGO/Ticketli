@@ -3,7 +3,7 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { db } from "../firebase";
 import {
   collection, getDocs, query, where, orderBy,
-  deleteDoc, doc, updateDoc,
+  deleteDoc, doc, updateDoc,writeBatch,
 } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import {
@@ -67,19 +67,33 @@ const MyListingsPage = () => {
     return `${h}h${m > 0 ? ` ${m}m` : ""}`;
   };
 
-  const handleDelete = async (ticketId) => {
-    setDeletingId(ticketId);
-    try {
-      await deleteDoc(doc(db, "tickets", ticketId));
-      setTickets((prev) => prev.filter((t) => t.id !== ticketId));
-    } catch (err) {
-      console.error("Error deleting ticket:", err);
-      alert("Failed to delete listing. Please try again.");
-    } finally {
-      setDeletingId(null);
-      setConfirmId(null);
-    }
-  };
+const handleDelete = async (ticketId) => {
+  setDeletingId(ticketId);
+  try {
+    // Find all contact requests tied to this ticket
+    const rq = query(
+      collection(db, "contactRequests"),
+      where("ticketId", "==", ticketId)
+    );
+    const rsnap = await getDocs(rq);
+
+    // Batch delete: the ticket itself + all related requests
+    const batch = writeBatch(db);
+    batch.delete(doc(db, "tickets", ticketId));
+    rsnap.docs.forEach((d) => batch.delete(doc(db, "contactRequests", d.id)));
+    await batch.commit();
+
+    // Update local state to match
+    setTickets((prev) => prev.filter((t) => t.id !== ticketId));
+    setRequests((prev) => prev.filter((r) => r.ticketId !== ticketId));
+  } catch (err) {
+    console.error("Error deleting ticket:", err);
+    alert("Failed to delete listing. Please try again.");
+  } finally {
+    setDeletingId(null);
+    setConfirmId(null);
+  }
+};
 
   const handleRequestAction = async (requestId, action) => {
     try {

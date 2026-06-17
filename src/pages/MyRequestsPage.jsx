@@ -140,14 +140,20 @@ const MyRequestsPage = () => {
                   {/* Ticket summary */}
                   <div className="flex items-start justify-between gap-3 mb-3">
                     <div>
-                      <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-1">
-                        <Train size={12} />
-                        <span>{req.trainNumber}</span>
+                      <div  className="flex items-center gap-1.5  text-black">
+                        <Train size={15} />
+                      <p>{req.ticketName}</p>
                       </div>
+                      
+                      
+                        
+                        <span className="mb-1 text-xs text-gray-400">{req.trainNumber}</span>
+                      
                       
                       <p className="text-xs text-gray-500 mt-0.5">
                         {req.from} → {req.to} · {req.journeyDate} · ₹{req.price}/seat
                       </p>
+
                     </div>
 
                     {/* Status badge */}
@@ -160,7 +166,7 @@ const MyRequestsPage = () => {
                   {/* Seller contact — approved only */}
                   {isApproved && (
                     <div className="mt-3 border-t border-gray-100 pt-3">
-                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                      <p className="text-xs  text-gray-400 uppercase tracking-wide mb-2">
                         Seller contact
                       </p>
                       <div className="flex flex-col gap-2">

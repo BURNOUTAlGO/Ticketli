@@ -181,8 +181,14 @@ const validateStep = (step, formData) => {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const selectedDate = new Date(formData.journeyDate);
+
+      const minDate = new Date(today);
+      minDate.setDate(minDate.getDate() + 3);
+
       if (selectedDate < today)
         errors.journeyDate = "Journey date cannot be in the past";
+      else if (selectedDate < minDate)
+        errors.journeyDate = "Journey date must be at least 3 days from today";
     }
 
     if (!formData.departureTime)

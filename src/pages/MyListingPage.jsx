@@ -1,30 +1,88 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { db } from "../firebase";
 import {
   collection, getDocs, query, where, orderBy,
-  deleteDoc, doc, updateDoc,writeBatch,
+  deleteDoc, doc, updateDoc, writeBatch, addDoc, serverTimestamp,
 } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import {
   Train, ArrowRight, Clock, Users, Plus, LayoutGrid,
-  Trash2, Bell, Check, X, Mail,
+  Trash2, Bell, Check, X, Mail, AlertTriangle,
 } from "lucide-react";
 import { KineticText } from "@/components/ui/kinetic-text";
 
-const MyListingsPage = () => {
+const EXPIRY_WINDOW_DAYS = 2;
+
+const MyListingPage = () => {
   const { user, isAuthenticated, isLoading: authLoading, loginWithRedirect } = useAuth0();
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
   const [confirmId, setConfirmId] = useState(null);
   const [requests, setRequests] = useState([]);
+  const [notifications, setNotifications] = useState([]);
   const [activeTab, setActiveTab] = useState("listings"); // "listings" | "requests"
   const navigate = useNavigate();
+  const hasFetchedRef = useRef(false);
+
+  // Returns true if a ticket's journeyDate is today+EXPIRY_WINDOW_DAYS or earlier (i.e. should be auto-removed)
+  const isExpiring = (journeyDate) => {
+    if (!journeyDate) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const journey = new Date(journeyDate); // works for "YYYY-MM-DD"
+    if (isNaN(journey.getTime())) return false;
+    journey.setHours(0, 0, 0, 0);
+
+    const cutoff = new Date(today);
+    cutoff.setDate(cutoff.getDate() + EXPIRY_WINDOW_DAYS);
+
+    // Ticket expires once its journey date is within the window (or already past)
+    return journey <= cutoff;
+  };
+
+  // Deletes a ticket + its related contactRequests, and logs a notification doc.
+  // Idempotent: if a notification for this ticket already exists, skip writing another.
+  const expireTicket = async (ticket) => {
+    const existingNotifQuery = query(
+      collection(db, "notifications"),
+      where("ticketId", "==", ticket.id),
+      where("type", "==", "expired")
+    );
+    const existingNotifSnap = await getDocs(existingNotifQuery);
+
+    const rq = query(
+      collection(db, "contactRequests"),
+      where("ticketId", "==", ticket.id)
+    );
+    const rsnap = await getDocs(rq);
+
+    const batch = writeBatch(db);
+    batch.delete(doc(db, "tickets", ticket.id));
+    rsnap.docs.forEach((d) => batch.delete(doc(db, "contactRequests", d.id)));
+    await batch.commit();
+
+    if (existingNotifSnap.empty) {
+      await addDoc(collection(db, "notifications"), {
+        sellerEmail: ticket.email,
+        type: "expired",
+        ticketId: ticket.id,
+        ticketName: ticket.trainName || ticket.trainNumber || "Your ticket",
+        from: ticket.from || "",
+        to: ticket.to || "",
+        journeyDate: ticket.journeyDate || "",
+        createdAt: serverTimestamp(),
+      });
+    }
+  };
 
   useEffect(() => {
     if (authLoading) return;
     if (!isAuthenticated || !user?.email) { setLoading(false); return; }
+    if (hasFetchedRef.current) return; // guard against Strict Mode's double-invoke
+    hasFetchedRef.current = true;
 
     const fetchAll = async () => {
       try {
@@ -35,9 +93,24 @@ const MyListingsPage = () => {
           orderBy("createdAt", "desc"),
         );
         const snap = await getDocs(q);
-        setTickets(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+        const allTickets = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 
-        // Fetch contact requests for my tickets
+        // Partition into valid vs expiring tickets
+        const validTickets = [];
+        const expiringTickets = [];
+        allTickets.forEach((t) => {
+          if (isExpiring(t.journeyDate)) expiringTickets.push(t);
+          else validTickets.push(t);
+        });
+
+        // Clean up expiring tickets (delete ticket + requests, log notification)
+        if (expiringTickets.length > 0) {
+          await Promise.all(expiringTickets.map((t) => expireTicket(t)));
+        }
+
+        setTickets(validTickets);
+
+        // Fetch contact requests for my (remaining) tickets
         const rq = query(
           collection(db, "contactRequests"),
           where("sellerEmail", "==", user.email.toLowerCase()),
@@ -45,6 +118,15 @@ const MyListingsPage = () => {
         );
         const rsnap = await getDocs(rq);
         setRequests(rsnap.docs.map((d) => ({ id: d.id, ...d.data() })));
+
+        // Fetch notifications (includes ones we just created above)
+        const nq = query(
+          collection(db, "notifications"),
+          where("sellerEmail", "==", user.email.toLowerCase()),
+          orderBy("createdAt", "desc"),
+        );
+        const nsnap = await getDocs(nq);
+        setNotifications(nsnap.docs.map((d) => ({ id: d.id, ...d.data() })));
       } catch (err) {
         console.error("Error fetching data:", err);
       } finally {
@@ -55,6 +137,8 @@ const MyListingsPage = () => {
   }, [authLoading, isAuthenticated, user]);
 
   const pendingCount = requests.filter((r) => r.status === "pending").length;
+  const unseenNotifCount = notifications.length; // all surfaced notifications count toward the badge
+  const requestsTabBadge = pendingCount + unseenNotifCount;
 
   const getDuration = (dep, arr) => {
     if (!dep || !arr) return null;
@@ -67,33 +151,33 @@ const MyListingsPage = () => {
     return `${h}h${m > 0 ? ` ${m}m` : ""}`;
   };
 
-const handleDelete = async (ticketId) => {
-  setDeletingId(ticketId);
-  try {
-    // Find all contact requests tied to this ticket
-    const rq = query(
-      collection(db, "contactRequests"),
-      where("ticketId", "==", ticketId)
-    );
-    const rsnap = await getDocs(rq);
+  const handleDelete = async (ticketId) => {
+    setDeletingId(ticketId);
+    try {
+      // Find all contact requests tied to this ticket
+      const rq = query(
+        collection(db, "contactRequests"),
+        where("ticketId", "==", ticketId)
+      );
+      const rsnap = await getDocs(rq);
 
-    // Batch delete: the ticket itself + all related requests
-    const batch = writeBatch(db);
-    batch.delete(doc(db, "tickets", ticketId));
-    rsnap.docs.forEach((d) => batch.delete(doc(db, "contactRequests", d.id)));
-    await batch.commit();
+      // Batch delete: the ticket itself + all related requests
+      const batch = writeBatch(db);
+      batch.delete(doc(db, "tickets", ticketId));
+      rsnap.docs.forEach((d) => batch.delete(doc(db, "contactRequests", d.id)));
+      await batch.commit();
 
-    // Update local state to match
-    setTickets((prev) => prev.filter((t) => t.id !== ticketId));
-    setRequests((prev) => prev.filter((r) => r.ticketId !== ticketId));
-  } catch (err) {
-    console.error("Error deleting ticket:", err);
-    alert("Failed to delete listing. Please try again.");
-  } finally {
-    setDeletingId(null);
-    setConfirmId(null);
-  }
-};
+      // Update local state to match
+      setTickets((prev) => prev.filter((t) => t.id !== ticketId));
+      setRequests((prev) => prev.filter((r) => r.ticketId !== ticketId));
+    } catch (err) {
+      console.error("Error deleting ticket:", err);
+      alert("Failed to delete listing. Please try again.");
+    } finally {
+      setDeletingId(null);
+      setConfirmId(null);
+    }
+  };
 
   const handleRequestAction = async (requestId, action) => {
     try {
@@ -105,6 +189,15 @@ const handleDelete = async (ticketId) => {
       );
     } catch (err) {
       console.error("Failed to update request:", err);
+    }
+  };
+
+  const handleDismissNotification = async (notifId) => {
+    try {
+      await deleteDoc(doc(db, "notifications", notifId));
+      setNotifications((prev) => prev.filter((n) => n.id !== notifId));
+    } catch (err) {
+      console.error("Failed to dismiss notification:", err);
     }
   };
 
@@ -186,9 +279,9 @@ const handleDelete = async (ticketId) => {
           >
             <Bell size={14} />
             Requests
-            {pendingCount > 0 && (
+            {requestsTabBadge > 0 && (
               <span className="bg-black text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-                {pendingCount}
+                {requestsTabBadge}
               </span>
             )}
           </button>
@@ -329,7 +422,7 @@ const handleDelete = async (ticketId) => {
         {/* ── REQUESTS TAB ── */}
         {activeTab === "requests" && (
           <>
-            {requests.length === 0 ? (
+            {requests.length === 0 && notifications.length === 0 ? (
               <div className="text-center py-16 md:py-24 text-gray-400 border border-gray-100 rounded-2xl px-4">
                 <Bell size={36} className="mx-auto mb-3 opacity-20" />
                 <p className="text-sm font-medium text-gray-600">No contact requests yet</p>
@@ -337,6 +430,38 @@ const handleDelete = async (ticketId) => {
               </div>
             ) : (
               <div className="flex flex-col gap-3">
+
+                {/* System notifications (e.g. auto-expired listings) */}
+                {notifications.map((notif) => (
+                  <div
+                    key={notif.id}
+                    className="bg-amber-50 border border-amber-200 rounded-2xl p-4 sm:p-5 flex items-start justify-between gap-3"
+                  >
+                    <div className="flex items-start gap-3 min-w-0">
+                      <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                        <AlertTriangle size={15} className="text-amber-600" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-gray-900">
+                          Listing auto-removed
+                        </p>
+                        <p className="text-xs text-gray-600 mt-0.5">
+                          {notif.ticketName} ({notif.from} → {notif.to}) was removed because the
+                          journey date ({notif.journeyDate}) was within {EXPIRY_WINDOW_DAYS} days.
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleDismissNotification(notif.id)}
+                      className="text-gray-400 hover:text-gray-600 flex-shrink-0"
+                      aria-label="Dismiss notification"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                ))}
+
+                {/* Contact requests */}
                 {requests.map((req) => (
                   <div
                     key={req.id}
@@ -421,4 +546,4 @@ const handleDelete = async (ticketId) => {
   );
 };
 
-export default MyListingsPage;
+export default MyListingPage;

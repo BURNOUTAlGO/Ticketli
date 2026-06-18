@@ -94,6 +94,18 @@ const TicketDetailPage = () => {
         sellerName: ticket.fullName || null,
         createdAt: serverTimestamp(),
       });
+      await addDoc(collection(db, "notifications"), {
+  type: "new_request",
+  sellerEmail: ticket.email,
+  buyerName: user.name || user.email,
+  buyerEmail: user.email.toLowerCase(),
+  ticketId: ticket.id,
+  ticketName: ticket.trainName,
+  from: ticket.from,
+  to: ticket.to,
+  journeyDate: ticket.journeyDate,
+  createdAt: serverTimestamp(),
+});
       setRequestSent(true);
     } catch (err) {
       console.error("Failed to send request:", err);

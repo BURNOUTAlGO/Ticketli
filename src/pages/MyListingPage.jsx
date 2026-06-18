@@ -147,7 +147,31 @@ setSoldTickets(
         sold: true,
         soldAt: serverTimestamp(),
       });
+      const rq = query(
+  collection(db, "contactRequests"),
+  where("ticketId", "==", ticketId)
+);
 
+const rsnap = await getDocs(rq);
+
+const nq = query(
+  collection(db, "notifications"),
+  where("ticketId", "==", ticketId)
+);
+
+const nsnap = await getDocs(nq);
+
+const batch = writeBatch(db);
+
+rsnap.docs.forEach((r) => {
+  batch.delete(doc(db, "contactRequests", r.id));
+});
+
+nsnap.docs.forEach((n) => {
+  batch.delete(doc(db, "notifications", n.id));
+});
+
+await batch.commit();
       if (ticket?.pnrNumber) {
         await setDoc(doc(db, "soldPnrs", ticket.pnrNumber), {
           pnrNumber: ticket.pnrNumber,
@@ -577,14 +601,31 @@ setSoldTickets((prev) => [
                         <AlertTriangle size={15} className="text-amber-600" />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold text-gray-900">
-                          Listing auto-removed
-                        </p>
-                        <p className="text-xs text-gray-600 mt-0.5">
-                          {notif.ticketName} ({notif.from} → {notif.to}) was
-                          removed because the journey date ({notif.journeyDate})
-                          was within 2 days.
-                        </p>
+{notif.type === "new_request" ? (
+  <>
+    <p className="text-sm font-semibold text-gray-900">
+      New Contact Request
+    </p>
+
+    <p className="text-xs text-gray-600 mt-0.5">
+      {notif.buyerName} requested contact for
+      {notif.ticketName}
+      ({notif.from} → {notif.to})
+    </p>
+  </>
+) : (
+  <>
+    <p className="text-sm font-semibold text-gray-900">
+      Listing auto-removed
+    </p>
+
+    <p className="text-xs text-gray-600 mt-0.5">
+      {notif.ticketName} ({notif.from} → {notif.to})
+      was removed because the journey date
+      ({notif.journeyDate}) was within 2 days.
+    </p>
+  </>
+)}
                       </div>
                     </div>
                     <button

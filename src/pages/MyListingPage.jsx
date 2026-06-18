@@ -14,6 +14,7 @@ import {
   addDoc,
   serverTimestamp,
   setDoc,
+  onSnapshot,
 } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import {
@@ -49,7 +50,7 @@ const MyListingPage = () => {
   const [activeTab, setActiveTab] = useState("listings");
  
   const navigate = useNavigate();
-  const hasFetchedRef = useRef(false);
+  
 
   // ── helpers ──────────────────────────────────────────────────────────────
 
@@ -65,8 +66,7 @@ const MyListingPage = () => {
       setLoading(false);
       return;
     }
-    if (hasFetchedRef.current) return;
-    hasFetchedRef.current = true;
+
 
     const fetchAll = async () => {
       try {
@@ -98,21 +98,50 @@ setSoldTickets(
 
 
 
-        const rq = query(
-          collection(db, "contactRequests"),
-          where("sellerEmail", "==", user.email.toLowerCase()),
-          orderBy("createdAt", "desc"),
-        );
-        const rsnap = await getDocs(rq);
-        setRequests(rsnap.docs.map((d) => ({ id: d.id, ...d.data() })));
+const rq = query(
+  collection(db, "contactRequests"),
+  where("sellerEmail", "==", user.email.toLowerCase())
+);
 
-        const nq = query(
-          collection(db, "notifications"),
-          where("sellerEmail", "==", user.email.toLowerCase()),
-          orderBy("createdAt", "desc"),
-        );
-        const nsnap = await getDocs(nq);
-        setNotifications(nsnap.docs.map((d) => ({ id: d.id, ...d.data() })));
+const unsubscribeRequests = onSnapshot(rq, (snapshot) => {
+  console.log("Seller:", user.email.toLowerCase());
+
+  console.log(
+    "Requests Found:",
+    snapshot.docs.map((d) => ({
+      id: d.id,
+      ...d.data(),
+    }))
+  );
+
+  setRequests(
+    snapshot.docs.map((d) => ({
+      id: d.id,
+      ...d.data(),
+    }))
+  );
+});
+const nq = query(
+  collection(db, "notifications"),
+  where("sellerEmail", "==", user.email.toLowerCase()),
+  orderBy("createdAt", "desc")
+);
+
+const unsubscribeNotifications = onSnapshot(
+  nq,
+  (snapshot) => {
+    setNotifications(
+      snapshot.docs.map((d) => ({
+        id: d.id,
+        ...d.data(),
+      }))
+    );
+  }
+);
+return () => {
+  unsubscribeRequests();
+  unsubscribeNotifications();
+};
       } catch (err) {
         console.error("Error fetching data:", err);
       } finally {
@@ -156,9 +185,8 @@ const rsnap = await getDocs(rq);
 
 const nq = query(
   collection(db, "notifications"),
-  where("ticketId", "==", ticketId)
+  where("sellerEmail", "==", user.email.toLowerCase())
 );
-
 const nsnap = await getDocs(nq);
 
 const batch = writeBatch(db);

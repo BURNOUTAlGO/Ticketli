@@ -87,7 +87,7 @@ const TicketDetailPage = () => {
         buyerName: user.name || user.email,
         buyerEmail: user.email.toLowerCase(),
         buyerUid: user.sub,
-        sellerEmail: ticket.email,
+        sellerEmail: ticket.email?.toLowerCase(),
         sellerUid: ticket.uid || null,
         status: "pending",
         sellerPhone: ticket.phone || null,
@@ -96,7 +96,7 @@ const TicketDetailPage = () => {
       });
       await addDoc(collection(db, "notifications"), {
   type: "new_request",
-  sellerEmail: ticket.email,
+  sellerEmail: ticket.email?.toLowerCase(),
   buyerName: user.name || user.email,
   buyerEmail: user.email.toLowerCase(),
   ticketId: ticket.id,

@@ -15,6 +15,7 @@ import {
   SlidersHorizontal,
   Check,
   X,
+  BadgeCheck,
 } from "lucide-react";
 import { KineticText } from "@/components/ui/kinetic-text";
 
@@ -308,6 +309,7 @@ const BrowseTicketsPage = () => {
       if (filterDate && t.journeyDate !== filterDate) return false;
       if (filterClass !== "Any class" && t.trainClass !== filterClass) return false;
       if (Number(t.price) < filterPriceRange[0] || Number(t.price) > filterPriceRange[1]) return false;
+      if (t.sold) return true; // sold tickets skip seat filter — they show regardless
       if (seatCount(t.seats) < minSeatsNumber) return false;
       return true;
     });
@@ -315,6 +317,8 @@ const BrowseTicketsPage = () => {
     if (sortBy === "Price: High to Low") result.sort((a, b) => Number(b.price) - Number(a.price));
     if (sortBy === "Earliest Departure") result.sort((a, b) => (a.departureTime || "").localeCompare(b.departureTime || ""));
     if (sortBy === "Latest Departure") result.sort((a, b) => (b.departureTime || "").localeCompare(a.departureTime || ""));
+    // Push sold tickets to the end always
+    result.sort((a, b) => (a.sold ? 1 : 0) - (b.sold ? 1 : 0));
     return result;
   }, [tickets, appliedFrom, appliedTo, appliedDate, filterFrom, filterTo, filterDate, filterClass, filterPriceRange, minSeatsNumber, sortBy]);
 
@@ -661,40 +665,70 @@ const BrowseTicketsPage = () => {
   );
 };
 
-/* ── Ticket card ── */
+// ── Ticket card ────────────────────────────────────────────────────────────
 const TicketCard = ({ ticket, duration, initials }) => {
   const navigate = useNavigate();
+  const isSold = !!ticket.sold;
 
   return (
-    <div className="border border-gray-200 rounded-2xl p-5 hover:shadow-md transition bg-white">
+    <div className={`border rounded-2xl p-5 hover:shadow-md transition ${
+      isSold
+        ? "bg-yellow-50 border-2 border-yellow-300"
+        : "bg-white border-gray-200"
+    }`}>
+
+      {/* Sold banner */}
+      {isSold && (
+        <div className="flex items-center gap-2 bg-yellow-100 border border-yellow-300 rounded-lg px-3 py-2 mb-3">
+          <BadgeCheck size={15} className="text-yellow-600 flex-shrink-0" />
+          <p className="text-xs font-semibold text-yellow-800">This ticket has been sold</p>
+        </div>
+      )}
+
       <div className="flex items-start justify-between mb-3">
         <div>
-          <h3 className="font-bold text-gray-900 text-sm">{ticket.trainName || "—"}</h3>
+          <h3 className={`font-bold text-sm ${isSold ? "text-yellow-900" : "text-gray-900"}`}>
+            {ticket.trainName || "—"}
+          </h3>
           <p className="text-xs text-gray-400 mt-0.5">{ticket.trainNumber || ""}</p>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="text-xs border border-gray-200 text-gray-600 px-2.5 py-1 rounded-full">
+          <span className={`text-xs border px-2.5 py-1 rounded-full ${
+            isSold
+              ? "border-yellow-300 text-yellow-700 bg-yellow-50"
+              : "border-gray-200 text-gray-600"
+          }`}>
             {ticket.trainClass}
           </span>
-          <span className="text-xs bg-black text-white px-2.5 py-1 rounded-full">Active</span>
+          <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
+            isSold
+              ? "bg-yellow-400 text-yellow-900"
+              : "bg-black text-white"
+          }`}>
+            {isSold ? "Sold" : "Active"}
+          </span>
         </div>
       </div>
 
       <div className="flex items-center gap-3 mb-3">
         <div>
-          <p className="text-xl font-bold text-gray-900">{ticket.departureTime || "—"}</p>
+          <p className={`text-xl font-bold ${isSold ? "text-yellow-800" : "text-gray-900"}`}>
+            {ticket.departureTime || "—"}
+          </p>
           <p className="text-xs text-gray-500">{ticket.from || "—"}</p>
         </div>
         <div className="flex-1 flex flex-col items-center gap-0.5">
           {duration && <span className="text-xs text-gray-400">{duration}</span>}
           <div className="flex items-center w-full gap-1">
-            <div className="flex-1 h-px bg-gray-200" />
-            <span className="text-gray-300 text-xs">→</span>
-            <div className="flex-1 h-px bg-gray-200" />
+            <div className={`flex-1 h-px ${isSold ? "bg-yellow-300" : "bg-gray-200"}`} />
+            <span className={`text-xs ${isSold ? "text-yellow-500" : "text-gray-300"}`}>→</span>
+            <div className={`flex-1 h-px ${isSold ? "bg-yellow-300" : "bg-gray-200"}`} />
           </div>
         </div>
         <div className="text-right">
-          <p className="text-xl font-bold text-gray-900">{ticket.arrivalTime || "—"}</p>
+          <p className={`text-xl font-bold ${isSold ? "text-yellow-800" : "text-gray-900"}`}>
+            {ticket.arrivalTime || "—"}
+          </p>
           <p className="text-xs text-gray-500">{ticket.to || "—"}</p>
         </div>
       </div>
@@ -711,7 +745,9 @@ const TicketCard = ({ ticket, duration, initials }) => {
         </div>
       </div>
 
-      <div className="border-t border-gray-100 pt-3 flex items-center justify-between">
+      <div className={`border-t pt-3 flex items-center justify-between ${
+        isSold ? "border-yellow-200" : "border-gray-100"
+      }`}>
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600">
             {initials}
@@ -720,15 +756,21 @@ const TicketCard = ({ ticket, duration, initials }) => {
         </div>
         <div className="flex items-center gap-2">
           <div className="text-right">
-            <p className="text-base font-bold text-gray-900">₹{ticket.price}</p>
+            <p className={`text-base font-bold ${isSold ? "text-yellow-800" : "text-gray-900"}`}>
+              ₹{ticket.price}
+            </p>
             <p className="text-[10px] text-gray-400">per seat</p>
           </div>
-          {/* ✅ Changed from <a> to navigate button */}
           <button
-            onClick={() => navigate(`/ticket/${ticket.id}`)}
-            className="bg-black text-white text-xs font-medium px-4 py-2 rounded-lg hover:bg-gray-800 transition"
+            onClick={() => !isSold && navigate(`/ticket/${ticket.id}`)}
+            disabled={isSold}
+            className={`text-xs font-medium px-4 py-2 rounded-lg transition ${
+              isSold
+                ? "bg-yellow-200 text-yellow-700 cursor-not-allowed"
+                : "bg-black text-white hover:bg-gray-800"
+            }`}
           >
-            View
+            {isSold ? "Sold" : "View"}
           </button>
         </div>
       </div>

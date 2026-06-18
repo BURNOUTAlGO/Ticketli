@@ -5,7 +5,7 @@ import { db } from "../firebase";
 import { doc, getDoc, collection, addDoc, serverTimestamp, query, where, getDocs } from "firebase/firestore";
 import {
   Train, Calendar, Clock, MapPin, Users,
-  MessageCircle, Share2, Info, ChevronRight, CheckCircle, Bell,
+  MessageCircle, Share2, Info, ChevronRight, CheckCircle, Bell, BadgeCheck,
 } from "lucide-react";
 
 const TicketDetailPage = () => {
@@ -91,7 +91,7 @@ const TicketDetailPage = () => {
         sellerUid: ticket.uid || null,
         status: "pending",
         sellerPhone: ticket.phone || null,
-        sellerName:ticket.fullName || null,
+        sellerName: ticket.fullName || null,
         createdAt: serverTimestamp(),
       });
       setRequestSent(true);
@@ -113,8 +113,7 @@ const TicketDetailPage = () => {
           url,
         });
       } catch (err) {
-        // Sharing failed or was cancelled; log for debugging
-        console.error('Share failed:', err);
+        console.error("Share failed:", err);
       }
     } else {
       await navigator.clipboard.writeText(url);
@@ -151,6 +150,7 @@ const TicketDetailPage = () => {
     );
 
   const duration = getDuration(ticket.departureTime, ticket.arrivalTime);
+  const isSold = !!ticket.sold;
   const isSentOrRequested = requestSent || alreadyRequested;
 
   return (
@@ -171,13 +171,32 @@ const TicketDetailPage = () => {
           {/* ── Left column ── */}
           <div className="flex-1 min-w-0 flex flex-col gap-5">
 
+            {/* Sold banner — shown at the top of the left column */}
+            {isSold && (
+              <div className="flex items-start gap-3 bg-yellow-50 border-2 border-yellow-300 rounded-2xl px-4 py-4">
+                <BadgeCheck size={20} className="text-yellow-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold text-yellow-800">This ticket has been sold</p>
+                  <p className="text-xs text-yellow-600 mt-0.5 leading-relaxed">
+                    The seller has marked this listing as sold. It is no longer available for purchase.
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Main ticket card */}
-            <div className="bg-white border border-gray-200 rounded-2xl p-5 md:p-6">
+            <div className={`border rounded-2xl p-5 md:p-6 ${
+              isSold
+                ? "bg-yellow-50 border-2 border-yellow-300"
+                : "bg-white border-gray-200"
+            }`}>
 
               {/* Header */}
               <div className="flex items-start justify-between mb-5 gap-3">
                 <div className="min-w-0">
-                  <h1 className="text-xl md:text-2xl font-bold text-gray-900 truncate">
+                  <h1 className={`text-xl md:text-2xl font-bold truncate ${
+                    isSold ? "text-yellow-900" : "text-gray-900"
+                  }`}>
                     {ticket.trainName || "—"}
                   </h1>
                   <div className="flex items-center gap-1.5 mt-1 text-xs text-gray-400">
@@ -186,38 +205,60 @@ const TicketDetailPage = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5 flex-shrink-0">
-                  <span className="text-xs border border-gray-200 text-gray-600 px-2.5 py-1 rounded-full">
+                  <span className={`text-xs border px-2.5 py-1 rounded-full ${
+                    isSold
+                      ? "border-yellow-300 text-yellow-700 bg-yellow-100"
+                      : "border-gray-200 text-gray-600"
+                  }`}>
                     {ticket.trainClass}
                   </span>
-                  <span className="text-xs bg-black text-white px-2.5 py-1 rounded-full">
-                    {ticket.status || "Active"}
+                  <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
+                    isSold
+                      ? "bg-yellow-400 text-yellow-900"
+                      : "bg-black text-white"
+                  }`}>
+                    {isSold ? "Sold" : (ticket.status || "Active")}
                   </span>
                 </div>
               </div>
 
               {/* Time box */}
-              <div className="bg-gray-50 border border-gray-100 rounded-xl p-4 md:p-5 mb-5">
+              <div className={`border rounded-xl p-4 md:p-5 mb-5 ${
+                isSold
+                  ? "bg-yellow-100 border-yellow-200"
+                  : "bg-gray-50 border-gray-100"
+              }`}>
                 <div className="flex items-center justify-between gap-2">
                   <div className="text-center">
-                    <p className="text-2xl md:text-3xl font-bold text-gray-900">
+                    <p className={`text-2xl md:text-3xl font-bold ${
+                      isSold ? "text-yellow-800" : "text-gray-900"
+                    }`}>
                       {ticket.departureTime || "—"}
                     </p>
-                    <p className="text-sm font-medium text-gray-700 mt-1">{ticket.from || "—"}</p>
+                    <p className={`text-sm font-medium mt-1 ${
+                      isSold ? "text-yellow-700" : "text-gray-700"
+                    }`}>{ticket.from || "—"}</p>
                     <p className="text-xs text-gray-400">Departure</p>
                   </div>
                   <div className="flex-1 flex flex-col items-center gap-1 px-2">
-                    {duration && <span className="text-xs text-gray-400 font-medium">{duration}</span>}
+                    {duration && (
+                      <span className="text-xs text-gray-400 font-medium">{duration}</span>
+                    )}
                     <div className="flex items-center w-full gap-1">
-                      <div className="flex-1 h-px bg-gray-300" />
-                      <Train size={16} className="text-gray-400 flex-shrink-0" />
-                      <div className="flex-1 h-px bg-gray-300" />
+                      <div className={`flex-1 h-px ${isSold ? "bg-yellow-300" : "bg-gray-300"}`} />
+                      <Train size={16} className={isSold ? "text-yellow-400 flex-shrink-0" : "text-gray-400 flex-shrink-0"} />
+                      <div className={`flex-1 h-px ${isSold ? "bg-yellow-300" : "bg-gray-300"}`} />
                     </div>
                   </div>
                   <div className="text-center">
-                    <p className="text-2xl md:text-3xl font-bold text-gray-900">
+                    <p className={`text-2xl md:text-3xl font-bold ${
+                      isSold ? "text-yellow-800" : "text-gray-900"
+                    }`}>
                       {ticket.arrivalTime || "—"}
                     </p>
-                    <p className="text-sm font-medium text-gray-700 mt-1">{ticket.to || "—"}</p>
+                    <p className={`text-sm font-medium mt-1 ${
+                      isSold ? "text-yellow-700" : "text-gray-700"
+                    }`}>{ticket.to || "—"}</p>
                     <p className="text-xs text-gray-400">Arrival</p>
                   </div>
                 </div>
@@ -229,37 +270,49 @@ const TicketDetailPage = () => {
                   <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-1">
                     <Calendar size={12} /> Journey Date
                   </div>
-                  <p className="text-sm font-semibold text-gray-900">{ticket.journeyDate || "—"}</p>
+                  <p className={`text-sm font-semibold ${isSold ? "text-yellow-800" : "text-gray-900"}`}>
+                    {ticket.journeyDate || "—"}
+                  </p>
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-1">
                     <Clock size={12} /> Duration
                   </div>
-                  <p className="text-sm font-semibold text-gray-900">{duration || "—"}</p>
+                  <p className={`text-sm font-semibold ${isSold ? "text-yellow-800" : "text-gray-900"}`}>
+                    {duration || "—"}
+                  </p>
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-1">
                     <Users size={12} /> Seats Available
                   </div>
-                  <p className="text-sm font-semibold text-gray-900">{ticket.seats}</p>
+                  <p className={`text-sm font-semibold ${isSold ? "text-yellow-800" : "text-gray-900"}`}>
+                    {ticket.seats}
+                  </p>
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-1">
                     <MapPin size={12} /> From
                   </div>
-                  <p className="text-sm font-semibold text-gray-900">{ticket.from || "—"}</p>
+                  <p className={`text-sm font-semibold ${isSold ? "text-yellow-800" : "text-gray-900"}`}>
+                    {ticket.from || "—"}
+                  </p>
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-1">
                     <MapPin size={12} /> To
                   </div>
-                  <p className="text-sm font-semibold text-gray-900">{ticket.to || "—"}</p>
+                  <p className={`text-sm font-semibold ${isSold ? "text-yellow-800" : "text-gray-900"}`}>
+                    {ticket.to || "—"}
+                  </p>
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-1">
                     <Train size={12} /> Class
                   </div>
-                  <p className="text-sm font-semibold text-gray-900">{ticket.trainClass || "—"}</p>
+                  <p className={`text-sm font-semibold ${isSold ? "text-yellow-800" : "text-gray-900"}`}>
+                    {ticket.trainClass || "—"}
+                  </p>
                 </div>
               </div>
             </div>
@@ -282,15 +335,21 @@ const TicketDetailPage = () => {
           {/* ── Right column ── */}
           <div className="w-full lg:w-72 flex-shrink-0">
             <div className="lg:sticky lg:top-[90px] flex flex-col gap-4">
-              <div className="bg-white border border-gray-200 rounded-2xl p-5">
+              <div className={`border rounded-2xl p-5 ${
+                isSold
+                  ? "bg-yellow-50 border-2 border-yellow-300"
+                  : "bg-white border-gray-200"
+              }`}>
 
                 <p className="text-xs text-gray-400 mb-1">Price per seat</p>
-                <p className="text-3xl font-bold text-gray-900 mb-1">₹{ticket.price}</p>
+                <p className={`text-3xl font-bold mb-1 ${isSold ? "text-yellow-800" : "text-gray-900"}`}>
+                  ₹{ticket.price}
+                </p>
                 <p className="text-xs text-gray-400 mb-5">
                   Total for {ticket.seats}: ₹{Number(ticket.price) * parseInt(ticket.seats)}
                 </p>
 
-                <div className="border-t border-gray-100 mb-4" />
+                <div className={`border-t mb-4 ${isSold ? "border-yellow-200" : "border-gray-100"}`} />
 
                 <p className="text-xs text-gray-400 mb-2">Listed by</p>
                 <div className="flex items-center gap-2.5 mb-5">
@@ -302,8 +361,24 @@ const TicketDetailPage = () => {
                   </div>
                 </div>
 
-                {/* Contact Seller / Request Sent */}
-                {isSentOrRequested ? (
+                {/* CTA area — sold state takes priority over request state */}
+                {isSold ? (
+                  <div className="flex flex-col gap-3">
+                    <div className="w-full flex items-center justify-center gap-2 bg-yellow-100 border-2 border-yellow-300 text-yellow-800 text-sm font-semibold py-3 rounded-xl">
+                      <BadgeCheck size={16} />
+                      Ticket Sold
+                    </div>
+                    <p className="text-[11px] text-gray-400 text-center leading-relaxed">
+                      This ticket is no longer available. Browse other listings to find a similar route.
+                    </p>
+                    <button
+                      onClick={() => navigate("/browse")}
+                      className="w-full flex items-center justify-center gap-1.5 border border-gray-200 text-gray-700 text-xs font-medium py-2.5 rounded-xl hover:bg-gray-50 transition"
+                    >
+                      Browse other tickets
+                    </button>
+                  </div>
+                ) : isSentOrRequested ? (
                   <div className="flex flex-col gap-3">
                     <div className="w-full flex items-center justify-center gap-2 bg-green-50 border border-green-200 text-green-700 text-sm font-semibold py-3 rounded-xl">
                       <CheckCircle size={16} />
@@ -347,7 +422,7 @@ const TicketDetailPage = () => {
                   {copied ? "Link Copied!" : "Share"}
                 </button>
 
-                {!isAuthenticated && (
+                {!isAuthenticated && !isSold && (
                   <p className="text-[11px] text-gray-400 text-center mt-3 leading-relaxed">
                     You'll be redirected to login before contacting the seller.
                   </p>

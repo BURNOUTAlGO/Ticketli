@@ -1,92 +1,173 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { db } from "../firebase";
 import {
-  collection, getDocs, query, where, orderBy,
-  deleteDoc, doc, updateDoc, writeBatch, addDoc, serverTimestamp,
+  collection,
+  getDocs,
+  query,
+  where,
+  orderBy,
+  deleteDoc,
+  doc,
+  updateDoc,
+  writeBatch,
+  addDoc,
+  serverTimestamp,
+  setDoc,
 } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import {
-  Train, ArrowRight, Clock, Users, Plus, LayoutGrid,
-  Trash2, Bell, Check, X, Mail, AlertTriangle,
+  Train,
+  Clock,
+  Users,
+  Plus,
+  LayoutGrid,
+  Bell,
+  Check,
+  X,
+  Mail,
+  AlertTriangle,
+  BadgeCheck,
 } from "lucide-react";
 import { KineticText } from "@/components/ui/kinetic-text";
 
-const EXPIRY_WINDOW_DAYS = 2;
+// const SOLD_CLEANUP_DELAY_MS = 86_400_000; // 24 hours
+// const SOLD_CLEANUP_DELAY_MS = 20_000; //20sec
+const SOLD_CLEANUP_DELAY_MS = 300_000; // 5 minutes
+
+const getSoldKey = (email) =>
+  `sold_tickets_pending_${email?.toLowerCase() || "guest"}`;
+
+const getSavedSold = (email) => {
+  try {
+    const raw = localStorage.getItem(getSoldKey(email));
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+};
+
+const saveSold = (email, tickets) => {
+  try {
+    localStorage.setItem(getSoldKey(email), JSON.stringify(tickets));
+  } catch {}
+};
+
+const clearSavedSold = (email, ticketId) => {
+  const updated = getSavedSold(email).filter((t) => t.id !== ticketId);
+  saveSold(email, updated);
+};
 
 const MyListingPage = () => {
-  const { user, isAuthenticated, isLoading: authLoading, loginWithRedirect } = useAuth0();
+  const {
+    user,
+    isAuthenticated,
+    isLoading: authLoading,
+    loginWithRedirect,
+  } = useAuth0();
   const [tickets, setTickets] = useState([]);
+  const [soldTickets, setSoldTickets] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [deletingId, setDeletingId] = useState(null);
   const [confirmId, setConfirmId] = useState(null);
   const [requests, setRequests] = useState([]);
   const [notifications, setNotifications] = useState([]);
-  const [activeTab, setActiveTab] = useState("listings"); // "listings" | "requests"
+  const [activeTab, setActiveTab] = useState("listings");
+  const [countdowns, setCountdowns] = useState({});
   const navigate = useNavigate();
   const hasFetchedRef = useRef(false);
+  const cleanupTimers = useRef({});
 
-  // Returns true if a ticket's journeyDate is today+EXPIRY_WINDOW_DAYS or earlier (i.e. should be auto-removed)
-  const isExpiring = (journeyDate) => {
-    if (!journeyDate) return false;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+  // ── helpers ──────────────────────────────────────────────────────────────
 
-    const journey = new Date(journeyDate); // works for "YYYY-MM-DD"
-    if (isNaN(journey.getTime())) return false;
-    journey.setHours(0, 0, 0, 0);
+  const deleteSoldTicket = useCallback(async (ticketId) => {
+    try {
+      const rq = query(
+        collection(db, "contactRequests"),
+        where("ticketId", "==", ticketId),
+      );
+      const rsnap = await getDocs(rq);
 
-    const cutoff = new Date(today);
-    cutoff.setDate(cutoff.getDate() + EXPIRY_WINDOW_DAYS);
+      const nq = query(
+        collection(db, "notifications"),
+        where("ticketId", "==", ticketId),
+      );
+      const nsnap = await getDocs(nq);
 
-    // Ticket expires once its journey date is within the window (or already past)
-    return journey <= cutoff;
-  };
+      const batch = writeBatch(db);
+      batch.delete(doc(db, "tickets", ticketId));
+      rsnap.docs.forEach((d) => batch.delete(doc(db, "contactRequests", d.id)));
+      nsnap.docs.forEach((d) => batch.delete(doc(db, "notifications", d.id)));
+      await batch.commit();
 
-  // Deletes a ticket + its related contactRequests, and logs a notification doc.
-  // Idempotent: if a notification for this ticket already exists, skip writing another.
-  const expireTicket = async (ticket) => {
-    const existingNotifQuery = query(
-      collection(db, "notifications"),
-      where("ticketId", "==", ticket.id),
-      where("type", "==", "expired")
-    );
-    const existingNotifSnap = await getDocs(existingNotifQuery);
-
-    const rq = query(
-      collection(db, "contactRequests"),
-      where("ticketId", "==", ticket.id)
-    );
-    const rsnap = await getDocs(rq);
-
-    const batch = writeBatch(db);
-    batch.delete(doc(db, "tickets", ticket.id));
-    rsnap.docs.forEach((d) => batch.delete(doc(db, "contactRequests", d.id)));
-    await batch.commit();
-
-    if (existingNotifSnap.empty) {
-      await addDoc(collection(db, "notifications"), {
-        sellerEmail: ticket.email,
-        type: "expired",
-        ticketId: ticket.id,
-        ticketName: ticket.trainName || ticket.trainNumber || "Your ticket",
-        from: ticket.from || "",
-        to: ticket.to || "",
-        journeyDate: ticket.journeyDate || "",
-        createdAt: serverTimestamp(),
+      const removedNotifIds = new Set(nsnap.docs.map((d) => d.id));
+      if (removedNotifIds.size > 0) {
+        setNotifications((prev) =>
+          prev.filter((n) => !removedNotifIds.has(n.id)),
+        );
+      }
+    } catch (err) {
+      console.error("Error deleting sold ticket:", err);
+    } finally {
+      clearSavedSold(user?.email, ticketId);
+      setSoldTickets((prev) => prev.filter((t) => t.id !== ticketId));
+      setCountdowns((prev) => {
+        const n = { ...prev };
+        delete n[ticketId];
+        return n;
       });
     }
-  };
+  }, []);
+
+  // Schedules deletion and starts per-second countdown from a given ms duration
+  const scheduleSoldCleanup = useCallback(
+    (ticketId, msLeft = SOLD_CLEANUP_DELAY_MS) => {
+      const secsLeft = Math.ceil(msLeft / 1000);
+      setCountdowns((prev) => ({ ...prev, [ticketId]: secsLeft }));
+
+      const tick = setInterval(() => {
+        setCountdowns((prev) => {
+          const remaining = (prev[ticketId] ?? 1) - 1;
+          if (remaining <= 0) {
+            clearInterval(tick);
+            return { ...prev, [ticketId]: 0 };
+          }
+          return { ...prev, [ticketId]: remaining };
+        });
+      }, 1000);
+
+      const del = setTimeout(() => {
+        clearInterval(tick);
+        deleteSoldTicket(ticketId);
+      }, msLeft);
+
+      cleanupTimers.current[ticketId] = { tick, del };
+    },
+    [deleteSoldTicket],
+  );
+
+  // Clear all timers on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(cleanupTimers.current).forEach(({ tick, del }) => {
+        clearInterval(tick);
+        clearTimeout(del);
+      });
+    };
+  }, []);
+
+  // ── data fetch ────────────────────────────────────────────────────────────
 
   useEffect(() => {
     if (authLoading) return;
-    if (!isAuthenticated || !user?.email) { setLoading(false); return; }
-    if (hasFetchedRef.current) return; // guard against Strict Mode's double-invoke
+    if (!isAuthenticated || !user?.email) {
+      setLoading(false);
+      return;
+    }
+    if (hasFetchedRef.current) return;
     hasFetchedRef.current = true;
 
     const fetchAll = async () => {
       try {
-        // Fetch my tickets
         const q = query(
           collection(db, "tickets"),
           where("email", "==", user.email.toLowerCase()),
@@ -94,23 +175,28 @@ const MyListingPage = () => {
         );
         const snap = await getDocs(q);
         const allTickets = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-
-        // Partition into valid vs expiring tickets
-        const validTickets = [];
-        const expiringTickets = [];
-        allTickets.forEach((t) => {
-          if (isExpiring(t.journeyDate)) expiringTickets.push(t);
-          else validTickets.push(t);
-        });
-
-        // Clean up expiring tickets (delete ticket + requests, log notification)
-        if (expiringTickets.length > 0) {
-          await Promise.all(expiringTickets.map((t) => expireTicket(t)));
-        }
-
+        const validTickets = allTickets.filter((t) => !t.sold);
         setTickets(validTickets);
 
-        // Fetch contact requests for my (remaining) tickets
+        // ── Rehydrate sold tickets from localStorage ──────────────────────
+        const saved = getSavedSold(user?.email);
+        const now = Date.now();
+        const stillPending = saved.filter((t) => t.expiresAt > now);
+        const alreadyExpired = saved.filter((t) => t.expiresAt <= now);
+
+        // Clean up any that expired while the user was away
+        if (alreadyExpired.length > 0) {
+          await Promise.all(alreadyExpired.map((t) => deleteSoldTicket(t.id)));
+        }
+
+        if (stillPending.length > 0) {
+          setSoldTickets(stillPending);
+          stillPending.forEach((t) => {
+            const msLeft = t.expiresAt - now;
+            scheduleSoldCleanup(t.id, msLeft);
+          });
+        }
+
         const rq = query(
           collection(db, "contactRequests"),
           where("sellerEmail", "==", user.email.toLowerCase()),
@@ -119,7 +205,6 @@ const MyListingPage = () => {
         const rsnap = await getDocs(rq);
         setRequests(rsnap.docs.map((d) => ({ id: d.id, ...d.data() })));
 
-        // Fetch notifications (includes ones we just created above)
         const nq = query(
           collection(db, "notifications"),
           where("sellerEmail", "==", user.email.toLowerCase()),
@@ -134,11 +219,15 @@ const MyListingPage = () => {
       }
     };
     fetchAll();
-  }, [authLoading, isAuthenticated, user]);
+  }, [
+    authLoading,
+    isAuthenticated,
+    user,
+    deleteSoldTicket,
+    scheduleSoldCleanup,
+  ]);
 
-  const pendingCount = requests.filter((r) => r.status === "pending").length;
-  const unseenNotifCount = notifications.length; // all surfaced notifications count toward the badge
-  const requestsTabBadge = pendingCount + unseenNotifCount;
+  // ── actions ───────────────────────────────────────────────────────────────
 
   const getDuration = (dep, arr) => {
     if (!dep || !arr) return null;
@@ -151,41 +240,53 @@ const MyListingPage = () => {
     return `${h}h${m > 0 ? ` ${m}m` : ""}`;
   };
 
-  const handleDelete = async (ticketId) => {
-    setDeletingId(ticketId);
+  const handleMarkSold = async (ticketId) => {
     try {
-      // Find all contact requests tied to this ticket
-      const rq = query(
-        collection(db, "contactRequests"),
-        where("ticketId", "==", ticketId)
-      );
-      const rsnap = await getDocs(rq);
+      const ticket = tickets.find((t) => t.id === ticketId);
 
-      // Batch delete: the ticket itself + all related requests
-      const batch = writeBatch(db);
-      batch.delete(doc(db, "tickets", ticketId));
-      rsnap.docs.forEach((d) => batch.delete(doc(db, "contactRequests", d.id)));
-      await batch.commit();
+      await updateDoc(doc(db, "tickets", ticketId), {
+        sold: true,
+        soldAt: serverTimestamp(),
+      });
 
-      // Update local state to match
-      setTickets((prev) => prev.filter((t) => t.id !== ticketId));
-      setRequests((prev) => prev.filter((r) => r.ticketId !== ticketId));
-    } catch (err) {
-      console.error("Error deleting ticket:", err);
-      alert("Failed to delete listing. Please try again.");
-    } finally {
-      setDeletingId(null);
+      if (ticket?.pnrNumber) {
+        await setDoc(doc(db, "soldPnrs", ticket.pnrNumber), {
+          pnrNumber: ticket.pnrNumber,
+          journeyDate: ticket.journeyDate,
+          soldAt: serverTimestamp(),
+          originalTicketId: ticketId,
+          sellerEmail: ticket.email || user?.email?.toLowerCase() || null,
+        });
+      }
+
+      if (ticket) {
+        const soldTicket = { ...ticket, sold: true };
+        const expiresAt = Date.now() + SOLD_CLEANUP_DELAY_MS;
+
+        saveSold(user?.email, [
+          ...getSavedSold(user?.email),
+          { ...soldTicket, expiresAt },
+        ]);
+
+        setTickets((prev) => prev.filter((t) => t.id !== ticketId));
+        setSoldTickets((prev) => [soldTicket, ...prev]);
+        scheduleSoldCleanup(ticketId, SOLD_CLEANUP_DELAY_MS);
+      }
+
       setConfirmId(null);
+    } catch (err) {
+      console.error("Error marking ticket as sold:", err);
+      alert("Failed to mark ticket as sold. Please try again.");
     }
   };
 
   const handleRequestAction = async (requestId, action) => {
     try {
       await updateDoc(doc(db, "contactRequests", requestId), {
-        status: action, // "approved" | "rejected"
+        status: action,
       });
       setRequests((prev) =>
-        prev.map((r) => (r.id === requestId ? { ...r, status: action } : r))
+        prev.map((r) => (r.id === requestId ? { ...r, status: action } : r)),
       );
     } catch (err) {
       console.error("Failed to update request:", err);
@@ -201,18 +302,53 @@ const MyListingPage = () => {
     }
   };
 
-  // ── Loading ──
+  const pendingCount = requests.filter((r) => r.status === "pending").length;
+  const unseenNotifCount = notifications.length;
+  const requestsTabBadge = pendingCount + unseenNotifCount;
+
+  // ── countdown display helper ──────────────────────────────────────────────
+
+  const formatCountdown = (secs) => {
+    if (secs >= 3600) {
+      const h = Math.floor(secs / 3600);
+      const m = Math.floor((secs % 3600) / 60);
+      return `${h}h ${m}m`;
+    }
+    if (secs >= 60) {
+      const m = Math.floor(secs / 60);
+      const s = secs % 60;
+      return `${m}m ${s}s`;
+    }
+    return `${secs}s`;
+  };
+
+  // ── loading / auth guards ─────────────────────────────────────────────────
+
   if (authLoading || loading)
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <svg className="animate-spin h-7 w-7 text-gray-400" viewBox="0 0 24 24" fill="none">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+        <svg
+          className="animate-spin h-7 w-7 text-gray-400"
+          viewBox="0 0 24 24"
+          fill="none"
+        >
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          />
+          <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8v8z"
+          />
         </svg>
       </div>
     );
 
-  // ── Not logged in ──
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
@@ -220,8 +356,12 @@ const MyListingPage = () => {
           <div className="w-12 h-12 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
             <LayoutGrid size={20} className="text-gray-400" />
           </div>
-          <h1 className="text-xl font-bold text-gray-900 mb-2">You're not logged in</h1>
-          <p className="text-sm text-gray-500 mb-5">Log in to view your dashboard and listings.</p>
+          <h1 className="text-xl font-bold text-gray-900 mb-2">
+            You're not logged in
+          </h1>
+          <p className="text-sm text-gray-500 mb-5">
+            Log in to view your dashboard and listings.
+          </p>
           <button
             onClick={() => loginWithRedirect()}
             className="bg-black text-white text-sm font-medium px-5 py-2.5 rounded-xl hover:bg-gray-800 transition"
@@ -233,10 +373,129 @@ const MyListingPage = () => {
     );
   }
 
+  // ── ticket card shared body ───────────────────────────────────────────────
+
+  const TicketCardBody = ({ ticket, isSold = false }) => {
+    const duration = getDuration(ticket.departureTime, ticket.arrivalTime);
+    return (
+      <>
+        {/* Top */}
+        <div className="flex items-start justify-between mb-3 gap-2">
+          <div className="min-w-0">
+            <h3 className="font-mono font-semibold text-sm truncate">
+              {ticket.trainName || "—"}
+            </h3>
+            <p className="text-neutral-400 font-mono text-[13px]">
+              {ticket.trainNumber}
+            </p>
+          </div>
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            <span
+              className={`text-xs border px-2.5 py-1 rounded-full whitespace-nowrap ${
+                isSold
+                  ? "border-yellow-300 text-yellow-700 bg-yellow-50"
+                  : "border-[var(--color-border)] text-gray-600 dark:text-neutral-400"
+              }`}
+            >
+              {ticket.trainClass}
+            </span>
+            <span
+              className={`text-xs px-2.5 py-1 rounded-full whitespace-nowrap font-medium ${
+                isSold
+                  ? "bg-yellow-400 text-yellow-900"
+                  : "bg-black dark:bg-[var(--color-3)] text-white"
+              }`}
+            >
+              {isSold ? "Sold" : ticket.status || "Active"}
+            </span>
+          </div>
+        </div>
+
+        {/* Time row */}
+        <div className="flex items-center gap-2 sm:gap-3 mb-3">
+          <div>
+            <p
+              className={`text-lg sm:text-xl font-semibold ${isSold ? "text-yellow-800" : ""}`}
+            >
+              {ticket.departureTime || "—"}
+            </p>
+            <p className="text-xs font-mono truncate">{ticket.from || "—"}</p>
+          </div>
+          <div className="flex-1 flex flex-col items-center gap-0.5 min-w-0">
+            {duration && (
+              <span className="text-xs text-gray-400 whitespace-nowrap">
+                {duration}
+              </span>
+            )}
+            <div className="flex items-center w-full gap-1">
+              <div
+                className={`flex-1 h-px ${isSold ? "bg-yellow-300" : "bg-black dark:bg-[var(--color-border)]"}`}
+              />
+              <span
+                className={`text-xl ${isSold ? "text-yellow-500" : "text-black dark:text-white"}`}
+              >
+                →
+              </span>
+              <div
+                className={`flex-1 h-px ${isSold ? "bg-yellow-300" : "bg-black dark:bg-[var(--color-border)]"}`}
+              />
+            </div>
+          </div>
+          <div className="text-right">
+            <p
+              className={`text-lg sm:text-xl font-semibold ${isSold ? "text-yellow-800" : ""}`}
+            >
+              {ticket.arrivalTime || "—"}
+            </p>
+            <p className="text-xs font-mono truncate">{ticket.to || "—"}</p>
+          </div>
+        </div>
+
+        {/* Date + seats */}
+        <div className="flex items-center gap-3 text-xs text-gray-400 dark:text-neutral-400 mb-4 flex-wrap font-mono">
+          <div className="flex items-center gap-1">
+            <Clock size={12} />
+            <span>{ticket.journeyDate || "—"}</span>
+          </div>
+          <span>·</span>
+          <div className="flex items-center gap-1">
+            <Users size={12} />
+            <span> {isSold ? ticket.seats : `${ticket.seats} available`}</span>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div
+          className={`border-t pt-3 flex items-center justify-between gap-2 ${
+            isSold ? "border-yellow-200" : "border-[var(--color-border)]"
+          }`}
+        >
+          <p className="text-xs text-gray-400 dark:text-neutral-400 font-mono truncate">
+            Listed -{" "}
+            {ticket.createdAt?.toDate
+              ? ticket.createdAt.toDate().toLocaleDateString()
+              : ticket.createdAt
+                ? new Date(ticket.createdAt.seconds * 1000).toLocaleDateString()
+                : "—"}
+          </p>
+          <div className="text-right flex-shrink-0">
+            <p className="text-base font-mono">₹{ticket.price}</p>
+            <p className="text-[10px] text-gray-400 dark:text-neutral-400">
+              per seat
+            </p>
+          </div>
+        </div>
+      </>
+    );
+  };
+
+  // ── render ────────────────────────────────────────────────────────────────
+
+  const totalListingCount = tickets.length + soldTickets.length;
+
   return (
     <div className="min-h-screen bg-[var(--color-bg)] px-4 sm:px-6 py-8 md:py-12 mt-[60px]">
       <div className="max-w-5xl mx-auto">
-
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
@@ -245,7 +504,7 @@ const MyListingPage = () => {
               className="text-[2.25rem] sm:text-[3.25rem] md:text-[4.5rem] tracking-[-5%] flex items-start justify-start"
             />
             <p className="text-sm text-neutral-400 mt-1 break-all sm:break-normal">
-              {tickets.length} listing{tickets.length !== 1 ? "s" : ""} · {user.name}
+              {tickets.length} active · {soldTickets.length} sold · {user.name}
             </p>
           </div>
           <button
@@ -290,19 +549,67 @@ const MyListingPage = () => {
         {/* ── MY LISTINGS TAB ── */}
         {activeTab === "listings" && (
           <>
-            {tickets.length === 0 ? (
+            {totalListingCount === 0 ? (
               <div className="text-center py-16 md:py-24 bg-[var(--color-surface)] text-gray-400 border border-[var(--color-border)] rounded-[10px] px-4">
-                <Train size={36} className="mx-auto mb-3 opacity-20 text-neutral-400" />
-                <p className="text-sm text-neutral-400">You haven't listed any tickets yet</p>
+                <Train
+                  size={36}
+                  className="mx-auto mb-3 opacity-20 text-neutral-400"
+                />
+                <p className="text-sm text-neutral-400">
+                  You haven't listed any tickets yet
+                </p>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* ── SOLD TICKETS (yellow) shown first ── */}
+                {soldTickets.map((ticket) => {
+                  // const secsLeft = countdowns[ticket.id] ?? 86400;
+                  // const secsLeft = countdowns[ticket.id] ?? 20;
+                  const secsLeft = countdowns[ticket.id] ?? 300;
+
+                  return (
+                    <div
+                      key={ticket.id}
+                      className="relative bg-yellow-50 border-2 border-yellow-300 rounded-[10px] p-4 sm:p-5 shadow-sm"
+                    >
+                      {/* Sold banner */}
+                      <div className="flex items-center gap-2 bg-yellow-100 border border-yellow-300 rounded-lg px-3 py-2 mb-3">
+                        <BadgeCheck
+                          size={15}
+                          className="text-yellow-600 flex-shrink-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-semibold text-yellow-800">
+                            Marked as Sold
+                          </p>
+                          <p className="text-[11px] text-yellow-600 mt-0.5">
+                            Listing will be removed in{" "}
+                            <span className="font-bold font-mono">
+                              {formatCountdown(secsLeft)}
+                            </span>
+                          </p>
+                        </div>
+                        {/* Progress bar showing time draining */}
+                        <div className="w-10 h-1.5 bg-yellow-200 rounded-full overflow-hidden flex-shrink-0">
+                          <div
+                            className="h-full bg-yellow-500 rounded-full transition-all duration-1000 ease-linear"
+                            // style={{ width: `${(secsLeft / 86400) * 100}%` }}
+                            // style={{ width: `${(secsLeft / 20) * 100}%` }}
+                            style={{ width: `${(secsLeft / 300) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      <TicketCardBody ticket={ticket} isSold />
+                    </div>
+                  );
+                })}
+
+                {/* ── ACTIVE TICKETS ── */}
                 {tickets.map((ticket) => {
-                  const duration = getDuration(ticket.departureTime, ticket.arrivalTime);
-                  const isConfirming = confirmId === ticket.id;
-                  const isDeleting = deletingId === ticket.id;
+                  const isSoldConfirming = confirmId === ticket.id + "_sold";
                   const ticketRequests = requests.filter(
-                    (r) => r.ticketId === ticket.id && r.status === "pending"
+                    (r) => r.ticketId === ticket.id && r.status === "pending",
                   );
 
                   return (
@@ -310,105 +617,44 @@ const MyListingPage = () => {
                       key={ticket.id}
                       className="relative bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[10px] p-4 sm:p-5 hover:shadow-md transition"
                     >
-                      {/* Pending requests badge */}
                       {ticketRequests.length > 0 && (
                         <div className="absolute -top-2 -right-2 bg-black text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full z-10">
-                          {ticketRequests.length} request{ticketRequests.length > 1 ? "s" : ""}
+                          {ticketRequests.length} request
+                          {ticketRequests.length > 1 ? "s" : ""}
                         </div>
                       )}
 
-                      {/* Top */}
-                      <div className="flex items-start justify-between mb-3 gap-2">
-                        <div className="min-w-0">
-                          <h3 className="font-mono font-semibold text-sm truncate">
-                            {ticket.trainName || "—"}
-                          </h3>
-                          <p className="text-neutral-400 font-mono text-[13px]">{ticket.trainNumber}</p>
-                        </div>
-                        <div className="flex items-center gap-1.5 flex-shrink-0">
-                          <span className="text-xs border border-[var(--color-border)] text-gray-600 dark:text-neutral-400 px-2.5 py-1 rounded-full whitespace-nowrap">
-                            {ticket.trainClass}
-                          </span>
-                          <span className="text-xs bg-black dark:bg-[var(--color-3)] text-white px-2.5 py-1 rounded-full whitespace-nowrap">
-                            {ticket.status || "Active"}
-                          </span>
-                        </div>
-                      </div>
+                      <TicketCardBody ticket={ticket} />
 
-                      {/* Time row */}
-                      <div className="flex items-center gap-2 sm:gap-3 mb-3">
-                        <div>
-                          <p className="text-lg sm:text-xl font-semibold">{ticket.departureTime || "—"}</p>
-                          <p className="text-xs font-mono truncate">{ticket.from || "—"}</p>
-                        </div>
-                        <div className="flex-1 flex flex-col items-center gap-0.5 min-w-0">
-                          {duration && <span className="text-xs text-gray-400 whitespace-nowrap">{duration}</span>}
-                          <div className="flex items-center w-full gap-1">
-                            <div className="flex-1 h-px bg-black dark:bg-[var(--color-border)]" />
-                            <span className="text-black dark:text-white text-xl">→</span>
-                            <div className="flex-1 h-px bg-black dark:bg-[var(--color-border)]" />
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-lg sm:text-xl font-semibold">{ticket.arrivalTime || "—"}</p>
-                          <p className="text-xs font-mono truncate">{ticket.to || "—"}</p>
-                        </div>
-                      </div>
-
-                      {/* Date + seats */}
-                      <div className="flex items-center gap-3 text-xs text-gray-400 dark:text-neutral-400 mb-4 flex-wrap font-mono">
-                        <div className="flex items-center gap-1">
-                          <Clock size={12} />
-                          <span>{ticket.journeyDate || "—"}</span>
-                        </div>
-                        <span>·</span>
-                        <div className="flex items-center gap-1">
-                          <Users size={12} />
-                          <span>{ticket.seats} available</span>
-                        </div>
-                      </div>
-
-                      {/* Footer */}
-                      <div className="border-t border-[var(--color-border)] pt-3 flex items-center justify-between gap-2">
-                        <p className="text-xs text-gray-400 dark:text-neutral-400 font-mono truncate">
-                          Listed {ticket.createdAt?.toDate ? ticket.createdAt.toDate().toLocaleDateString() : "—"}
-                        </p>
-                        <div className="text-right flex-shrink-0">
-                          <p className="text-base font-mono">₹{ticket.price}</p>
-                          <p className="text-[10px] text-gray-400 dark:text-neutral-400">per seat</p>
-                        </div>
-                      </div>
-
-                      {/* Remove button */}
-                      {!isConfirming ? (
+                      {!isSoldConfirming ? (
                         <button
-                          onClick={() => setConfirmId(ticket.id)}
-                          className="mt-3 w-full flex items-center justify-center gap-1.5 text-xs font-medium text-red-600 border border-red-100 bg-red-50 px-3 py-2 rounded-lg hover:bg-red-100 transition"
+                          onClick={() => setConfirmId(ticket.id + "_sold")}
+                          className="mt-3 w-full flex items-center justify-center gap-1.5 text-xs font-medium text-green-700 border border-green-200 bg-green-50 px-3 py-2 rounded-lg hover:bg-green-100 transition"
                         >
-                          <Trash2 size={13} />
-                          Remove Listing
+                          <BadgeCheck size={13} />
+                          Mark as Sold
                         </button>
                       ) : (
-                        <div className="mt-3 flex items-center gap-2">
-                          <button
-                            onClick={() => handleDelete(ticket.id)}
-                            disabled={isDeleting}
-                            className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium text-white bg-red-600 px-3 py-2 rounded-lg hover:bg-red-700 disabled:opacity-60 transition"
-                          >
-                            {isDeleting ? (
-                              <svg className="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24" fill="none">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                              </svg>
-                            ) : "Confirm Remove"}
-                          </button>
-                          <button
-                            onClick={() => setConfirmId(null)}
-                            disabled={isDeleting}
-                            className="flex-1 text-xs font-medium border border-gray-200 px-3 py-2 rounded-lg disabled:opacity-60 transition bg-black text-white dark:bg-white dark:text-black hover:bg-[var(--color-surface-hover-switch)] hover:dark:bg-gray-200 duration-200"
-                          >
-                            Cancel
-                          </button>
+                        <div className="mt-3">
+                          <p className="text-[11px] text-gray-500 mb-2 text-center">
+                            Mark as sold? The PNR will be permanently blocked
+                            from re-listing.
+                          </p>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => handleMarkSold(ticket.id)}
+                              className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium text-white bg-green-600 px-3 py-2 rounded-lg hover:bg-green-700 transition"
+                            >
+                              <Check size={13} />
+                              Confirm Sold
+                            </button>
+                            <button
+                              onClick={() => setConfirmId(null)}
+                              className="flex-1 text-xs font-medium border border-gray-200 px-3 py-2 rounded-lg bg-black text-white dark:bg-white dark:text-black hover:bg-[var(--color-surface-hover-switch)] hover:dark:bg-gray-200 duration-200 transition"
+                            >
+                              Cancel
+                            </button>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -425,13 +671,15 @@ const MyListingPage = () => {
             {requests.length === 0 && notifications.length === 0 ? (
               <div className="text-center py-16 md:py-24 text-gray-400 border border-gray-100 rounded-2xl px-4">
                 <Bell size={36} className="mx-auto mb-3 opacity-20" />
-                <p className="text-sm font-medium text-gray-600">No contact requests yet</p>
-                <p className="text-xs mt-1">When buyers request to contact you, they'll appear here.</p>
+                <p className="text-sm font-medium text-gray-600">
+                  No contact requests yet
+                </p>
+                <p className="text-xs mt-1">
+                  When buyers request to contact you, they'll appear here.
+                </p>
               </div>
             ) : (
               <div className="flex flex-col gap-3">
-
-                {/* System notifications (e.g. auto-expired listings) */}
                 {notifications.map((notif) => (
                   <div
                     key={notif.id}
@@ -446,8 +694,9 @@ const MyListingPage = () => {
                           Listing auto-removed
                         </p>
                         <p className="text-xs text-gray-600 mt-0.5">
-                          {notif.ticketName} ({notif.from} → {notif.to}) was removed because the
-                          journey date ({notif.journeyDate}) was within {EXPIRY_WINDOW_DAYS} days.
+                          {notif.ticketName} ({notif.from} → {notif.to}) was
+                          removed because the journey date ({notif.journeyDate})
+                          was within 2 days.
                         </p>
                       </div>
                     </div>
@@ -461,30 +710,39 @@ const MyListingPage = () => {
                   </div>
                 ))}
 
-                {/* Contact requests */}
                 {requests.map((req) => (
                   <div
                     key={req.id}
                     className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-5"
                   >
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-
-                      {/* Left: buyer info + ticket info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-2">
                           <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600 flex-shrink-0">
-                            {req.buyerName?.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) || "?"}
+                            {req.buyerName
+                              ?.split(" ")
+                              .map((w) => w[0])
+                              .join("")
+                              .toUpperCase()
+                              .slice(0, 2) || "?"}
                           </div>
                           <div>
-                            <p className="text-sm font-semibold text-gray-900">{req.buyerName}</p>
-                            <p className="text-xs text-gray-400">{req.buyerEmail}</p>
+                            <p className="text-sm font-semibold text-gray-900">
+                              {req.buyerName}
+                            </p>
+                            <p className="text-xs text-gray-400">
+                              {req.buyerEmail}
+                            </p>
                           </div>
                         </div>
-
                         <div className="flex items-center gap-1.5 text-xs text-gray-500 flex-wrap">
-                          <span className="font-medium text-gray-700">{req.ticketName}</span>
+                          <span className="font-medium text-gray-700">
+                            {req.ticketName}
+                          </span>
                           <span className="text-gray-300">·</span>
-                          <span>{req.from} → {req.to}</span>
+                          <span>
+                            {req.from} → {req.to}
+                          </span>
                           <span className="text-gray-300">·</span>
                           <span>{req.journeyDate}</span>
                           <span className="text-gray-300">·</span>
@@ -492,19 +750,22 @@ const MyListingPage = () => {
                         </div>
                       </div>
 
-                      {/* Right: status or actions */}
                       <div className="flex items-center gap-2 flex-shrink-0">
                         {req.status === "pending" && (
                           <>
                             <button
-                              onClick={() => handleRequestAction(req.id, "approved")}
+                              onClick={() =>
+                                handleRequestAction(req.id, "approved")
+                              }
                               className="flex items-center gap-1.5 bg-black text-white text-xs font-medium px-3 py-2 rounded-lg hover:bg-gray-800 transition"
                             >
                               <Check size={13} />
                               Approve
                             </button>
                             <button
-                              onClick={() => handleRequestAction(req.id, "rejected")}
+                              onClick={() =>
+                                handleRequestAction(req.id, "rejected")
+                              }
                               className="flex items-center gap-1.5 border border-gray-200 text-gray-700 text-xs font-medium px-3 py-2 rounded-lg hover:bg-gray-50 transition"
                             >
                               <X size={13} />
@@ -512,7 +773,6 @@ const MyListingPage = () => {
                             </button>
                           </>
                         )}
-
                         {req.status === "approved" && (
                           <div className="flex flex-col items-end gap-2">
                             <span className="flex items-center gap-1 text-xs font-medium text-green-600 bg-green-50 border border-green-200 px-3 py-1.5 rounded-lg">
@@ -527,7 +787,6 @@ const MyListingPage = () => {
                             </a>
                           </div>
                         )}
-
                         {req.status === "rejected" && (
                           <span className="flex items-center gap-1 text-xs font-medium text-red-500 bg-red-50 border border-red-100 px-3 py-1.5 rounded-lg">
                             <X size={12} /> Rejected

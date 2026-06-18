@@ -5,7 +5,7 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { db } from "../firebase";
 import {
   collection, addDoc, serverTimestamp,
-  query, where, getDocs,
+  query, where, getDocs, doc, getDoc,
 } from "firebase/firestore";
 import ProgressBar from "../components/ProgressBar";
 import {
@@ -160,19 +160,37 @@ const PNRStep = ({ onVerified }) => {
     setPnrData(null);
 
     try {
-      // Check if this PNR is already listed in Firestore
+      // ── 1. Check the PERMANENT sold-PNR record first ──────────────────
+      // This collection is never deleted by the app (unlike "tickets",
+      // which gets wiped 1 minute after being marked sold). Checking this
+      // first guarantees a PNR can never be re-listed after a real sale,
+      // even after the original ticket document has been cleaned up.
+      const soldRef = doc(db, "soldPnrs", trimmed);
+      const soldSnap = await getDoc(soldRef);
+      if (soldSnap.exists()) {
+        setError("This ticket has already been sold and cannot be re-listed.");
+        setLoading(false);
+        return;
+      }
+
+      // ── 2. Check if this PNR is currently listed (active) in Firestore ─
       const existing = query(
         collection(db, "tickets"),
         where("pnrNumber", "==", trimmed)
       );
       const existingSnap = await getDocs(existing);
       if (!existingSnap.empty) {
-        setError("This PNR has already been listed. Each ticket can only be listed once.");
+        const isSold = existingSnap.docs[0].data().sold === true;
+        setError(
+          isSold
+            ? "This ticket has already been marked as sold and cannot be re-listed."
+            : "This PNR has already been listed. Each ticket can only be listed once."
+        );
         setLoading(false);
         return;
       }
 
-      // Call PNR API — correct host and endpoint
+      // ── 3. Call PNR API ─────────────────────────────────────────────────
       const res = await fetch(
         `https://irctc-indian-railway-pnr-status.p.rapidapi.com/getPNRStatus/${trimmed}`,
         {
@@ -217,27 +235,24 @@ const PNRStep = ({ onVerified }) => {
   const handleConfirm = () => {
     if (!pnrData) return;
 
-    // Parse departure from dateOfJourney: "Feb 9, 2025 11:30:05 AM"
     let journeyDate = "";
     let departureTime = "";
     try {
       const parsed = new Date(pnrData.dateOfJourney || "");
       if (!isNaN(parsed)) {
-        journeyDate = parsed.toISOString().split("T")[0]; // YYYY-MM-DD
-        departureTime = parsed.toTimeString().slice(0, 5); // HH:MM
+        journeyDate = parsed.toISOString().split("T")[0];
+        departureTime = parsed.toTimeString().slice(0, 5);
       }
     } catch {}
 
-    // Parse arrival from arrivalDate: "Nov 30, 2024 12:25:05 PM"
     let arrivalTime = "";
     try {
       const parsed = new Date(pnrData.arrivalDate || "");
       if (!isNaN(parsed)) {
-        arrivalTime = parsed.toTimeString().slice(0, 5); // HH:MM
+        arrivalTime = parsed.toTimeString().slice(0, 5);
       }
     } catch {}
 
-    // Seats: number of passengers
     const numSeats = pnrData.numberOfpassenger || 1;
     const seatsStr = `${numSeats} seat${numSeats > 1 ? "s" : ""}`;
     const clampedSeats = seatOptions.includes(seatsStr) ? seatsStr : "1 seat";
@@ -722,12 +737,40 @@ const CreateListingPage = () => {
 
     setPublishing(true);
     try {
+      // ── Final safety check right before publish ───────────────────────
+      // Guards against a race where the PNR was sold/listed by someone
+      // else between the "Verify" step and now (e.g. user left the form
+      // open for a while before finishing steps 1-3).
+      if (formData.pnrNumber) {
+        const soldRef = doc(db, "soldPnrs", formData.pnrNumber);
+        const soldSnap = await getDoc(soldRef);
+        if (soldSnap.exists()) {
+          alert("This ticket has already been sold and cannot be listed. Please start over.");
+          setPublishing(false);
+          navigate("/create-listing");
+          return;
+        }
+
+        const dupQuery = query(
+          collection(db, "tickets"),
+          where("pnrNumber", "==", formData.pnrNumber)
+        );
+        const dupSnap = await getDocs(dupQuery);
+        if (!dupSnap.empty) {
+          alert("This PNR has already been listed by someone else. Please start over.");
+          setPublishing(false);
+          navigate("/create-listing");
+          return;
+        }
+      }
+
       await addDoc(collection(db, "tickets"), {
         ...formData,
         uid: user?.sub || null,
         listerPhoto: user?.picture || null,
         createdAt: serverTimestamp(),
         status: "active",
+        sold: false,
       });
       navigate("/browse");
     } catch (err) {

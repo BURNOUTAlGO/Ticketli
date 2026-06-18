@@ -31,32 +31,7 @@ import {
 } from "lucide-react";
 import { KineticText } from "@/components/ui/kinetic-text";
 
-// const SOLD_CLEANUP_DELAY_MS = 86_400_000; // 24 hours
-// const SOLD_CLEANUP_DELAY_MS = 20_000; //20sec
-const SOLD_CLEANUP_DELAY_MS = 300_000; // 5 minutes
 
-const getSoldKey = (email) =>
-  `sold_tickets_pending_${email?.toLowerCase() || "guest"}`;
-
-const getSavedSold = (email) => {
-  try {
-    const raw = localStorage.getItem(getSoldKey(email));
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-};
-
-const saveSold = (email, tickets) => {
-  try {
-    localStorage.setItem(getSoldKey(email), JSON.stringify(tickets));
-  } catch {}
-};
-
-const clearSavedSold = (email, ticketId) => {
-  const updated = getSavedSold(email).filter((t) => t.id !== ticketId);
-  saveSold(email, updated);
-};
 
 const MyListingPage = () => {
   const {
@@ -72,88 +47,15 @@ const MyListingPage = () => {
   const [requests, setRequests] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [activeTab, setActiveTab] = useState("listings");
-  const [countdowns, setCountdowns] = useState({});
+ 
   const navigate = useNavigate();
   const hasFetchedRef = useRef(false);
-  const cleanupTimers = useRef({});
 
   // ── helpers ──────────────────────────────────────────────────────────────
 
-  const deleteSoldTicket = useCallback(async (ticketId) => {
-    try {
-      const rq = query(
-        collection(db, "contactRequests"),
-        where("ticketId", "==", ticketId),
-      );
-      const rsnap = await getDocs(rq);
+  
 
-      const nq = query(
-        collection(db, "notifications"),
-        where("ticketId", "==", ticketId),
-      );
-      const nsnap = await getDocs(nq);
 
-      const batch = writeBatch(db);
-      batch.delete(doc(db, "tickets", ticketId));
-      rsnap.docs.forEach((d) => batch.delete(doc(db, "contactRequests", d.id)));
-      nsnap.docs.forEach((d) => batch.delete(doc(db, "notifications", d.id)));
-      await batch.commit();
-
-      const removedNotifIds = new Set(nsnap.docs.map((d) => d.id));
-      if (removedNotifIds.size > 0) {
-        setNotifications((prev) =>
-          prev.filter((n) => !removedNotifIds.has(n.id)),
-        );
-      }
-    } catch (err) {
-      console.error("Error deleting sold ticket:", err);
-    } finally {
-      clearSavedSold(user?.email, ticketId);
-      setSoldTickets((prev) => prev.filter((t) => t.id !== ticketId));
-      setCountdowns((prev) => {
-        const n = { ...prev };
-        delete n[ticketId];
-        return n;
-      });
-    }
-  }, []);
-
-  // Schedules deletion and starts per-second countdown from a given ms duration
-  const scheduleSoldCleanup = useCallback(
-    (ticketId, msLeft = SOLD_CLEANUP_DELAY_MS) => {
-      const secsLeft = Math.ceil(msLeft / 1000);
-      setCountdowns((prev) => ({ ...prev, [ticketId]: secsLeft }));
-
-      const tick = setInterval(() => {
-        setCountdowns((prev) => {
-          const remaining = (prev[ticketId] ?? 1) - 1;
-          if (remaining <= 0) {
-            clearInterval(tick);
-            return { ...prev, [ticketId]: 0 };
-          }
-          return { ...prev, [ticketId]: remaining };
-        });
-      }, 1000);
-
-      const del = setTimeout(() => {
-        clearInterval(tick);
-        deleteSoldTicket(ticketId);
-      }, msLeft);
-
-      cleanupTimers.current[ticketId] = { tick, del };
-    },
-    [deleteSoldTicket],
-  );
-
-  // Clear all timers on unmount
-  useEffect(() => {
-    return () => {
-      Object.values(cleanupTimers.current).forEach(({ tick, del }) => {
-        clearInterval(tick);
-        clearTimeout(del);
-      });
-    };
-  }, []);
 
   // ── data fetch ────────────────────────────────────────────────────────────
 
@@ -175,27 +77,26 @@ const MyListingPage = () => {
         );
         const snap = await getDocs(q);
         const allTickets = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-        const validTickets = allTickets.filter((t) => !t.sold);
-        setTickets(validTickets);
+        const activeTickets = allTickets.filter((t) => !t.sold);
+setTickets(activeTickets);
 
-        // ── Rehydrate sold tickets from localStorage ──────────────────────
-        const saved = getSavedSold(user?.email);
-        const now = Date.now();
-        const stillPending = saved.filter((t) => t.expiresAt > now);
-        const alreadyExpired = saved.filter((t) => t.expiresAt <= now);
+const soldQuery = query(
+  collection(db, "soldTickets"),
+  where("sellerEmail", "==", user.email.toLowerCase()),
+  orderBy("soldAt", "desc")
+);
 
-        // Clean up any that expired while the user was away
-        if (alreadyExpired.length > 0) {
-          await Promise.all(alreadyExpired.map((t) => deleteSoldTicket(t.id)));
-        }
+const soldSnap = await getDocs(soldQuery);
 
-        if (stillPending.length > 0) {
-          setSoldTickets(stillPending);
-          stillPending.forEach((t) => {
-            const msLeft = t.expiresAt - now;
-            scheduleSoldCleanup(t.id, msLeft);
-          });
-        }
+setSoldTickets(
+  soldSnap.docs.map((d) => ({
+    id: d.id,
+    ...d.data(),
+  }))
+);
+        
+
+
 
         const rq = query(
           collection(db, "contactRequests"),
@@ -223,8 +124,6 @@ const MyListingPage = () => {
     authLoading,
     isAuthenticated,
     user,
-    deleteSoldTicket,
-    scheduleSoldCleanup,
   ]);
 
   // ── actions ───────────────────────────────────────────────────────────────
@@ -257,20 +156,36 @@ const MyListingPage = () => {
           originalTicketId: ticketId,
           sellerEmail: ticket.email || user?.email?.toLowerCase() || null,
         });
+        await addDoc(collection(db, "soldTickets"), {
+  ticketId,
+  sellerEmail: user.email.toLowerCase(),
+  trainName: ticket.trainName,
+  trainNumber: ticket.trainNumber,
+  trainClass: ticket.trainClass,
+  from: ticket.from,
+  to: ticket.to,
+  departureTime: ticket.departureTime,
+  arrivalTime: ticket.arrivalTime,
+  journeyDate: ticket.journeyDate,
+  price: ticket.price,
+  seats: ticket.seats,
+  createdAt: ticket.createdAt || serverTimestamp(),
+  soldAt: serverTimestamp(),
+  expiresAt: Date.now() + 8 * 60 * 60 * 1000,
+});
       }
 
       if (ticket) {
-        const soldTicket = { ...ticket, sold: true };
-        const expiresAt = Date.now() + SOLD_CLEANUP_DELAY_MS;
+const soldTicket = { ...ticket, sold: true };
 
-        saveSold(user?.email, [
-          ...getSavedSold(user?.email),
-          { ...soldTicket, expiresAt },
-        ]);
+setTickets((prev) =>
+  prev.filter((t) => t.id !== ticketId)
+);
 
-        setTickets((prev) => prev.filter((t) => t.id !== ticketId));
-        setSoldTickets((prev) => [soldTicket, ...prev]);
-        scheduleSoldCleanup(ticketId, SOLD_CLEANUP_DELAY_MS);
+setSoldTickets((prev) => [
+  soldTicket,
+  ...prev,
+]);
       }
 
       setConfirmId(null);
@@ -306,21 +221,7 @@ const MyListingPage = () => {
   const unseenNotifCount = notifications.length;
   const requestsTabBadge = pendingCount + unseenNotifCount;
 
-  // ── countdown display helper ──────────────────────────────────────────────
 
-  const formatCountdown = (secs) => {
-    if (secs >= 3600) {
-      const h = Math.floor(secs / 3600);
-      const m = Math.floor((secs % 3600) / 60);
-      return `${h}h ${m}m`;
-    }
-    if (secs >= 60) {
-      const m = Math.floor(secs / 60);
-      const s = secs % 60;
-      return `${m}m ${s}s`;
-    }
-    return `${secs}s`;
-  };
 
   // ── loading / auth guards ─────────────────────────────────────────────────
 
@@ -563,9 +464,7 @@ const MyListingPage = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* ── SOLD TICKETS (yellow) shown first ── */}
                 {soldTickets.map((ticket) => {
-                  // const secsLeft = countdowns[ticket.id] ?? 86400;
-                  // const secsLeft = countdowns[ticket.id] ?? 20;
-                  const secsLeft = countdowns[ticket.id] ?? 300;
+                
 
                   return (
                     <div
@@ -582,22 +481,10 @@ const MyListingPage = () => {
                           <p className="text-xs font-semibold text-yellow-800">
                             Marked as Sold
                           </p>
-                          <p className="text-[11px] text-yellow-600 mt-0.5">
-                            Listing will be removed in{" "}
-                            <span className="font-bold font-mono">
-                              {formatCountdown(secsLeft)}
-                            </span>
-                          </p>
+                       
                         </div>
                         {/* Progress bar showing time draining */}
-                        <div className="w-10 h-1.5 bg-yellow-200 rounded-full overflow-hidden flex-shrink-0">
-                          <div
-                            className="h-full bg-yellow-500 rounded-full transition-all duration-1000 ease-linear"
-                            // style={{ width: `${(secsLeft / 86400) * 100}%` }}
-                            // style={{ width: `${(secsLeft / 20) * 100}%` }}
-                            style={{ width: `${(secsLeft / 300) * 100}%` }}
-                          />
-                        </div>
+                        
                       </div>
 
                       <TicketCardBody ticket={ticket} isSold />

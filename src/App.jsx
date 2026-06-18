@@ -88,34 +88,64 @@ const cleanupExpiredTickets = async () => {
 };
   // Cleanup function for sold PNRs older than 30 days since the journey date.
   // This helps keep the soldPnrs collection from growing indefinitely.
-  const cleanupSoldPnrs = async () => {
-    try {
-      const snap = await getDocs(collection(db, "soldPnrs"));
-      const today = new Date();
+const cleanupSoldPnrs = async () => {
+  try {
+    const snap = await getDocs(collection(db, "soldPnrs"));
+    const today = new Date();
 
-      for (const d of snap.docs) {
-        const data = d.data();
+    for (const d of snap.docs) {
+      const data = d.data();
 
-        if (!data.journeyDate) continue;
+      if (!data.journeyDate) continue;
 
-        const journeyDate = new Date(`${data.journeyDate}T00:00:00`);
-        const deleteDate = new Date(journeyDate);
-        deleteDate.setDate(deleteDate.getDate() + 30);
+      const journeyDate = new Date(`${data.journeyDate}T00:00:00`);
+      const deleteDate = new Date(journeyDate);
 
-        if (today >= deleteDate) {
-          await deleteDoc(doc(db, "soldPnrs", d.id));
-          console.log(`Deleted expired PNR: ${data.pnrNumber}`);
+      deleteDate.setDate(deleteDate.getDate() + 30);
+
+      if (today >= deleteDate) {
+        // Delete ONLY the original sold ticket
+        if (data.originalTicketId) {
+          await deleteDoc(
+            doc(db, "tickets", data.originalTicketId)
+          );
         }
+
+        console.log(
+          `Deleted sold ticket: ${data.originalTicketId}`
+        );
       }
-    } catch (err) {
-      console.error("PNR cleanup failed:", err);
     }
-  };
+  } catch (err) {
+    console.error("Sold ticket cleanup failed:", err);
+  }
+};
+  const cleanupSoldTickets = async () => {
+  try {
+    const snap = await getDocs(collection(db, "soldTickets"));
+    const now = Date.now();
+
+    const batch = writeBatch(db);
+
+    snap.docs.forEach((d) => {
+      const data = d.data();
+
+      if (data.expiresAt && data.expiresAt <= now) {
+        batch.delete(doc(db, "soldTickets", d.id));
+      }
+    });
+
+    await batch.commit();
+  } catch (err) {
+    console.error("Sold ticket cleanup failed:", err);
+  }
+};
 
   useEffect(() => {
     // Run cleanup routines once when the app mounts.
     cleanupExpiredTickets();
     cleanupSoldPnrs();
+    cleanupSoldTickets();
   }, []);
 
   return (

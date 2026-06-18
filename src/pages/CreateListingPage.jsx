@@ -3,9 +3,15 @@ import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 import { db } from "../firebase";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import {
+  collection, addDoc, serverTimestamp,
+  query, where, getDocs,
+} from "firebase/firestore";
 import ProgressBar from "../components/ProgressBar";
-import { ChevronLeft, ChevronRight, Save, Train, Ticket, User, ChevronDown, Check } from "lucide-react";
+import {
+  ChevronLeft, ChevronRight, Save, Train, Ticket,
+  User, ChevronDown, Check, Search, CheckCircle, AlertCircle,
+} from "lucide-react";
 import { KineticText } from "@/components/ui/kinetic-text";
 
 // ── Reusable components ────────────────────────────────────────────────────
@@ -21,7 +27,7 @@ const Input = ({ error, hint, ...props }) => (
     <input
       className={`w-full border rounded-lg px-3 md:px-4 py-2.5 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-black/10
         ${error ? "border-red-400" : "border-gray-200"}
-        ${props.readOnly ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
+        ${props.readOnly || props.disabled ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""}`}
       {...props}
     />
     {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
@@ -30,7 +36,7 @@ const Input = ({ error, hint, ...props }) => (
 );
 
 // ── Portal-based custom dropdown ───────────────────────────────────────────
-const CustomSelect = ({ value, onChange, options }) => {
+const CustomSelect = ({ value, onChange, options, disabled }) => {
   const [open, setOpen] = useState(false);
   const [menuStyle, setMenuStyle] = useState({});
   const btnRef = useRef(null);
@@ -43,7 +49,6 @@ const CustomSelect = ({ value, onChange, options }) => {
     const spaceBelow = viewportHeight - rect.bottom;
     const menuHeight = Math.min(options.length * 38 + 8, 220);
     const openUpward = spaceBelow < menuHeight + 8 && rect.top > menuHeight + 8;
-
     setMenuStyle({
       position: "fixed",
       left: rect.left,
@@ -56,6 +61,7 @@ const CustomSelect = ({ value, onChange, options }) => {
   }, [options.length]);
 
   const handleOpen = () => {
+    if (disabled) return;
     if (!open) calcPosition();
     setOpen((v) => !v);
   };
@@ -78,9 +84,7 @@ const CustomSelect = ({ value, onChange, options }) => {
       if (
         btnRef.current && !btnRef.current.contains(e.target) &&
         menuRef.current && !menuRef.current.contains(e.target)
-      ) {
-        setOpen(false);
-      }
+      ) setOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -92,56 +96,264 @@ const CustomSelect = ({ value, onChange, options }) => {
         ref={btnRef}
         type="button"
         onClick={handleOpen}
-        className={`
-          w-full flex items-center justify-between gap-2
-          border rounded-lg px-3 md:px-4 py-2.5 text-sm text-left
-          bg-gray-50 transition-all
-          focus:outline-none focus:ring-2 focus:ring-black/10
-          hover:bg-white hover:border-gray-300
-          ${open ? "border-gray-400 bg-white" : "border-gray-200"}
-        `}
+        className={`w-full flex items-center justify-between gap-2 border rounded-lg px-3 md:px-4 py-2.5 text-sm text-left transition-all focus:outline-none focus:ring-2 focus:ring-black/10
+          ${disabled
+            ? "bg-gray-100 text-gray-500 cursor-not-allowed border-gray-200"
+            : `bg-gray-50 hover:bg-white hover:border-gray-300 ${open ? "border-gray-400 bg-white" : "border-gray-200"}`
+          }`}
       >
         <span className="text-gray-800 truncate">{value}</span>
-        <ChevronDown
-          size={13}
-          className={`text-gray-400 flex-shrink-0 transition-transform duration-150 ${
-            open ? "rotate-180" : ""
-          }`}
-        />
-      </button>
-
-      {open &&
-        createPortal(
-          <div
-            ref={menuRef}
-            style={menuStyle}
-            className="bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden py-1"
-          >
-            {options.map((opt) => (
-              <button
-                key={opt}
-                type="button"
-                onClick={() => {
-                  onChange(opt);
-                  setOpen(false);
-                }}
-                className="w-full flex items-center justify-between gap-2 px-3 py-2 text-sm text-left hover:bg-gray-50 transition"
-              >
-                <span className={value === opt ? "font-figtree text-gray-900" : "text-gray-600"}>
-                  {opt}
-                </span>
-                {value === opt && <Check size={13} className="text-gray-900 flex-shrink-0" />}
-              </button>
-            ))}
-          </div>,
-          document.body
+        {!disabled && (
+          <ChevronDown size={13} className={`text-gray-400 flex-shrink-0 transition-transform duration-150 ${open ? "rotate-180" : ""}`} />
         )}
+      </button>
+      {open && !disabled && createPortal(
+        <div ref={menuRef} style={menuStyle} className="bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden py-1">
+          {options.map((opt) => (
+            <button
+              key={opt}
+              type="button"
+              onClick={() => { onChange(opt); setOpen(false); }}
+              className="w-full flex items-center justify-between gap-2 px-3 py-2 text-sm text-left hover:bg-gray-50 transition"
+            >
+              <span className={value === opt ? "font-semibold text-gray-900" : "text-gray-600"}>{opt}</span>
+              {value === opt && <Check size={13} className="text-gray-900 flex-shrink-0" />}
+            </button>
+          ))}
+        </div>,
+        document.body
+      )}
     </div>
   );
 };
 
-const classOptions = ["Economy", "Sleeper", "AC 3-Tier", "AC 2-Tier", "First AC"];
+const classOptions = ["3E", "Sleeper", "AC 3-Tier", "AC 2-Tier", "First AC"];
 const seatOptions = ["1 seat", "2 seats", "3 seats", "4 seats"];
+
+// ── Map IRCTC class codes to our options ───────────────────────────────────
+const mapClass = (code) => {
+  const map = {
+    SL: "Sleeper", "3A": "AC 3-Tier", "2A": "AC 2-Tier",
+    "1A": "First AC", CC: "3E", EC: "3E",
+    "2S": "3E", GN: "3E",
+  };
+  return map[code] || "3E";
+};
+
+// ── PNR Verification Step ──────────────────────────────────────────────────
+const PNRStep = ({ onVerified }) => {
+  const [pnr, setPnr] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [pnrData, setPnrData] = useState(null);
+
+  const verifyPNR = async () => {
+    const trimmed = pnr.trim();
+
+    if (!/^\d{10}$/.test(trimmed)) {
+      setError("PNR must be exactly 10 digits");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+    setPnrData(null);
+
+    try {
+      // Check if this PNR is already listed in Firestore
+      const existing = query(
+        collection(db, "tickets"),
+        where("pnrNumber", "==", trimmed)
+      );
+      const existingSnap = await getDocs(existing);
+      if (!existingSnap.empty) {
+        setError("This PNR has already been listed. Each ticket can only be listed once.");
+        setLoading(false);
+        return;
+      }
+
+      // Call PNR API — correct host and endpoint
+      const res = await fetch(
+        `https://irctc-indian-railway-pnr-status.p.rapidapi.com/getPNRStatus/${trimmed}`,
+        {
+          method: "GET",
+          headers: {
+            "x-rapidapi-key": import.meta.env.VITE_RAPIDAPI_KEY,
+            "x-rapidapi-host": "irctc-indian-railway-pnr-status.p.rapidapi.com",
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const json = await res.json();
+
+      if (!json.success || !json.data) {
+        setError("Invalid PNR or ticket not found. Please check and try again.");
+        return;
+      }
+
+      const data = json.data;
+
+      // Block fully cancelled tickets
+      const isCancelled =
+        Array.isArray(data.passengerList) &&
+        data.passengerList.length > 0 &&
+        data.passengerList.every((p) => p.currentStatus === "CAN");
+
+      if (isCancelled) {
+        setError("This ticket has been cancelled and cannot be listed.");
+        return;
+      }
+
+      setPnrData(data);
+    } catch (err) {
+      console.error(err);
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleConfirm = () => {
+    if (!pnrData) return;
+
+    // Parse departure from dateOfJourney: "Feb 9, 2025 11:30:05 AM"
+    let journeyDate = "";
+    let departureTime = "";
+    try {
+      const parsed = new Date(pnrData.dateOfJourney || "");
+      if (!isNaN(parsed)) {
+        journeyDate = parsed.toISOString().split("T")[0]; // YYYY-MM-DD
+        departureTime = parsed.toTimeString().slice(0, 5); // HH:MM
+      }
+    } catch {}
+
+    // Parse arrival from arrivalDate: "Nov 30, 2024 12:25:05 PM"
+    let arrivalTime = "";
+    try {
+      const parsed = new Date(pnrData.arrivalDate || "");
+      if (!isNaN(parsed)) {
+        arrivalTime = parsed.toTimeString().slice(0, 5); // HH:MM
+      }
+    } catch {}
+
+    // Seats: number of passengers
+    const numSeats = pnrData.numberOfpassenger || 1;
+    const seatsStr = `${numSeats} seat${numSeats > 1 ? "s" : ""}`;
+    const clampedSeats = seatOptions.includes(seatsStr) ? seatsStr : "1 seat";
+
+    onVerified({
+      pnrNumber:   pnrData.pnrNumber || pnr.trim(),
+      trainName:   pnrData.trainName || "",
+      trainNumber: pnrData.trainNumber || "",
+      from:        pnrData.sourceStation || "",
+      to:          pnrData.destinationStation || "",
+      journeyDate,
+      departureTime,
+      arrivalTime,
+      trainClass:  mapClass(pnrData.journeyClass),
+      seats:       clampedSeats,
+      bookingFare: pnrData.bookingFare || 0,
+      numberOfPassengers: pnrData.numberOfpassenger || 1,
+    });
+  };
+
+  return (
+    <div className="border border-gray-200 rounded-xl p-4 md:p-6">
+      <h2 className="text-base md:text-lg font-bold text-gray-900">Verify Your Ticket</h2>
+      <p className="text-xs md:text-sm text-gray-500 mt-1 mb-4 md:mb-6">
+        Enter your 10-digit PNR number to auto-fill journey details. Each PNR can only be listed once.
+      </p>
+
+      <Label required>PNR Number</Label>
+      <div className="flex gap-2 mb-4">
+        <input
+          placeholder="e.g. 8524877966"
+          value={pnr}
+          onChange={(e) => { setPnr(e.target.value.replace(/\D/g, "")); setError(""); setPnrData(null); }}
+          maxLength={10}
+          className={`flex-1 border rounded-lg px-3 py-2.5 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-black/10 font-mono tracking-widest ${error ? "border-red-400" : "border-gray-200"}`}
+        />
+        <button
+          onClick={verifyPNR}
+          disabled={loading || pnr.length !== 10}
+          className="flex items-center gap-1.5 bg-black text-white text-sm font-medium px-4 py-2.5 rounded-lg hover:bg-gray-800 disabled:opacity-50 transition flex-shrink-0"
+        >
+          {loading ? (
+            <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+            </svg>
+          ) : (
+            <Search size={15} />
+          )}
+          {loading ? "Checking..." : "Verify"}
+        </button>
+      </div>
+
+      {error && (
+        <div className="flex items-start gap-2 text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2.5 mb-4">
+          <AlertCircle size={15} className="flex-shrink-0 mt-0.5" />
+          <p className="text-xs">{error}</p>
+        </div>
+      )}
+
+      {pnrData && (
+        <div className="border border-gray-200 rounded-xl p-4 mb-4 bg-gray-50">
+          <div className="flex items-center gap-2 mb-3">
+            <CheckCircle size={16} className="text-green-600" />
+            <p className="text-sm font-semibold text-gray-900">PNR Verified Successfully</p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 text-sm mb-4">
+            <div>
+              <p className="text-xs text-gray-400 mb-0.5">Train</p>
+              <p className="font-semibold text-gray-900 text-xs">{pnrData.trainName} ({pnrData.trainNumber})</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-400 mb-0.5">Class</p>
+              <p className="font-semibold text-gray-900 text-xs">{pnrData.journeyClass} → {mapClass(pnrData.journeyClass)}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-400 mb-0.5">From</p>
+              <p className="font-semibold text-gray-900 text-xs">{pnrData.sourceStation}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-400 mb-0.5">To</p>
+              <p className="font-semibold text-gray-900 text-xs">{pnrData.destinationStation}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-400 mb-0.5">Departure</p>
+              <p className="font-semibold text-gray-900 text-xs">{pnrData.dateOfJourney}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-400 mb-0.5">Arrival</p>
+              <p className="font-semibold text-gray-900 text-xs">{pnrData.arrivalDate || "—"}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-400 mb-0.5">Passengers</p>
+              <p className="font-semibold text-gray-900 text-xs">{pnrData.numberOfpassenger}</p>
+            </div>
+          </div>
+
+          <button
+            onClick={handleConfirm}
+            className="w-full flex items-center justify-center gap-2 bg-black text-white text-sm font-medium py-2.5 rounded-lg hover:bg-gray-800 transition"
+          >
+            <CheckCircle size={15} />
+            Use This Ticket Details
+          </button>
+        </div>
+      )}
+
+      {!pnrData && !error && (
+        <p className="text-xs text-gray-400 mt-2">
+          Your PNR number can be found on your train booking confirmation or ticket.
+        </p>
+      )}
+    </div>
+  );
+};
 
 // ── validateStep ───────────────────────────────────────────────────────────
 const validateStep = (step, formData) => {
@@ -150,13 +362,9 @@ const validateStep = (step, formData) => {
   if (step === 1) {
     if (!formData.from.trim())
       errors.from = "Starting city is required";
-    else if (!/^[a-zA-Z\s]+$/.test(formData.from.trim()))
-      errors.from = "City name should contain only letters";
 
     if (!formData.to.trim())
       errors.to = "Destination city is required";
-    else if (!/^[a-zA-Z\s]+$/.test(formData.to.trim()))
-      errors.to = "City name should contain only letters";
 
     if (
       formData.from.trim() &&
@@ -167,13 +375,9 @@ const validateStep = (step, formData) => {
 
     if (!formData.trainName.trim())
       errors.trainName = "Train name is required";
-    else if (!/^[a-zA-Z\s]+$/.test(formData.trainName.trim()))
-      errors.trainName = "Train name should contain only letters";
 
     if (!formData.trainNumber.trim())
       errors.trainNumber = "Train number is required";
-    else if (!/^\d+$/.test(formData.trainNumber.trim()))
-      errors.trainNumber = "Train number should contain only digits";
 
     if (!formData.journeyDate)
       errors.journeyDate = "Journey date is required";
@@ -181,14 +385,12 @@ const validateStep = (step, formData) => {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const selectedDate = new Date(formData.journeyDate);
-
       const minDate = new Date(today);
-      minDate.setDate(minDate.getDate() + 3);
-
+      minDate.setDate(minDate.getDate() + 2);
       if (selectedDate < today)
         errors.journeyDate = "Journey date cannot be in the past";
       else if (selectedDate < minDate)
-        errors.journeyDate = "Journey date must be at least 3 days from today";
+        errors.journeyDate = "Journey date must be at least 2 days from today";
     }
 
     if (!formData.departureTime)
@@ -199,14 +401,16 @@ const validateStep = (step, formData) => {
   }
 
   if (step === 2) {
+    const perSeatFare = Math.round((Number(formData.bookingFare) || 0) / (Number(formData.numberOfPassengers) || 1));
+    const maxPrice = perSeatFare + 250;
     if (!formData.price)
       errors.price = "Price is required";
     else if (!/^\d+$/.test(formData.price.toString().trim()))
       errors.price = "Price should be a whole number";
     else if (Number(formData.price) <= 0)
       errors.price = "Price must be greater than 0";
-    else if (Number(formData.price) > 50000)
-      errors.price = "Price seems too high, please check";
+    else if (Number(formData.price) > maxPrice)
+      errors.price = `Price cannot exceed ₹${maxPrice} (booking fare + ₹250)`;
   }
 
   if (step === 3) {
@@ -231,65 +435,44 @@ const validateStep = (step, formData) => {
   return errors;
 };
 
-// ── Step panels ────────────────────────────────────────────────────────────
+// ── Step 1: Journey Details (PNR-locked fields are read-only) ──────────────
 const Step1 = ({ formData, handleChange, errors }) => (
   <div className="border border-gray-200 rounded-xl p-4 md:p-6">
-    <h2 className="text-base md:text-lg font-bold font-figtree text-gray-900">Journey Details</h2>
-    <p className="text-xs md:text-sm text-gray-500 mt-1 mb-4 md:mb-6">
-      Enter your train journey information.
+    <h2 className="text-base md:text-lg font-bold text-gray-900">Journey Details</h2>
+    <p className="text-xs md:text-sm text-gray-500 mt-1 mb-1 md:mb-2">
+      Journey details have been auto-filled from your PNR and are locked.
     </p>
+    <div className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 mb-4 md:mb-5">
+      <CheckCircle size={13} className="text-blue-600 flex-shrink-0" />
+      <p className="text-xs text-blue-700">Fields below are auto-filled from PNR and cannot be edited.</p>
+    </div>
 
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 mb-3 md:mb-4">
       <div>
         <Label required>From</Label>
-        <Input
-          placeholder="e.g. Mumbai"
-          value={formData.from}
-          onChange={handleChange("from")}
-          error={errors.from}
-        />
+        <Input value={formData.from} readOnly error={errors.from} />
       </div>
       <div>
         <Label required>To</Label>
-        <Input
-          placeholder="e.g. Delhi"
-          value={formData.to}
-          onChange={handleChange("to")}
-          error={errors.to}
-        />
+        <Input value={formData.to} readOnly error={errors.to} />
       </div>
     </div>
 
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 mb-3 md:mb-4">
       <div>
         <Label required>Train Name</Label>
-        <Input
-          placeholder="e.g. Rajdhani Express"
-          value={formData.trainName}
-          onChange={handleChange("trainName")}
-          error={errors.trainName}
-        />
+        <Input value={formData.trainName} readOnly error={errors.trainName} />
       </div>
       <div>
         <Label required>Train Number</Label>
-        <Input
-          placeholder="e.g. 12951"
-          value={formData.trainNumber}
-          onChange={handleChange("trainNumber")}
-          error={errors.trainNumber}
-        />
+        <Input value={formData.trainNumber} readOnly error={errors.trainNumber} />
       </div>
     </div>
 
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 mb-3 md:mb-4">
       <div>
         <Label required>Journey Date</Label>
-        <Input
-          type="date"
-          value={formData.journeyDate}
-          onChange={handleChange("journeyDate")}
-          error={errors.journeyDate}
-        />
+        <Input type="date" value={formData.journeyDate} readOnly error={errors.journeyDate} />
       </div>
       <div></div>
     </div>
@@ -297,48 +480,43 @@ const Step1 = ({ formData, handleChange, errors }) => (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
       <div>
         <Label required>Departure Time</Label>
-        <Input
-          type="time"
-          value={formData.departureTime}
-          onChange={handleChange("departureTime")}
-          error={errors.departureTime}
-        />
+        <Input type="time" value={formData.departureTime} readOnly error={errors.departureTime} />
       </div>
       <div>
         <Label required>Arrival Time</Label>
-        <Input
-          type="time"
-          value={formData.arrivalTime}
-          onChange={handleChange("arrivalTime")}
-          error={errors.arrivalTime}
-        />
+        <Input type="time" value={formData.arrivalTime} readOnly error={errors.arrivalTime} />
       </div>
     </div>
   </div>
 );
 
+// ── Step 2: Ticket Details (trainClass locked) ─────────────────────────────
 const Step2 = ({ formData, handleChange, errors }) => (
   <div className="border border-gray-200 rounded-xl p-4 md:p-6">
     <h2 className="text-base md:text-lg font-bold text-gray-900">Ticket Details</h2>
     <p className="text-xs md:text-sm text-gray-500 mt-1 mb-4 md:mb-6">
-      Specify the class, number of seats, and your asking price.
+      Specify the number of seats and your asking price.
     </p>
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 mb-4 md:mb-5">
       <div>
         <Label required>Train Class</Label>
         <CustomSelect
           value={formData.trainClass}
-          onChange={(val) => handleChange("trainClass")({ target: { value: val } })}
+          onChange={() => {}}
           options={classOptions}
+          disabled
         />
+        <p className="text-gray-400 text-xs mt-1">Auto-filled from PNR, cannot be changed.</p>
       </div>
       <div>
         <Label required>Number of Seats</Label>
         <CustomSelect
           value={formData.seats}
-          onChange={(val) => handleChange("seats")({ target: { value: val } })}
+          onChange={() => {}}
           options={seatOptions}
+          disabled
         />
+        <p className="text-gray-400 text-xs mt-1">Auto-filled from PNR, cannot be changed.</p>
       </div>
     </div>
     <div className="mb-4 md:mb-5">
@@ -349,7 +527,7 @@ const Step2 = ({ formData, handleChange, errors }) => (
         value={formData.price}
         onChange={handleChange("price")}
         error={errors.price}
-        hint={!errors.price ? "Set a fair price. The original ticket price can be found on your ticket." : undefined}
+        hint={!errors.price && formData.bookingFare ? `Max allowed: ₹${Math.round(Number(formData.bookingFare) / (Number(formData.numberOfPassengers) || 1)) + 250} (₹${Math.round(Number(formData.bookingFare) / (Number(formData.numberOfPassengers) || 1))} per seat + ₹250)` : !errors.price ? "Set a fair price based on the original booking fare." : undefined}
       />
     </div>
     <div>
@@ -415,26 +593,35 @@ const ReviewRow = ({ label, value, muted = false }) => (
 );
 
 const Step4 = ({ formData }) => (
-  <div className="border border-gray-200  text-white w-[100%] rounded-xl p-4 md:p-6">
+  <div className="border border-gray-200 rounded-xl p-4 md:p-6">
     <h2 className="text-base md:text-lg font-bold text-gray-900">Review Your Listing</h2>
     <p className="text-xs md:text-sm text-gray-500 mt-1 mb-4 md:mb-6">
       Confirm all details before publishing.
     </p>
 
-    <div className="mb-5 ">
+    {formData.pnrNumber && (
+      <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg px-3 py-2 mb-4">
+        <CheckCircle size={14} className="text-green-600 flex-shrink-0" />
+        <p className="text-xs text-green-700 font-medium">
+          PNR Verified: <span className="font-mono">{formData.pnrNumber}</span>
+        </p>
+      </div>
+    )}
+
+    <div className="mb-5">
       <div className="flex items-center gap-2 mb-2">
         <Train size={16} className="text-gray-700 flex-shrink-0" />
         <h3 className="text-sm font-bold text-gray-900">Journey Details</h3>
       </div>
-      <div className="border border-gray-200  rounded-lg px-3 sm:px-4">
-        <ReviewRow className=""
+      <div className="border border-gray-200 rounded-lg px-3 sm:px-4">
+        <ReviewRow
           label="Train"
           value={
             formData.trainName || formData.trainNumber
               ? `${formData.trainName || "—"}${formData.trainNumber ? ` (${formData.trainNumber})` : ""}`
               : "—"
           }
-        /> 
+        />
         <ReviewRow label="Route" value={`${formData.from || "—"} → ${formData.to || "—"}`} />
         <ReviewRow label="Date" value={formData.journeyDate || "—"} />
         <ReviewRow label="Timing" value={`${formData.departureTime || "—"} → ${formData.arrivalTime || "—"}`} />
@@ -463,7 +650,6 @@ const Step4 = ({ formData }) => (
       </div>
       <div className="border border-gray-200 rounded-lg px-3 sm:px-4">
         <ReviewRow label="Name" value={formData.fullName || "—"} />
-        
         <ReviewRow label="Phone" value={formData.phone || "Not provided"} muted={!formData.phone} />
       </div>
     </div>
@@ -473,16 +659,19 @@ const Step4 = ({ formData }) => (
 // ── Page ───────────────────────────────────────────────────────────────────
 const CreateListingPage = () => {
   const { user } = useAuth0();
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(0);
   const [publishing, setPublishing] = useState(false);
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
+    pnrNumber: "",
     from: "", to: "", trainName: "", trainNumber: "", journeyDate: "",
     departureTime: "", arrivalTime: "",
-    trainClass: "Economy", seats: "1 seat",
+    trainClass: "3E", seats: "1 seat",
     price: "", description: "",
+    bookingFare: 0,
+    numberOfPassengers: 1,
     fullName: "", email: "", phone: "",
   });
 
@@ -491,9 +680,15 @@ const CreateListingPage = () => {
       setFormData((prev) => ({
         ...prev,
         email: user.email ? user.email.toLowerCase() : prev.email,
+        listerPhoto: user.picture || prev.listerPhoto || null,
       }));
     }
   }, [user]);
+
+  const handlePNRVerified = useCallback((pnrFields) => {
+    setFormData((prev) => ({ ...prev, ...pnrFields }));
+    setStep(1);
+  }, []);
 
   const handleChange = useCallback((field) => (e) => {
     const value = e.target.value;
@@ -530,6 +725,7 @@ const CreateListingPage = () => {
       await addDoc(collection(db, "tickets"), {
         ...formData,
         uid: user?.sub || null,
+        listerPhoto: user?.picture || null,
         createdAt: serverTimestamp(),
         status: "active",
       });
@@ -545,66 +741,68 @@ const CreateListingPage = () => {
   return (
     <div className="min-h-screen flex justify-center px-4 py-6 md:py-10">
       <div className="w-full max-w-2xl mt-9">
-        <div className="rounded-2xl px-2  flex flex-col gap-9 sm:px-6 md:px-8 pt-6 md:pt-8 pb-5 md:pb-6">
+        <div className="rounded-2xl px-2 flex flex-col gap-9 sm:px-6 md:px-8 pt-6 md:pt-8 pb-5 md:pb-6">
 
           <KineticText
             text="List Your Ticket"
             className="text-[2.65rem] sm:text-[3.25rem] md:text-[4.5rem] tracking-[-5%] flex items-center justify-center"
           />
 
-          <ProgressBar step={step} />
+          {step > 0 && <ProgressBar step={step} />}
 
+          {step === 0 && <PNRStep onVerified={handlePNRVerified} />}
           {step === 1 && <Step1 formData={formData} handleChange={handleChange} errors={errors} />}
           {step === 2 && <Step2 formData={formData} handleChange={handleChange} errors={errors} />}
           {step === 3 && <Step3 formData={formData} handleChange={handleChange} errors={errors} />}
           {step === 4 && <Step4 formData={formData} />}
 
-          {/* Navigation */}
-          <div className="flex items-center justify-between">
-            <button
-              onClick={() => setStep((s) => s - 1)}
-              disabled={step === 1}
-              className="flex items-center gap-1 border border-gray-300 text-gray-700 text-sm font-medium px-3 md:px-4 py-2 rounded-lg hover:bg-gray-50 disabled:opacity-40 transition"
-            >
-              <ChevronLeft size={16} />
-              Back
-            </button>
+          {step > 0 && (
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => setStep((s) => s - 1)}
+                disabled={step === 1}
+                className="flex items-center gap-1 border border-gray-300 text-gray-700 text-sm font-medium px-3 md:px-4 py-2 rounded-lg hover:bg-gray-50 disabled:opacity-40 transition"
+              >
+                <ChevronLeft size={16} />
+                Back
+              </button>
 
-            <div className="flex items-center gap-2 md:gap-3">
-              {step < 4 && (
-                <button className="hidden sm:flex items-center gap-1.5 text-gray-500 text-sm font-medium hover:text-gray-700 transition">
-                  <Save size={15} />
-                  Save Draft
-                </button>
-              )}
+              <div className="flex items-center gap-2 md:gap-3">
+                {step < 4 && (
+                  <button className="hidden sm:flex items-center gap-1.5 text-gray-500 text-sm font-medium hover:text-gray-700 transition">
+                    <Save size={15} />
+                    Save Draft
+                  </button>
+                )}
 
-              {step < 4 ? (
-                <button
-                  onClick={handleNext}
-                  className="flex items-center gap-1 bg-black text-white text-sm font-medium px-4 md:px-5 py-2 rounded-lg hover:bg-gray-800 transition"
-                >
-                  Next
-                  <ChevronRight size={16} />
-                </button>
-              ) : (
-                <button
-                  onClick={handlePublish}
-                  disabled={publishing}
-                  className="flex items-center gap-2 bg-black text-white text-sm font-medium px-4 md:px-5 py-2 rounded-lg hover:bg-gray-800 disabled:opacity-60 transition"
-                >
-                  {publishing ? (
-                    <>
-                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
-                      </svg>
-                      Publishing...
-                    </>
-                  ) : "Publish Listing"}
-                </button>
-              )}
+                {step < 4 ? (
+                  <button
+                    onClick={handleNext}
+                    className="flex items-center gap-1 bg-black text-white text-sm font-medium px-4 md:px-5 py-2 rounded-lg hover:bg-gray-800 transition"
+                  >
+                    Next
+                    <ChevronRight size={16} />
+                  </button>
+                ) : (
+                  <button
+                    onClick={handlePublish}
+                    disabled={publishing}
+                    className="flex items-center gap-2 bg-black text-white text-sm font-medium px-4 md:px-5 py-2 rounded-lg hover:bg-gray-800 disabled:opacity-60 transition"
+                  >
+                    {publishing ? (
+                      <>
+                        <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                        </svg>
+                        Publishing...
+                      </>
+                    ) : "Publish Listing"}
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
         </div>
       </div>

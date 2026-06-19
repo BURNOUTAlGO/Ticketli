@@ -642,14 +642,23 @@ const nq = query(
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-2">
-                          <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600 flex-shrink-0">
-                            {req.buyerName
-                              ?.split(" ")
-                              .map((w) => w[0])
-                              .join("")
-                              .toUpperCase()
-                              .slice(0, 2) || "?"}
-                          </div>
+         {req.buyerPhoto ? (
+  <img
+    src={req.buyerPhoto}
+    alt={req.buyerName}
+    className="w-8 h-8 rounded-full object-cover border border-gray-200 flex-shrink-0"
+    referrerPolicy="no-referrer"
+  />
+) : (
+  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600 flex-shrink-0">
+    {req.buyerName
+      ?.split(" ")
+      .map((w) => w[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2) || "?"}
+  </div>
+)}
                           <div>
                             <p className="text-sm font-semibold text-gray-900">
                               {req.buyerName}

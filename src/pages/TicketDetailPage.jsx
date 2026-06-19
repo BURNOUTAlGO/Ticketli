@@ -86,12 +86,14 @@ const TicketDetailPage = () => {
         price: ticket.price,
         buyerName: user.name || user.email,
         buyerEmail: user.email.toLowerCase(),
+        buyerPhoto: user.picture || null,
         buyerUid: user.sub,
         sellerEmail: ticket.email?.toLowerCase(),
         sellerUid: ticket.uid || null,
         status: "pending",
         sellerPhone: ticket.phone || null,
         sellerName: ticket.fullName || null,
+        sellerPhoto: ticket.listerPhoto || null,
         createdAt: serverTimestamp(),
       });
       await addDoc(collection(db, "notifications"), {
@@ -365,9 +367,18 @@ const TicketDetailPage = () => {
 
                 <p className="text-xs text-gray-400 mb-2">Listed by</p>
                 <div className="flex items-center gap-2.5 mb-5">
-                  <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600 flex-shrink-0">
-                    {getInitials(ticket.fullName)}
-                  </div>
+  {ticket.listerPhoto ? (
+  <img
+    src={ticket.listerPhoto}
+    alt={ticket.fullName}
+    className="w-9 h-9 rounded-full object-cover border border-gray-200 flex-shrink-0"
+    referrerPolicy="no-referrer"
+  />
+) : (
+  <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600 flex-shrink-0">
+    {getInitials(ticket.fullName)}
+  </div>
+)}
                   <div>
                     <p className="text-sm font-semibold text-gray-900">{ticket.fullName || "—"}</p>
                   </div>

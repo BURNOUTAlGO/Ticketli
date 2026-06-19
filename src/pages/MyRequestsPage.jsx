@@ -171,9 +171,18 @@ const MyRequestsPage = () => {
                       </p>
                       <div className="flex flex-col gap-2">
                         <div  className="flex items-center gap-2.5 ">
-                          <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600 flex-shrink-0">
-                            {getInitials(req.sellerName)}
-                          </div>
+                {req.sellerPhoto ? (
+  <img
+    src={req.sellerPhoto}
+    alt={req.sellerName}
+    className="w-8 h-8 rounded-full object-cover border border-gray-200 flex-shrink-0"
+    referrerPolicy="no-referrer"
+  />
+) : (
+  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600 flex-shrink-0">
+    {getInitials(req.sellerName)}
+  </div>
+)}
 
                           <p className="text-sm  text-gray-900">{req.sellerName}</p>
                         </div>

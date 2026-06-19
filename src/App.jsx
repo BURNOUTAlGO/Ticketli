@@ -104,12 +104,6 @@ const cleanupSoldPnrs = async () => {
       deleteDate.setDate(deleteDate.getDate() + 30);
 
       if (today >= deleteDate) {
-        // Delete ONLY the original sold ticket
-        if (data.originalTicketId) {
-          await deleteDoc(
-            doc(db, "tickets", data.originalTicketId)
-          );
-        }
 
         console.log(
           `Deleted sold ticket: ${data.originalTicketId}`
@@ -130,9 +124,20 @@ const cleanupSoldPnrs = async () => {
     snap.docs.forEach((d) => {
       const data = d.data();
 
-      if (data.expiresAt && data.expiresAt <= now) {
-        batch.delete(doc(db, "soldTickets", d.id));
-      }
+if (data.expiresAt && data.expiresAt <= now) {
+
+  // delete original ticket
+  if (data.ticketId) {
+    batch.delete(
+      doc(db, "tickets", data.ticketId)
+    );
+  }
+
+  // delete sold card
+  batch.delete(
+    doc(db, "soldTickets", d.id)
+  );
+}
     });
 
     await batch.commit();

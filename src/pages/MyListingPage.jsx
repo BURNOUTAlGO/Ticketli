@@ -32,8 +32,6 @@ import {
 } from "lucide-react";
 import { KineticText } from "@/components/ui/kinetic-text";
 
-
-
 const MyListingPage = () => {
   const {
     user,
@@ -48,15 +46,8 @@ const MyListingPage = () => {
   const [requests, setRequests] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [activeTab, setActiveTab] = useState("listings");
- 
+
   const navigate = useNavigate();
-  
-
-  // ── helpers ──────────────────────────────────────────────────────────────
-
-  
-
-
 
   // ── data fetch ────────────────────────────────────────────────────────────
 
@@ -66,7 +57,6 @@ const MyListingPage = () => {
       setLoading(false);
       return;
     }
-
 
     const fetchAll = async () => {
       try {
@@ -78,70 +68,64 @@ const MyListingPage = () => {
         const snap = await getDocs(q);
         const allTickets = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
         const activeTickets = allTickets.filter((t) => !t.sold);
-setTickets(activeTickets);
+        setTickets(activeTickets);
 
-const soldQuery = query(
-  collection(db, "soldTickets"),
-  where("sellerEmail", "==", user.email.toLowerCase()),
-  orderBy("soldAt", "desc")
-);
+        const soldQuery = query(
+          collection(db, "soldTickets"),
+          where("sellerEmail", "==", user.email.toLowerCase()),
+          orderBy("soldAt", "desc"),
+        );
 
-const soldSnap = await getDocs(soldQuery);
+        const soldSnap = await getDocs(soldQuery);
 
-setSoldTickets(
-  soldSnap.docs.map((d) => ({
-    id: d.id,
-    ...d.data(),
-  }))
-);
-        
+        setSoldTickets(
+          soldSnap.docs.map((d) => ({
+            id: d.id,
+            ...d.data(),
+          })),
+        );
 
+        const rq = query(
+          collection(db, "contactRequests"),
+          where("sellerEmail", "==", user.email.toLowerCase()),
+        );
 
+        const unsubscribeRequests = onSnapshot(rq, (snapshot) => {
+          console.log("Seller:", user.email.toLowerCase());
 
-const rq = query(
-  collection(db, "contactRequests"),
-  where("sellerEmail", "==", user.email.toLowerCase())
-);
+          console.log(
+            "Requests Found:",
+            snapshot.docs.map((d) => ({
+              id: d.id,
+              ...d.data(),
+            })),
+          );
 
-const unsubscribeRequests = onSnapshot(rq, (snapshot) => {
-  console.log("Seller:", user.email.toLowerCase());
+          setRequests(
+            snapshot.docs.map((d) => ({
+              id: d.id,
+              ...d.data(),
+            })),
+          );
+        });
+        const nq = query(
+          collection(db, "notifications"),
+          where("sellerEmail", "==", user.email.toLowerCase()),
+          orderBy("createdAt", "desc"),
+        );
 
-  console.log(
-    "Requests Found:",
-    snapshot.docs.map((d) => ({
-      id: d.id,
-      ...d.data(),
-    }))
-  );
-
-  setRequests(
-    snapshot.docs.map((d) => ({
-      id: d.id,
-      ...d.data(),
-    }))
-  );
-});
-const nq = query(
-  collection(db, "notifications"),
-  where("sellerEmail", "==", user.email.toLowerCase()),
-  orderBy("createdAt", "desc")
-);
-
-const unsubscribeNotifications = onSnapshot(
-  nq,
-  (snapshot) => {
-    setNotifications(
-      snapshot.docs.map((d) => ({
-        id: d.id,
-        ...d.data(),
-      }))
-    );
-  }
-);
-return () => {
-  unsubscribeRequests();
-  unsubscribeNotifications();
-};
+        const unsubscribeNotifications = onSnapshot(nq, (snapshot) => {
+          setNotifications(
+            snapshot.docs.map((d) => ({
+              id: d.id,
+              ...d.data(),
+            })),
+          );
+        });
+        return () => {
+          unsubscribeRequests();
+          unsubscribeNotifications();
+        };
       } catch (err) {
         console.error("Error fetching data:", err);
       } finally {
@@ -149,11 +133,7 @@ return () => {
       }
     };
     fetchAll();
-  }, [
-    authLoading,
-    isAuthenticated,
-    user,
-  ]);
+  }, [authLoading, isAuthenticated, user]);
 
   // ── actions ───────────────────────────────────────────────────────────────
 
@@ -177,29 +157,29 @@ return () => {
         soldAt: serverTimestamp(),
       });
       const rq = query(
-  collection(db, "contactRequests"),
-  where("ticketId", "==", ticketId)
-);
+        collection(db, "contactRequests"),
+        where("ticketId", "==", ticketId),
+      );
 
-const rsnap = await getDocs(rq);
+      const rsnap = await getDocs(rq);
 
 const nq = query(
   collection(db, "notifications"),
-  where("sellerEmail", "==", user.email.toLowerCase())
+  where("ticketId", "==", ticketId),
 );
-const nsnap = await getDocs(nq);
+      const nsnap = await getDocs(nq);
 
-const batch = writeBatch(db);
+      const batch = writeBatch(db);
 
-rsnap.docs.forEach((r) => {
-  batch.delete(doc(db, "contactRequests", r.id));
-});
+      rsnap.docs.forEach((r) => {
+        batch.delete(doc(db, "contactRequests", r.id));
+      });
 
-nsnap.docs.forEach((n) => {
-  batch.delete(doc(db, "notifications", n.id));
-});
+      nsnap.docs.forEach((n) => {
+        batch.delete(doc(db, "notifications", n.id));
+      });
 
-await batch.commit();
+      await batch.commit();
       if (ticket?.pnrNumber) {
         await setDoc(doc(db, "soldPnrs", ticket.pnrNumber), {
           pnrNumber: ticket.pnrNumber,
@@ -209,35 +189,30 @@ await batch.commit();
           sellerEmail: ticket.email || user?.email?.toLowerCase() || null,
         });
         await addDoc(collection(db, "soldTickets"), {
-  ticketId,
-  sellerEmail: user.email.toLowerCase(),
-  trainName: ticket.trainName,
-  trainNumber: ticket.trainNumber,
-  trainClass: ticket.trainClass,
-  from: ticket.from,
-  to: ticket.to,
-  departureTime: ticket.departureTime,
-  arrivalTime: ticket.arrivalTime,
-  journeyDate: ticket.journeyDate,
-  price: ticket.price,
-  seats: ticket.seats,
-  createdAt: ticket.createdAt || serverTimestamp(),
-  soldAt: serverTimestamp(),
-  expiresAt: Date.now() + 8 * 60 * 60 * 1000,
-});
+          ticketId: ticket.id,
+          sellerEmail: user.email.toLowerCase(),
+          trainName: ticket.trainName,
+          trainNumber: ticket.trainNumber,
+          trainClass: ticket.trainClass,
+          from: ticket.from,
+          to: ticket.to,
+          departureTime: ticket.departureTime,
+          arrivalTime: ticket.arrivalTime,
+          journeyDate: ticket.journeyDate,
+          price: ticket.price,
+          seats: ticket.seats,
+          createdAt: ticket.createdAt || serverTimestamp(),
+          soldAt: serverTimestamp(),
+          expiresAt: Date.now() + 8 * 60 * 60 * 1000,
+        });
       }
 
       if (ticket) {
-const soldTicket = { ...ticket, sold: true };
+        const soldTicket = { ...ticket, sold: true };
 
-setTickets((prev) =>
-  prev.filter((t) => t.id !== ticketId)
-);
+        setTickets((prev) => prev.filter((t) => t.id !== ticketId));
 
-setSoldTickets((prev) => [
-  soldTicket,
-  ...prev,
-]);
+        setSoldTickets((prev) => [soldTicket, ...prev]);
       }
 
       setConfirmId(null);
@@ -272,8 +247,6 @@ setSoldTickets((prev) => [
   const pendingCount = requests.filter((r) => r.status === "pending").length;
   const unseenNotifCount = notifications.length;
   const requestsTabBadge = pendingCount + unseenNotifCount;
-
-
 
   // ── loading / auth guards ─────────────────────────────────────────────────
 
@@ -516,8 +489,6 @@ setSoldTickets((prev) => [
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* ── SOLD TICKETS (yellow) shown first ── */}
                 {soldTickets.map((ticket) => {
-                
-
                   return (
                     <div
                       key={ticket.id}
@@ -533,10 +504,8 @@ setSoldTickets((prev) => [
                           <p className="text-xs font-semibold text-yellow-800">
                             Marked as Sold
                           </p>
-                       
                         </div>
                         {/* Progress bar showing time draining */}
-                        
                       </div>
 
                       <TicketCardBody ticket={ticket} isSold />
@@ -629,31 +598,30 @@ setSoldTickets((prev) => [
                         <AlertTriangle size={15} className="text-amber-600" />
                       </div>
                       <div className="min-w-0">
-{notif.type === "new_request" ? (
-  <>
-    <p className="text-sm font-semibold text-gray-900">
-      New Contact Request
-    </p>
+                        {notif.type === "new_request" ? (
+                          <>
+                            <p className="text-sm font-semibold text-gray-900">
+                              New Contact Request
+                            </p>
 
-    <p className="text-xs text-gray-600 mt-0.5">
-      {notif.buyerName} requested contact for
-      {notif.ticketName}
-      ({notif.from} → {notif.to})
-    </p>
-  </>
-) : (
-  <>
-    <p className="text-sm font-semibold text-gray-900">
-      Listing auto-removed
-    </p>
+                            <p className="text-xs text-gray-600 mt-0.5">
+                              {notif.buyerName} requested contact for
+                              {notif.ticketName}({notif.from} → {notif.to})
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <p className="text-sm font-semibold text-gray-900">
+                              Listing auto-removed
+                            </p>
 
-    <p className="text-xs text-gray-600 mt-0.5">
-      {notif.ticketName} ({notif.from} → {notif.to})
-      was removed because the journey date
-      ({notif.journeyDate}) was within 2 days.
-    </p>
-  </>
-)}
+                            <p className="text-xs text-gray-600 mt-0.5">
+                              {notif.ticketName} ({notif.from} → {notif.to}) was
+                              removed because the journey date (
+                              {notif.journeyDate}) was within 2 days.
+                            </p>
+                          </>
+                        )}
                       </div>
                     </div>
                     <button

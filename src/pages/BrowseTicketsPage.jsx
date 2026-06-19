@@ -674,7 +674,7 @@ const TicketCard = ({ ticket, duration, initials }) => {
     <div className={`border rounded-2xl p-5 hover:shadow-md transition ${
       isSold
         ? "bg-yellow-50 border-2 border-yellow-300"
-        : "bg-white border-gray-200"
+        : "bg-green-50 border-2 border-green-300"
     }`}>
 
       {/* Sold banner */}
@@ -687,7 +687,7 @@ const TicketCard = ({ ticket, duration, initials }) => {
 
       <div className="flex items-start justify-between mb-3">
         <div>
-          <h3 className={`font-bold text-sm ${isSold ? "text-yellow-900" : "text-gray-900"}`}>
+          <h3 className={`font-bold text-sm ${isSold ? "text-yellow-900" : "text-green-900"}`}>
             {ticket.trainName || "—"}
           </h3>
           <p className="text-xs text-gray-400 mt-0.5">{ticket.trainNumber || ""}</p>
@@ -696,14 +696,14 @@ const TicketCard = ({ ticket, duration, initials }) => {
           <span className={`text-xs border px-2.5 py-1 rounded-full ${
             isSold
               ? "border-yellow-300 text-yellow-700 bg-yellow-50"
-              : "border-gray-200 text-gray-600"
+              : "border-green-300 text-green-700 bg-green-50"
           }`}>
             {ticket.trainClass}
           </span>
           <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
             isSold
               ? "bg-yellow-400 text-yellow-900"
-              : "bg-black text-white"
+              : "bg-green-600 text-white"
           }`}>
             {isSold ? "Sold" : "Active"}
           </span>
@@ -712,7 +712,7 @@ const TicketCard = ({ ticket, duration, initials }) => {
 
       <div className="flex items-center gap-3 mb-3">
         <div>
-          <p className={`text-xl font-bold ${isSold ? "text-yellow-800" : "text-gray-900"}`}>
+          <p className={`text-xl font-bold ${isSold ? "text-yellow-800" : "text-green-900"}`}>
             {ticket.departureTime || "—"}
           </p>
           <p className="text-xs text-gray-500">{ticket.from || "—"}</p>
@@ -720,13 +720,13 @@ const TicketCard = ({ ticket, duration, initials }) => {
         <div className="flex-1 flex flex-col items-center gap-0.5">
           {duration && <span className="text-xs text-gray-400">{duration}</span>}
           <div className="flex items-center w-full gap-1">
-            <div className={`flex-1 h-px ${isSold ? "bg-yellow-300" : "bg-gray-200"}`} />
-            <span className={`text-xs ${isSold ? "text-yellow-500" : "text-gray-300"}`}>→</span>
-            <div className={`flex-1 h-px ${isSold ? "bg-yellow-300" : "bg-gray-200"}`} />
+            <div className={`flex-1 h-px ${isSold ? "bg-yellow-300" : "bg-green-300"}`} />
+            <span className={`text-xs ${isSold ? "text-yellow-500" : "text-green-900"}`}>→</span>
+            <div className={`flex-1 h-px ${isSold ? "bg-yellow-300" : "bg-green-300"}`} />
           </div>
         </div>
         <div className="text-right">
-          <p className={`text-xl font-bold ${isSold ? "text-yellow-800" : "text-gray-900"}`}>
+          <p className={`text-xl font-bold ${isSold ? "text-yellow-800" : "text-green-900"}`}>
             {ticket.arrivalTime || "—"}
           </p>
           <p className="text-xs text-gray-500">{ticket.to || "—"}</p>
@@ -746,7 +746,7 @@ const TicketCard = ({ ticket, duration, initials }) => {
       </div>
 
       <div className={`border-t pt-3 flex items-center justify-between ${
-        isSold ? "border-yellow-200" : "border-gray-100"
+        isSold ? "border-yellow-200" : "border-green-200"
       }`}>
         <div className="flex items-center gap-2">
 {ticket.listerPhoto ? (
@@ -764,7 +764,7 @@ const TicketCard = ({ ticket, duration, initials }) => {
         </div>
         <div className="flex items-center gap-2">
           <div className="text-right">
-            <p className={`text-base font-bold ${isSold ? "text-yellow-800" : "text-gray-900"}`}>
+            <p className={`text-base font-bold ${isSold ? "text-yellow-800" : "text-green-900"}`}>
               ₹{ticket.price}
             </p>
             <p className="text-[10px] text-gray-400">per seat</p>
@@ -775,7 +775,7 @@ const TicketCard = ({ ticket, duration, initials }) => {
             className={`text-xs font-medium px-4 py-2 rounded-lg transition ${
               isSold
                 ? "bg-yellow-200 text-yellow-700 cursor-not-allowed"
-                : "bg-black text-white hover:bg-gray-800"
+                : "bg-green-600 text-white hover:bg-green-700"
             }`}
           >
             {isSold ? "Sold out" : "View"}

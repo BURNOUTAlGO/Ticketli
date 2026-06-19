@@ -70,20 +70,23 @@ const MyListingPage = () => {
         const activeTickets = allTickets.filter((t) => !t.sold);
         setTickets(activeTickets);
 
-        const soldQuery = query(
-          collection(db, "soldTickets"),
-          where("sellerEmail", "==", user.email.toLowerCase()),
-          orderBy("soldAt", "desc"),
-        );
+const soldQuery = query(
+  collection(db, "soldTickets"),
+  where("sellerEmail", "==", user.email.toLowerCase()),
+  orderBy("soldAt", "desc"),
+);
 
-        const soldSnap = await getDocs(soldQuery);
-
-        setSoldTickets(
-          soldSnap.docs.map((d) => ({
-            id: d.id,
-            ...d.data(),
-          })),
-        );
+const unsubscribeSoldTickets = onSnapshot(
+  soldQuery,
+  (snapshot) => {
+    setSoldTickets(
+      snapshot.docs.map((d) => ({
+        id: d.id,
+        ...d.data(),
+      }))
+    );
+  }
+);
 
         const rq = query(
           collection(db, "contactRequests"),
@@ -125,6 +128,7 @@ const MyListingPage = () => {
         return () => {
           unsubscribeRequests();
           unsubscribeNotifications();
+          unsubscribeSoldTickets();
         };
       } catch (err) {
         console.error("Error fetching data:", err);
@@ -207,13 +211,11 @@ const nq = query(
         });
       }
 
-      if (ticket) {
-        const soldTicket = { ...ticket, sold: true };
-
-        setTickets((prev) => prev.filter((t) => t.id !== ticketId));
-
-        setSoldTickets((prev) => [soldTicket, ...prev]);
-      }
+if (ticket) {
+  setTickets((prev) =>
+    prev.filter((t) => t.id !== ticketId)
+  );
+}
 
       setConfirmId(null);
     } catch (err) {

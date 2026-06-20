@@ -1,9 +1,10 @@
 import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { db } from "../firebase";
-import { collection, getDocs, orderBy, query } from "firebase/firestore";
+import { collection,onSnapshot, orderBy, query } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import * as Slider from "@radix-ui/react-slider";
+
 import {
   Search,
   RotateCcw,
@@ -15,7 +16,6 @@ import {
   SlidersHorizontal,
   Check,
   X,
-  BadgeCheck,
 } from "lucide-react";
 import { KineticText } from "@/components/ui/kinetic-text";
 
@@ -263,15 +263,25 @@ const BrowseTicketsPage = () => {
   const [appliedTo, setAppliedTo] = useState("");
   const [appliedDate, setAppliedDate] = useState("");
 
-  useEffect(() => {
-    const fetchTickets = async () => {
-      const q = query(collection(db, "tickets"), orderBy("createdAt", "desc"));
-      const snapshot = await getDocs(q);
-      setTickets(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
-      setLoading(false);
-    };
-    fetchTickets();
-  }, []);
+useEffect(() => {
+  const q = query(
+    collection(db, "tickets"),
+    orderBy("createdAt", "desc")
+  );
+
+  const unsubscribe = onSnapshot(q, (snapshot) => {
+    setTickets(
+      snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }))
+    );
+
+    setLoading(false);
+  });
+
+  return () => unsubscribe();
+}, []);
 
   const handleSearch = () => {
     setAppliedFrom(searchFrom);

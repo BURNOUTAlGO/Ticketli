@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 import { db } from "../firebase";
-import { doc, getDoc, collection, addDoc, serverTimestamp, query, where, getDocs } from "firebase/firestore";
+import { doc, getDoc, collection, addDoc,onSnapshot, serverTimestamp, query, where, getDocs } from "firebase/firestore";
 import {
+  
   Train, Calendar, Clock, MapPin, Users,
   MessageCircle, Share2, Info, ChevronRight, CheckCircle, Bell, BadgeCheck,
 } from "lucide-react";

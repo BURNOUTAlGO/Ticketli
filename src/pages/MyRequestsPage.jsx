@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { db } from "../firebase";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { Bell, Train, CheckCircle, XCircle, Clock, Mail, Phone } from "lucide-react";
 
@@ -43,40 +43,50 @@ const MyRequestsPage = () => {
     return map[id] && Date.now() - map[id] > TWENTY_FOUR_HOURS;
   };
 
-  useEffect(() => {
-    if (authLoading) return;
-    if (!isAuthenticated || !user?.email) { setLoading(false); return; }
+ useEffect(() => {
+  if (authLoading) return;
 
-    const fetchRequests = async () => {
-      try {
-        const q = query(
-          collection(db, "contactRequests"),
-          where("buyerEmail", "==", user.email.toLowerCase()),
-        );
-        const snap = await getDocs(q);
-        const all = snap.docs
-          .map((d) => ({ id: d.id, ...d.data() }))
-          .sort((a, b) => b.createdAt?.toMillis() - a.createdAt?.toMillis());
+  if (!isAuthenticated || !user?.email) {
+    setLoading(false);
+    return;
+  }
 
-        // Mark all rejected ones as "seen" with current timestamp if not already
-        const rejectedIds = all.filter((r) => r.status === "rejected").map((r) => r.id);
-        markAsSeen(rejectedIds);
+  const q = query(
+    collection(db, "contactRequests"),
+    where("buyerEmail", "==", user.email.toLowerCase())
+  );
 
-        // Filter out rejected cards that were first seen more than 24hrs ago
-        const visible = all.filter((r) => {
-          if (r.status === "rejected") return !isExpired(r.id);
-          return true;
-        });
+  const unsubscribe = onSnapshot(q, (snapshot) => {
+    const all = snapshot.docs
+      .map((d) => ({
+        id: d.id,
+        ...d.data(),
+      }))
+      .sort(
+        (a, b) =>
+          (b.createdAt?.toMillis?.() || 0) -
+          (a.createdAt?.toMillis?.() || 0)
+      );
 
-        setRequests(visible);
-      } catch (err) {
-        console.error("Error fetching requests:", err);
-      } finally {
-        setLoading(false);
+    const rejectedIds = all
+      .filter((r) => r.status === "rejected")
+      .map((r) => r.id);
+
+    markAsSeen(rejectedIds);
+
+    const visible = all.filter((r) => {
+      if (r.status === "rejected") {
+        return !isExpired(r.id);
       }
-    };
-    fetchRequests();
-  }, [authLoading, isAuthenticated, user]);
+      return true;
+    });
+
+    setRequests(visible);
+    setLoading(false);
+  });
+
+  return () => unsubscribe();
+}, [authLoading, isAuthenticated, user]);
 
   if (authLoading || loading)
     return (

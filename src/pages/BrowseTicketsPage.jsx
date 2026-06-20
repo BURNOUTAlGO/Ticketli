@@ -379,9 +379,9 @@ useEffect(() => {
       <div className="h-screen flex flex-col overflow-hidden bg-[var(--color-bg)] text-[var(--color-text)]">
 
         {/* ── SEARCH BAR ── */}
-        <div className="border-b border-[var(--color-border)] px-4 py-3 mt-[100px] flex-shrink-0 bg-[var(--color-bg)]">
+        <div className="border-b border-[var(--color-border)] px-3 sm:px-4 py-2.5 sm:py-3 mt-16 sm:mt-20 md:mt-[100px] flex-shrink-0 bg-[var(--color-bg)]">
           {/* Mobile */}
-          <div className="flex flex-col gap-2 md:hidden">
+          <div className="flex flex-col gap-2 md:hidden max-w-3xl md:max-w-none mx-auto w-full">
             <div className="flex items-center gap-2">
               <div className="relative flex-1">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-subtle)]">
@@ -481,16 +481,16 @@ useEffect(() => {
         <div className="flex-1 overflow-hidden">
 
           {/* ══ MOBILE ══ */}
-          <div className="h-full flex flex-col md:hidden overflow-y-auto hide-scrollbar">
+          <div className="h-full flex flex-col lg:hidden overflow-y-auto hide-scrollbar">
             {/* Sticky bar */}
-            <div className="sticky top-0 z-10 bg-white dark:bg-black border-b border-[var(--color-border)] px-3 py-2.5 flex items-center justify-between gap-2">
-              <p className="text-xs pl-3.5 sm:text-sm text-[var(--color-text)] font-medium whitespace-nowrap flex-shrink-0">
+            <div className="sticky top-0 z-10 bg-white dark:bg-black border-b border-[var(--color-border)] px-3 sm:px-4 md:px-6 py-2.5 flex items-center justify-between gap-2 max-w-3xl md:max-w-none mx-auto w-full">
+              <p className="text-xs pl-1 sm:pl-2 sm:text-sm text-[var(--color-text)] font-medium whitespace-nowrap flex-shrink-0">
                 {filtered.length} listing{filtered.length !== 1 ? "s" : ""}
               </p>
-              <div className="flex items-center gap-1.5 flex-shrink-0">
+              <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
                 <button
                   onClick={() => setShowFilters(true)}
-                  className="flex items-center gap-1.5 border border-[var(--color-border)] rounded-xl px-3 py-2 text-xs bg-[var(--color-surface)] font-medium text-[var(--color-text)] whitespace-nowrap flex-shrink-0"
+                  className="flex items-center gap-1.5 border border-[var(--color-border)] rounded-xl px-3 py-2 text-xs sm:text-sm bg-[var(--color-surface)] font-medium text-[var(--color-text)] whitespace-nowrap flex-shrink-0"
                 >
                   <SlidersHorizontal size={13} className="text-[var(--color-text-subtle)]" />
                   Filters
@@ -498,7 +498,7 @@ useEffect(() => {
                 <div className="relative flex-shrink-0">
                   <button
                     onClick={() => setSortOpen((v) => !v)}
-                    className="flex items-center gap-2 border border-[var(--color-border)] rounded-xl px-3 py-2 text-xs bg-[var(--color-surface)] text-[var(--color-text)] font-medium max-w-[150px] justify-between"
+                    className="flex items-center gap-2 border border-[var(--color-border)] rounded-xl px-3 py-2 text-xs sm:text-sm bg-[var(--color-surface)] text-[var(--color-text)] font-medium max-w-[130px] sm:max-w-[200px] justify-between"
                   >
                     <span className="truncate">{sortBy}</span>
                     <ChevronDown
@@ -531,12 +531,12 @@ useEffect(() => {
 
             {/* Mobile filter popup */}
             {showFilters && (
-              <div className="fixed inset-0 z-40 flex items-center justify-center p-4">
+              <div className="fixed inset-0 z-40 flex items-center  justify-center p-4">
                 <div
-                  className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+                  className="absolute h-[100vh] inset-0 bg-black/30 backdrop-blur-sm"
                   onClick={() => setShowFilters(false)}
                 />
-                <div className="relative mt-15 bg-[var(--color-bg-secondary)] rounded-2xl shadow-xl w-full max-w-sm max-h-[80vh] font-mono flex flex-col overflow-hidden border border-[var(--color-border)]">
+                <div className="relative mt-15 bg-white dark:bg-black rounded-2xl shadow-xl w-full max-w-sm md:max-w-md max-h-[85vh] sm:max-h-[80vh] font-mono flex flex-col overflow-hidden border border-[var(--color-border)]">
                   <div className="flex-shrink-0 px-5 pt-5 pb-3 border-b border-[var(--color-border)] flex items-center justify-between">
                     <h2 className="text-base font-semibold text-[var(--color-text)]">Filters</h2>
                     <div className="flex items-center gap-3">
@@ -569,15 +569,15 @@ useEffect(() => {
             )}
 
             {/* Ticket cards */}
-            <div className="px-4 py-4">
+            <div className="px-3 sm:px-4 md:px-6 py-4 max-w-3xl md:max-w-none mx-auto w-full">
               {filtered.length === 0 ? (
-                <div className="text-center py-20 text-[var(--color-text-subtle)] border border-[var(--color-border)] rounded-2xl">
+                <div className="text-center py-16 sm:py-20 text-[var(--color-text-subtle)] border border-[var(--color-border)] rounded-2xl">
                   <Search size={36} className="mx-auto mb-3 opacity-20" />
                   <p className="text-sm font-medium">No tickets match your search</p>
                   <p className="text-xs mt-1">Try adjusting filters or search terms</p>
                 </div>
               ) : (
-                <div className="flex flex-col gap-4 pb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-8">
                   {filtered.map((ticket) => (
                     <TicketCard
                       key={ticket.id}
@@ -592,8 +592,8 @@ useEffect(() => {
           </div>
 
           {/* ══ DESKTOP ══ */}
-          <div className="hidden md:flex h-full w-[90%] mx-auto px-4 py-6 gap-6">
-            <aside className="w-64 flex-shrink-0 overflow-y-auto hide-scrollbar">
+          <div className="hidden lg:flex h-full w-[92%] xl:w-[90%] mx-auto px-4 py-6 gap-6">
+            <aside className="w-56 xl:w-64 flex-shrink-0 overflow-y-auto hide-scrollbar">
               <div className="border border-[var(--color-border)] font-mono rounded-2xl p-5">
                 <div className="flex items-center justify-between mb-5">
                   <h2 className="text-base  font-semibold text-[var(--color-text)]">Filters</h2>
@@ -653,7 +653,7 @@ useEffect(() => {
                   <p className="text-xs mt-1">Try adjusting filters or search terms</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pb-6">
+                <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-4 pb-6">
                   {filtered.map((ticket) => (
                     <TicketCard
                       key={ticket.id}
@@ -678,29 +678,29 @@ const TicketCard = ({ ticket, duration, initials }) => {
   const isSold = !!ticket.sold;
 
   return (
-    <div className={`border rounded-2xl p-5 hover:shadow-md transition ${
+    <div className={`border rounded-2xl p-4 sm:p-5 hover:shadow-md transition ${
       isSold
         ? "bg-yellow-50 border-2 border-yellow-300"
         : "bg-green-50 border-2 border-green-200"
     }`}>
 
 
-      <div className="flex items-start justify-between mb-3">
-        <div>
-          <h3 className={`font-bold text-sm font-mono ${isSold ? "text-yellow-900" : "text-green-900"}`}>
+      <div className="flex items-start justify-between mb-3 gap-2">
+        <div className="min-w-0">
+          <h3 className={`font-bold text-sm font-mono truncate ${isSold ? "text-yellow-900" : "text-green-900"}`}>
             {ticket.trainName || "—"}
           </h3>
           <p className="text-xs font-mono text-gray-400 mt-0.5">{ticket.trainNumber || ""}</p>
         </div>
-        <div className="flex items-center gap-1.5">
-          <span className={`text-xs border px-2.5 py-1 rounded-full ${
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          <span className={`text-xs border px-2.5 py-1 rounded-full whitespace-nowrap ${
             isSold
               ? "border-yellow-300 text-yellow-700 bg-yellow-50"
               : "border-green-200 text-green-700 bg-green-50"
           }`}>
             {ticket.trainClass}
           </span>
-          <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
+          <span className={`text-xs px-2.5 py-1 rounded-full font-medium whitespace-nowrap ${
             isSold
               ? "bg-yellow-400 text-yellow-900"
               : "bg-green-600 text-white"
@@ -710,30 +710,30 @@ const TicketCard = ({ ticket, duration, initials }) => {
         </div>
       </div>
 
-      <div className="flex items-center gap-3 mb-3">
-        <div>
-          <p className={`text-xl font-bold font-mono ${isSold ? "text-yellow-800" : "text-green-900"}`}>
+      <div className="flex items-center gap-2 sm:gap-3 mb-3">
+        <div className="min-w-0">
+          <p className={`text-lg sm:text-xl font-bold font-mono ${isSold ? "text-yellow-800" : "text-green-900"}`}>
             {ticket.departureTime || "—"}
           </p>
-          <p className="text-xs font-mono text-gray-500">{ticket.from || "—"}</p>
+          <p className="text-xs font-mono text-gray-500 truncate">{ticket.from || "—"}</p>
         </div>
-        <div className="flex-1 flex flex-col items-center gap-0.5">
-          {duration && <span className="text-xs text-gray-400">{duration}</span>}
+        <div className="flex-1 flex flex-col items-center gap-0.5 min-w-[40px]">
+          {duration && <span className="text-xs text-gray-400 whitespace-nowrap">{duration}</span>}
           <div className="flex items-center w-full gap-1">
             <div className={`flex-1 h-px ${isSold ? "bg-yellow-300" : "bg-green-300"}`} />
             <span className={`text-xs ${isSold ? "text-yellow-500" : "text-green-900"}`}>→</span>
             <div className={`flex-1 h-px ${isSold ? "bg-yellow-300" : "bg-green-300"}`} />
           </div>
         </div>
-        <div className="text-right">
-          <p className={`text-xl font-bold font-mono ${isSold ? "text-yellow-800" : "text-green-900"}`}>
+        <div className="text-right min-w-0">
+          <p className={`text-lg sm:text-xl font-bold font-mono ${isSold ? "text-yellow-800" : "text-green-900"}`}>
             {ticket.arrivalTime || "—"}
           </p>
-          <p className="text-xs font-mono text-gray-500">{ticket.to || "—"}</p>
+          <p className="text-xs font-mono text-gray-500 truncate">{ticket.to || "—"}</p>
         </div>
       </div>
 
-      <div className="flex items-center gap-3 text-xs text-gray-400 mb-4">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-400 mb-4">
         <div className="flex font-mono items-center gap-1">
           <Clock size={12} />
           <span>{ticket.journeyDate || "—"}</span>
@@ -745,26 +745,26 @@ const TicketCard = ({ ticket, duration, initials }) => {
         </div>
       </div>
 
-      <div className={`border-t pt-3 flex items-center justify-between ${
+      <div className={`border-t pt-3 flex items-center justify-between gap-2 ${
         isSold ? "border-yellow-200" : "border-green-200"
       }`}>
-        <div className="flex items-center  gap-2">
+        <div className="flex items-center gap-2 min-w-0">
 {ticket.listerPhoto ? (
   <img
     src={ticket.listerPhoto}
     alt={ticket.fullName}
-    className="w-8 h-8 rounded-full  object-cover border border-gray-200"
+    className="w-8 h-8 rounded-full object-cover border border-gray-200 flex-shrink-0"
   />
 ) : (
-  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600">
+  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600 flex-shrink-0">
     {initials}
   </div>
 )}
-          <p className="text-sm font-medium text-gray-900">{ticket.fullName || "—"}</p>
+          <p className="text-sm font-medium text-gray-900 truncate">{ticket.fullName || "—"}</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           <div className="text-right">
-            <p className={`text-base font-bold font-mono ${isSold ? "text-yellow-800" : "text-green-900"}`}>
+            <p className={`text-sm sm:text-base font-bold font-mono ${isSold ? "text-yellow-800" : "text-green-900"}`}>
               ₹{ticket.price}
             </p>
             <p className="text-[10px] font-mono text-gray-400">per seat</p>
@@ -772,7 +772,7 @@ const TicketCard = ({ ticket, duration, initials }) => {
           <button
             onClick={() => !isSold && navigate(`/ticket/${ticket.id}`)}
             disabled={isSold}
-            className={`text-xs font-medium px-4 py-2 rounded-lg transition ${
+            className={`text-xs font-medium px-3 sm:px-4 py-2 rounded-lg transition whitespace-nowrap ${
               isSold
                 ? "bg-yellow-200 text-yellow-700 cursor-not-allowed"
                 : "bg-green-600 text-white hover:bg-green-700"

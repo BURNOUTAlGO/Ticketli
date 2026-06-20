@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 import { db } from "../firebase";
-import { doc, getDoc, collection, addDoc,onSnapshot, serverTimestamp, query, where, getDocs } from "firebase/firestore";
+import { doc, collection, addDoc,onSnapshot, serverTimestamp, query, where, getDocs } from "firebase/firestore";
 import {
   
   Train, Calendar, Clock, MapPin, Users,
@@ -23,23 +23,31 @@ const TicketDetailPage = () => {
   const [alreadyRequested, setAlreadyRequested] = useState(false);
 
   useEffect(() => {
-    const fetchTicket = async () => {
-      try {
-        const snap = await getDoc(doc(db, "tickets", id));
-        if (!snap.exists()) {
-          setNotFound(true);
-        } else {
-          setTicket({ id: snap.id, ...snap.data() });
-        }
-      } catch (err) {
-        console.error("Error fetching ticket:", err);
+  const unsubscribe = onSnapshot(
+    doc(db, "tickets", id),
+    (snap) => {
+      if (!snap.exists()) {
         setNotFound(true);
-      } finally {
-        setLoading(false);
+        setTicket(null);
+      } else {
+        setNotFound(false);
+        setTicket({
+          id: snap.id,
+          ...snap.data(),
+        });
       }
-    };
-    fetchTicket();
-  }, [id]);
+
+      setLoading(false);
+    },
+    (err) => {
+      console.error("Error fetching ticket:", err);
+      setNotFound(true);
+      setLoading(false);
+    }
+  );
+
+  return () => unsubscribe();
+}, [id]);
 
   useEffect(() => {
     if (!isAuthenticated || !user?.email || !id) return;

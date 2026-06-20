@@ -60,15 +60,27 @@ const MyListingPage = () => {
 
     const fetchAll = async () => {
       try {
-        const q = query(
-          collection(db, "tickets"),
-          where("email", "==", user.email.toLowerCase()),
-          orderBy("createdAt", "desc"),
-        );
-        const snap = await getDocs(q);
-        const allTickets = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-        const activeTickets = allTickets.filter((t) => !t.sold);
-        setTickets(activeTickets);
+const ticketsQuery = query(
+  collection(db, "tickets"),
+  where("email", "==", user.email.toLowerCase()),
+  orderBy("createdAt", "desc")
+);
+
+const unsubscribeTickets = onSnapshot(
+  ticketsQuery,
+  (snapshot) => {
+    const allTickets = snapshot.docs.map((d) => ({
+      id: d.id,
+      ...d.data(),
+    }));
+
+    const activeTickets = allTickets.filter(
+      (t) => !t.sold
+    );
+
+    setTickets(activeTickets);
+  }
+);
 
 const soldQuery = query(
   collection(db, "soldTickets"),
@@ -126,9 +138,11 @@ const unsubscribeSoldTickets = onSnapshot(
           );
         });
         return () => {
+          unsubscribeTickets();
           unsubscribeRequests();
           unsubscribeNotifications();
           unsubscribeSoldTickets();
+          
         };
       } catch (err) {
         console.error("Error fetching data:", err);
@@ -211,11 +225,7 @@ const nq = query(
         });
       }
 
-if (ticket) {
-  setTickets((prev) =>
-    prev.filter((t) => t.id !== ticketId)
-  );
-}
+
 
       setConfirmId(null);
     } catch (err) {
@@ -227,11 +237,8 @@ if (ticket) {
   const handleRequestAction = async (requestId, action) => {
     try {
       await updateDoc(doc(db, "contactRequests", requestId), {
-        status: action,
-      });
-      setRequests((prev) =>
-        prev.map((r) => (r.id === requestId ? { ...r, status: action } : r)),
-      );
+  status: action,
+});
     } catch (err) {
       console.error("Failed to update request:", err);
     }
@@ -240,7 +247,6 @@ if (ticket) {
   const handleDismissNotification = async (notifId) => {
     try {
       await deleteDoc(doc(db, "notifications", notifId));
-      setNotifications((prev) => prev.filter((n) => n.id !== notifId));
     } catch (err) {
       console.error("Failed to dismiss notification:", err);
     }

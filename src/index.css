@@ -50,6 +50,7 @@ body {
   --color-surface: var(--ds-gray-100);
   --color-surface-hover: var(--ds-gray-200);
   --color-surface-hover-switch:var(--ds-gray-switch-200);
+  --slider:rgb(0, 0, 0);
 
   
   --popover: oklch(1 0 0);
@@ -77,7 +78,7 @@ body {
 }
 [data-theme="dark"] {
   --ds-white: hsla(0, 0%, 100%, 1);
-  --ds-background-100: hsla(0, 0%, 0%, 1);
+  --ds-background-100: rgb(0, 0, 0);
   --ds-background-200: rgb(5, 5, 5);
 
   
@@ -110,6 +111,7 @@ body {
   --color-surface: var(--ds-gray-100);
   --color-surface-hover: var(--ds-gray-200);
   --color-surface-hover-switch:var(--ds-gray-switch-200);
+  --slider:var(--ds-white);
 }
 html {
   background-color: var(--color-bg);

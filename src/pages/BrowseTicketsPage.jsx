@@ -85,16 +85,16 @@ const CustomSelect = ({ value, onChange, options }) => {
         className={`
           w-full flex items-center justify-between gap-2
           border rounded-lg px-3 py-2 text-sm text-left
-          bg-gray-50 transition-all
-          focus:outline-none focus:ring-2 focus:ring-black/10
-          hover:bg-white hover:border-gray-300
-          ${open ? "border-gray-400 bg-white" : "border-gray-200"}
+          bg-[var(--color-surface)] text-[var(--color-text)] transition-all
+          focus:outline-none focus:ring-2 focus:ring-[var(--ring)]
+          hover:bg-[var(--color-bg)] hover:border-[var(--color-text-subtle)]
+          ${open ? "border-[var(--color-text-subtle)] bg-[var(--color-bg)]" : "border-[var(--color-border)]"}
         `}
       >
-        <span className="text-gray-800 truncate">{value}</span>
+        <span className="text-[var(--color-text)] truncate">{value}</span>
         <ChevronDown
           size={13}
-          className={`text-gray-400 flex-shrink-0 transition-transform duration-150 ${
+          className={`text-[var(--color-text-subtle)] flex-shrink-0 transition-transform duration-150 ${
             open ? "rotate-180" : ""
           }`}
         />
@@ -105,7 +105,7 @@ const CustomSelect = ({ value, onChange, options }) => {
           <div
             ref={menuRef}
             style={menuStyle}
-            className="bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden py-1"
+            className="bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-xl shadow-xl overflow-hidden py-1"
           >
             {options.map((opt) => (
               <button
@@ -115,19 +115,19 @@ const CustomSelect = ({ value, onChange, options }) => {
                   onChange(opt);
                   setOpen(false);
                 }}
-                className="w-full flex items-center justify-between gap-2 px-3 py-2 text-sm text-left hover:bg-gray-50 transition"
+                className="w-full flex items-center justify-between gap-2 px-3 py-2 text-sm text-left hover:bg-[var(--color-surface-hover)] transition"
               >
                 <span
                   className={
                     value === opt
-                      ? "font-semibold text-gray-900"
-                      : "text-gray-600"
+                      ? "font-semibold text-[var(--color-text)]"
+                      : "text-[var(--color-text-muted)]"
                   }
                 >
                   {opt}
                 </span>
                 {value === opt && (
-                  <Check size={13} className="text-gray-900 flex-shrink-0" />
+                  <Check size={13} className="text-[var(--color-text)] flex-shrink-0" />
                 )}
               </button>
             ))}
@@ -152,43 +152,43 @@ const FilterFields = ({
 }) => (
   <>
     <div className="mb-4">
-      <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">
+      <label className="block text-xs font-semibold text-[var(--color-text-subtle)] uppercase tracking-wide mb-1.5">
         From
       </label>
       <input
         placeholder="Departure city"
         value={filterFrom}
         onChange={(e) => setFilterFrom(e.target.value)}
-        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-black/10"
+        className="w-full border border-[var(--color-border)] rounded-lg px-3 py-2 text-sm bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-subtle)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
       />
     </div>
 
     <div className="mb-4">
-      <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">
+      <label className="block text-xs font-semibold text-[var(--color-text-subtle)] uppercase tracking-wide mb-1.5">
         To
       </label>
       <input
         placeholder="Arrival city"
         value={filterTo}
         onChange={(e) => setFilterTo(e.target.value)}
-        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-black/10"
+        className="w-full border border-[var(--color-border)] rounded-lg px-3 py-2 text-sm bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-subtle)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
       />
     </div>
 
     <div className="mb-4">
-      <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">
+      <label className="block text-xs font-semibold text-[var(--color-text-subtle)] uppercase tracking-wide mb-1.5">
         Journey Date
       </label>
       <input
         type="date"
         value={filterDate}
         onChange={(e) => setFilterDate(e.target.value)}
-        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-black/10"
+        className="w-full border border-[var(--color-border)] rounded-lg px-3 py-2 text-sm bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
       />
     </div>
 
     <div className="mb-4">
-      <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">
+      <label className="block text-xs font-semibold text-[var(--color-text-subtle)] uppercase tracking-wide mb-1.5">
         Train Class
       </label>
       <CustomSelect
@@ -199,7 +199,7 @@ const FilterFields = ({
     </div>
 
     <div className="mb-4">
-      <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">
+      <label className="block text-xs font-semibold text-[var(--color-text-subtle)] uppercase tracking-wide mb-1.5">
         Price Range: ₹{filterPriceRange[0].toLocaleString()} – ₹{filterPriceRange[1].toLocaleString()}
       </label>
       <Slider.Root
@@ -210,16 +210,16 @@ const FilterFields = ({
         onValueChange={setFilterPriceRange}
         className="relative flex items-center w-full h-5 mt-3"
       >
-        <Slider.Track className="relative h-1.5 w-full grow rounded-full bg-gray-200">
-          <Slider.Range className="absolute h-full rounded-full bg-black" />
+        <Slider.Track className="relative h-1.5 w-full grow rounded-full bg-[var(--color-surface-hover)]">
+          <Slider.Range className="absolute h-full rounded-full bg-[var(--slider)]" />
         </Slider.Track>
-        <Slider.Thumb className="block w-5 h-5 rounded-full bg-white border-2 border-black shadow focus:outline-none focus:ring-2 focus:ring-black/20 cursor-pointer" />
-        <Slider.Thumb className="block w-5 h-5 rounded-full bg-white border-2 border-black shadow focus:outline-none focus:ring-2 focus:ring-black/20 cursor-pointer" />
+        <Slider.Thumb className="block w-5 h-5 rounded-full bg-[var(--color-bg)] border-2 border-[var(--primary)] shadow focus:outline-none focus:ring-2 focus:ring-[var(--ring)] cursor-pointer" />
+        <Slider.Thumb className="block w-5 h-5 rounded-full bg-[var(--color-bg)] border-2 border-[var(--primary)] shadow focus:outline-none focus:ring-2 focus:ring-[var(--ring)] cursor-pointer" />
       </Slider.Root>
     </div>
 
     <div>
-      <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">
+      <label className="block text-xs font-semibold text-[var(--color-text-subtle)] uppercase tracking-wide mb-1.5">
         Min. Seats Available
       </label>
       <CustomSelect
@@ -357,8 +357,8 @@ useEffect(() => {
 
   if (loading)
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <svg className="animate-spin h-7 w-7 text-gray-400" viewBox="0 0 24 24" fill="none">
+      <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg)]">
+        <svg className="animate-spin h-7 w-7 text-[var(--color-text-subtle)]" viewBox="0 0 24 24" fill="none">
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
         </svg>
@@ -376,39 +376,39 @@ useEffect(() => {
         .compact-filters input { padding-top: 0.4rem !important; padding-bottom: 0.4rem !important; }
       `}</style>
 
-      <div className="h-screen flex flex-col overflow-hidden">
+      <div className="h-screen flex flex-col overflow-hidden bg-[var(--color-bg)] text-[var(--color-text)]">
 
         {/* ── SEARCH BAR ── */}
-        <div className="border-b border-gray-100 px-4 py-3 mt-[100px] flex-shrink-0 bg-white">
+        <div className="border-b border-[var(--color-border)] px-4 py-3 mt-[100px] flex-shrink-0 bg-[var(--color-bg)]">
           {/* Mobile */}
           <div className="flex flex-col gap-2 md:hidden">
             <div className="flex items-center gap-2">
               <div className="relative flex-1">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-subtle)]">
                   <MapPin size={14} />
                 </span>
                 <input
                   placeholder="From"
                   value={searchFrom}
                   onChange={(e) => setSearchFrom(e.target.value)}
-                  className="w-full pl-8 pr-3 py-2.5 text-sm border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-black/10"
+                  className="w-full pl-8 pr-3 py-2.5 text-sm border border-[var(--color-border)] rounded-xl bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-subtle)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
                 />
               </div>
               <button
                 onClick={handleSwap}
-                className="flex items-center justify-center w-9 h-9 rounded-full border border-gray-200 bg-white flex-shrink-0"
+                className="flex items-center justify-center w-9 h-9 rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] flex-shrink-0"
               >
-                <ArrowLeftRight size={14} className="text-gray-500" />
+                <ArrowLeftRight size={14} className="text-[var(--color-text-muted)]" />
               </button>
               <div className="relative flex-1">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-subtle)]">
                   <MapPin size={14} />
                 </span>
                 <input
                   placeholder="To"
                   value={searchTo}
                   onChange={(e) => setSearchTo(e.target.value)}
-                  className="w-full pl-8 pr-3 py-2.5 text-sm border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-black/10"
+                  className="w-full pl-8 pr-3 py-2.5 text-sm border border-[var(--color-border)] rounded-xl bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-subtle)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
                 />
               </div>
             </div>
@@ -417,11 +417,11 @@ useEffect(() => {
                 type="date"
                 value={searchDate}
                 onChange={(e) => setSearchDate(e.target.value)}
-                className="flex-1 px-3 py-2.5 text-sm border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-black/10"
+                className="flex-1 px-3 py-2.5 text-sm border border-[var(--color-border)] rounded-xl bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
               />
               <button
                 onClick={handleSearch}
-                className="flex items-center justify-center gap-1.5 bg-black text-white text-sm font-medium px-5 py-2.5 rounded-xl hover:bg-gray-800 transition flex-shrink-0"
+                className="flex items-center justify-center gap-1.5 bg-[var(--color-3)] text-white text-sm font-medium px-5 py-2.5 rounded-xl hover:brightness-90 active:brightness-75 transition flex-shrink-0"
               >
                 <Search size={14} />
                 Search
@@ -432,31 +432,31 @@ useEffect(() => {
           {/* Desktop */}
           <div className="hidden md:flex max-w-5xl mx-auto items-center gap-2">
             <div className="relative flex-1">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-subtle)]">
                 <MapPin size={15} />
               </span>
               <input
                 placeholder="From"
                 value={searchFrom}
                 onChange={(e) => setSearchFrom(e.target.value)}
-                className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-black/10"
+                className="w-full pl-9 pr-4 py-2.5 text-sm border border-[var(--color-border)] rounded-xl bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-subtle)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
               />
             </div>
             <button
               onClick={handleSwap}
-              className="flex items-center justify-center w-9 h-9 rounded-full border border-gray-200 hover:bg-gray-50 transition flex-shrink-0"
+              className="flex items-center justify-center w-9 h-9 rounded-full border border-[var(--color-border)] hover:bg-[var(--color-surface-hover)] transition flex-shrink-0"
             >
-              <ArrowLeftRight size={15} className="text-gray-500" />
+              <ArrowLeftRight size={15} className="text-[var(--color-text-muted)]" />
             </button>
             <div className="relative flex-1">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-subtle)]">
                 <MapPin size={15} />
               </span>
               <input
                 placeholder="To"
                 value={searchTo}
                 onChange={(e) => setSearchTo(e.target.value)}
-                className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-black/10"
+                className="w-full pl-9 pr-4 py-2.5 text-sm border border-[var(--color-border)] rounded-xl bg-[var(--color-surface)] text-[var(--color-text)] placeholder:text-[var(--color-text-subtle)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
               />
             </div>
             <div className="relative flex-1">
@@ -464,12 +464,12 @@ useEffect(() => {
                 type="date"
                 value={searchDate}
                 onChange={(e) => setSearchDate(e.target.value)}
-                className="w-full px-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-black/10"
+                className="w-full px-4 py-2.5 text-sm border border-[var(--color-border)] rounded-xl bg-[var(--color-surface)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
               />
             </div>
             <button
               onClick={handleSearch}
-              className="flex items-center justify-center gap-2 bg-black text-white text-sm font-medium px-6 py-2.5 rounded-xl hover:bg-gray-800 transition flex-shrink-0"
+              className="flex items-center justify-center gap-2 bg-[var(--color-3)] text-white text-sm font-medium px-6 py-2.5 rounded-xl hover:brightness-90 active:brightness-75 transition flex-shrink-0"
             >
               <Search size={15} />
               Search
@@ -483,43 +483,43 @@ useEffect(() => {
           {/* ══ MOBILE ══ */}
           <div className="h-full flex flex-col md:hidden overflow-y-auto hide-scrollbar">
             {/* Sticky bar */}
-            <div className="sticky top-0 z-10 bg-white border-b border-gray-100 px-3 py-2.5 flex items-center justify-between gap-2">
-              <p className="text-xs pl-3.5 sm:text-sm text-black font-medium whitespace-nowrap flex-shrink-0">
+            <div className="sticky top-0 z-10 bg-[var(--color-bg)] border-b border-[var(--color-border)] px-3 py-2.5 flex items-center justify-between gap-2">
+              <p className="text-xs pl-3.5 sm:text-sm text-[var(--color-text)] font-medium whitespace-nowrap flex-shrink-0">
                 {filtered.length} listing{filtered.length !== 1 ? "s" : ""}
               </p>
               <div className="flex items-center gap-1.5 flex-shrink-0">
                 <button
                   onClick={() => setShowFilters(true)}
-                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border text-xs font-medium transition whitespace-nowrap flex-shrink-0 bg-white text-gray-700 border-gray-200"
+                  className="flex items-center gap-1.5 border border-[var(--color-border)] rounded-xl px-3 py-2 text-xs bg-[var(--color-surface)] font-medium text-[var(--color-text)] whitespace-nowrap flex-shrink-0"
                 >
-                  <SlidersHorizontal size={12} />
+                  <SlidersHorizontal size={13} className="text-[var(--color-text-subtle)]" />
                   Filters
                 </button>
                 <div className="relative flex-shrink-0">
                   <button
                     onClick={() => setSortOpen((v) => !v)}
-                    className="flex items-center gap-1 border border-gray-200 rounded-xl pl-2.5 pr-2 py-1.5 text-xs bg-white font-medium text-gray-700 max-w-[120px]"
+                    className="flex items-center gap-2 border border-[var(--color-border)] rounded-xl px-3 py-2 text-xs bg-[var(--color-surface)] text-[var(--color-text)] font-medium max-w-[150px] justify-between"
                   >
                     <span className="truncate">{sortBy}</span>
                     <ChevronDown
-                      size={12}
-                      className={`text-gray-400 flex-shrink-0 transition-transform ${sortOpen ? "rotate-180" : ""}`}
+                      size={13}
+                      className={`text-[var(--color-text-subtle)] flex-shrink-0 transition-transform ${sortOpen ? "rotate-180" : ""}`}
                     />
                   </button>
                   {sortOpen && (
                     <>
                       <div className="fixed inset-0 z-20" onClick={() => setSortOpen(false)} />
-                      <div className="absolute right-0 mt-1.5 w-52 bg-white border border-gray-200 rounded-xl shadow-lg z-30 overflow-hidden">
+                      <div className="absolute right-0 mt-1.5 w-56 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-xl shadow-lg z-30 overflow-hidden">
                         {sortOptions.map((opt) => (
                           <button
                             key={opt}
                             onClick={() => { setSortBy(opt); setSortOpen(false); }}
-                            className="w-full flex items-center justify-between gap-2 px-4 py-2.5 text-sm text-left hover:bg-gray-50 transition"
+                            className="w-full flex items-center justify-between gap-2 px-4 py-2.5 text-sm text-left hover:bg-[var(--color-surface-hover)] transition"
                           >
-                            <span className={sortBy === opt ? "font-semibold text-gray-900" : "text-gray-600"}>
+                            <span className={sortBy === opt ? "font-semibold text-[var(--color-text)]" : "text-[var(--color-text-muted)]"}>
                               {opt}
                             </span>
-                            {sortBy === opt && <Check size={15} className="text-gray-900 flex-shrink-0" />}
+                            {sortBy === opt && <Check size={15} className="text-[var(--color-text)] flex-shrink-0" />}
                           </button>
                         ))}
                       </div>
@@ -536,33 +536,30 @@ useEffect(() => {
                   className="absolute inset-0 bg-black/30 backdrop-blur-sm"
                   onClick={() => setShowFilters(false)}
                 />
-                <div className="relative mt-15 bg-white rounded-2xl shadow-xl w-full max-w-sm max-h-[80vh] flex flex-col overflow-hidden">
-                  <div className="flex-shrink-0 px-4 pt-4 pb-3 border-b border-gray-100 flex items-center justify-between">
-                    <KineticText
-                      text="Filter Tickets"
-                      className="text-[2.25rem] sm:text-[3.25rem] md:text-[4.5rem] tracking-[-5%] flex items-start justify-start"
-                    />
-                    <button onClick={() => setShowFilters(false)} className="text-gray-500">
-                      <X size={18} />
-                    </button>
-                  </div>
-                  <div className="flex-1 overflow-y-auto px-4 pt-3 pb-3 hide-scrollbar">
-                    <div className="flex items-center justify-end mb-3">
+                <div className="relative mt-15 bg-[var(--color-bg-secondary)] rounded-2xl shadow-xl w-full max-w-sm max-h-[80vh] font-mono flex flex-col overflow-hidden border border-[var(--color-border)]">
+                  <div className="flex-shrink-0 px-5 pt-5 pb-3 border-b border-[var(--color-border)] flex items-center justify-between">
+                    <h2 className="text-base font-semibold text-[var(--color-text)]">Filters</h2>
+                    <div className="flex items-center gap-3">
                       <button
                         onClick={handleReset}
-                        className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800 transition"
+                        className="flex items-center gap-1 text-xs text-[var(--color-text-subtle)] hover:text-[var(--color-text)] transition"
                       >
-                        <RotateCcw size={11} /> Reset
+                        <RotateCcw size={12} /> Reset
+                      </button>
+                      <button onClick={() => setShowFilters(false)} className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition">
+                        <X size={18} />
                       </button>
                     </div>
+                  </div>
+                  <div className="flex-1 overflow-y-auto px-5 pt-4 pb-4 hide-scrollbar">
                     <div className="compact-filters">
                       <FilterFields {...filterFieldProps} />
                     </div>
                   </div>
-                  <div className="flex-shrink-0 px-4 py-3 border-t border-gray-100">
+                  <div className="flex-shrink-0 px-5 py-4 border-t border-[var(--color-border)]">
                     <button
                       onClick={() => setShowFilters(false)}
-                      className="w-full bg-black text-white text-sm font-semibold py-3 rounded-xl hover:bg-gray-800 transition"
+                      className="w-full bg-[var(--color-3)] text-white text-sm font-semibold py-3 rounded-xl hover:brightness-90 active:brightness-75 transition"
                     >
                       Apply Filters ({filtered.length} result{filtered.length !== 1 ? "s" : ""})
                     </button>
@@ -574,7 +571,7 @@ useEffect(() => {
             {/* Ticket cards */}
             <div className="px-4 py-4">
               {filtered.length === 0 ? (
-                <div className="text-center py-20 text-gray-400 border border-gray-100 rounded-2xl">
+                <div className="text-center py-20 text-[var(--color-text-subtle)] border border-[var(--color-border)] rounded-2xl">
                   <Search size={36} className="mx-auto mb-3 opacity-20" />
                   <p className="text-sm font-medium">No tickets match your search</p>
                   <p className="text-xs mt-1">Try adjusting filters or search terms</p>
@@ -597,12 +594,12 @@ useEffect(() => {
           {/* ══ DESKTOP ══ */}
           <div className="hidden md:flex h-full w-[90%] mx-auto px-4 py-6 gap-6">
             <aside className="w-64 flex-shrink-0 overflow-y-auto hide-scrollbar">
-              <div className="border border-gray-200 rounded-2xl p-5">
+              <div className="border border-[var(--color-border)] font-mono rounded-2xl p-5">
                 <div className="flex items-center justify-between mb-5">
-                  <h2 className="text-base font-semibold text-gray-900">Filters</h2>
+                  <h2 className="text-base  font-semibold text-[var(--color-text)]">Filters</h2>
                   <button
                     onClick={handleReset}
-                    className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800 transition"
+                    className="flex items-center gap-1 text-xs text-[var(--color-text-subtle)] hover:text-[var(--color-text)] transition"
                   >
                     <RotateCcw size={12} /> Reset
                   </button>
@@ -613,34 +610,34 @@ useEffect(() => {
 
             <div className="flex-1 min-w-0 overflow-y-auto hide-scrollbar">
               <div className="flex items-center justify-between mb-4">
-                <p className="text-sm text-black font-medium">
+                <p className="text-sm text-[var(--color-text)] font-medium">
                   {filtered.length} listing{filtered.length !== 1 ? "s" : ""}
                 </p>
                 <div className="relative">
                   <button
                     onClick={() => setSortOpen((v) => !v)}
-                    className="flex items-center gap-2 border border-gray-200 rounded-xl px-4 py-2 text-sm bg-white font-medium min-w-[180px] justify-between"
+                    className="flex items-center gap-2 border border-[var(--color-border)] rounded-xl px-4 py-2 text-sm bg-[var(--color-surface)] text-[var(--color-text)] font-medium min-w-[180px] justify-between"
                   >
                     <span>{sortBy}</span>
                     <ChevronDown
                       size={13}
-                      className={`text-gray-400 transition-transform ${sortOpen ? "rotate-180" : ""}`}
+                      className={`text-[var(--color-text-subtle)] transition-transform ${sortOpen ? "rotate-180" : ""}`}
                     />
                   </button>
                   {sortOpen && (
                     <>
                       <div className="fixed inset-0 z-20" onClick={() => setSortOpen(false)} />
-                      <div className="absolute right-0 mt-1.5 w-56 bg-white border border-gray-200 rounded-xl shadow-lg z-30 overflow-hidden">
+                      <div className="absolute right-0 mt-1.5 w-56 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-xl shadow-lg z-30 overflow-hidden">
                         {sortOptions.map((opt) => (
                           <button
                             key={opt}
                             onClick={() => { setSortBy(opt); setSortOpen(false); }}
-                            className="w-full flex items-center justify-between gap-2 px-4 py-2.5 text-sm text-left hover:bg-gray-50 transition"
+                            className="w-full flex items-center justify-between gap-2 px-4 py-2.5 text-sm text-left hover:bg-[var(--color-surface-hover)] transition"
                           >
-                            <span className={sortBy === opt ? "font-semibold text-gray-900" : "text-gray-600"}>
+                            <span className={sortBy === opt ? "font-semibold text-[var(--color-text)]" : "text-[var(--color-text-muted)]"}>
                               {opt}
                             </span>
-                            {sortBy === opt && <Check size={15} className="text-gray-900 flex-shrink-0" />}
+                            {sortBy === opt && <Check size={15} className="text-[var(--color-text)] flex-shrink-0" />}
                           </button>
                         ))}
                       </div>
@@ -650,7 +647,7 @@ useEffect(() => {
               </div>
 
               {filtered.length === 0 ? (
-                <div className="text-center py-24 text-gray-400 border border-gray-100 rounded-2xl">
+                <div className="text-center py-24 text-[var(--color-text-subtle)] border border-[var(--color-border)] rounded-2xl">
                   <Search size={36} className="mx-auto mb-3 opacity-20" />
                   <p className="text-sm font-medium">No tickets match your search</p>
                   <p className="text-xs mt-1">Try adjusting filters or search terms</p>
@@ -684,29 +681,22 @@ const TicketCard = ({ ticket, duration, initials }) => {
     <div className={`border rounded-2xl p-5 hover:shadow-md transition ${
       isSold
         ? "bg-yellow-50 border-2 border-yellow-300"
-        : "bg-green-50 border-2 border-green-300"
+        : "bg-green-50 border-2 border-green-200"
     }`}>
 
-      {/* Sold banner */}
-      {/* {isSold && (
-        <div className="flex items-center gap-2 bg-yellow-100 border border-yellow-300 rounded-lg px-3 py-2 mb-3">
-          <BadgeCheck size={15} className="text-yellow-600 flex-shrink-0" />
-          <p className="text-xs font-semibold text-yellow-800">This ticket has been sold</p>
-        </div>
-      )} */}
 
       <div className="flex items-start justify-between mb-3">
         <div>
-          <h3 className={`font-bold text-sm ${isSold ? "text-yellow-900" : "text-green-900"}`}>
+          <h3 className={`font-bold text-sm font-mono ${isSold ? "text-yellow-900" : "text-green-900"}`}>
             {ticket.trainName || "—"}
           </h3>
-          <p className="text-xs text-gray-400 mt-0.5">{ticket.trainNumber || ""}</p>
+          <p className="text-xs font-mono text-gray-400 mt-0.5">{ticket.trainNumber || ""}</p>
         </div>
         <div className="flex items-center gap-1.5">
           <span className={`text-xs border px-2.5 py-1 rounded-full ${
             isSold
               ? "border-yellow-300 text-yellow-700 bg-yellow-50"
-              : "border-green-300 text-green-700 bg-green-50"
+              : "border-green-200 text-green-700 bg-green-50"
           }`}>
             {ticket.trainClass}
           </span>
@@ -722,10 +712,10 @@ const TicketCard = ({ ticket, duration, initials }) => {
 
       <div className="flex items-center gap-3 mb-3">
         <div>
-          <p className={`text-xl font-bold ${isSold ? "text-yellow-800" : "text-green-900"}`}>
+          <p className={`text-xl font-bold font-mono ${isSold ? "text-yellow-800" : "text-green-900"}`}>
             {ticket.departureTime || "—"}
           </p>
-          <p className="text-xs text-gray-500">{ticket.from || "—"}</p>
+          <p className="text-xs font-mono text-gray-500">{ticket.from || "—"}</p>
         </div>
         <div className="flex-1 flex flex-col items-center gap-0.5">
           {duration && <span className="text-xs text-gray-400">{duration}</span>}
@@ -736,20 +726,20 @@ const TicketCard = ({ ticket, duration, initials }) => {
           </div>
         </div>
         <div className="text-right">
-          <p className={`text-xl font-bold ${isSold ? "text-yellow-800" : "text-green-900"}`}>
+          <p className={`text-xl font-bold font-mono ${isSold ? "text-yellow-800" : "text-green-900"}`}>
             {ticket.arrivalTime || "—"}
           </p>
-          <p className="text-xs text-gray-500">{ticket.to || "—"}</p>
+          <p className="text-xs font-mono text-gray-500">{ticket.to || "—"}</p>
         </div>
       </div>
 
       <div className="flex items-center gap-3 text-xs text-gray-400 mb-4">
-        <div className="flex items-center gap-1">
+        <div className="flex font-mono items-center gap-1">
           <Clock size={12} />
           <span>{ticket.journeyDate || "—"}</span>
         </div>
         <span>·</span>
-        <div className="flex items-center gap-1">
+        <div className="flex font-mono items-center gap-1">
           <Users size={12} />
           <span>{ticket.seats} available</span>
         </div>
@@ -758,12 +748,12 @@ const TicketCard = ({ ticket, duration, initials }) => {
       <div className={`border-t pt-3 flex items-center justify-between ${
         isSold ? "border-yellow-200" : "border-green-200"
       }`}>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center  gap-2">
 {ticket.listerPhoto ? (
   <img
     src={ticket.listerPhoto}
     alt={ticket.fullName}
-    className="w-8 h-8 rounded-full object-cover border border-gray-200"
+    className="w-8 h-8 rounded-full  object-cover border border-gray-200"
   />
 ) : (
   <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600">
@@ -774,10 +764,10 @@ const TicketCard = ({ ticket, duration, initials }) => {
         </div>
         <div className="flex items-center gap-2">
           <div className="text-right">
-            <p className={`text-base font-bold ${isSold ? "text-yellow-800" : "text-green-900"}`}>
+            <p className={`text-base font-bold font-mono ${isSold ? "text-yellow-800" : "text-green-900"}`}>
               ₹{ticket.price}
             </p>
-            <p className="text-[10px] text-gray-400">per seat</p>
+            <p className="text-[10px] font-mono text-gray-400">per seat</p>
           </div>
           <button
             onClick={() => !isSold && navigate(`/ticket/${ticket.id}`)}

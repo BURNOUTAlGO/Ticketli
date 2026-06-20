@@ -105,7 +105,7 @@ const CustomSelect = ({ value, onChange, options }) => {
           <div
             ref={menuRef}
             style={menuStyle}
-            className="bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-xl shadow-xl overflow-hidden py-1"
+            className="bg-white dark:bg-black border border-[var(--color-border)] rounded-xl shadow-xl overflow-hidden py-1"
           >
             {options.map((opt) => (
               <button
@@ -483,7 +483,7 @@ useEffect(() => {
           {/* ══ MOBILE ══ */}
           <div className="h-full flex flex-col md:hidden overflow-y-auto hide-scrollbar">
             {/* Sticky bar */}
-            <div className="sticky top-0 z-10 bg-[var(--color-bg)] border-b border-[var(--color-border)] px-3 py-2.5 flex items-center justify-between gap-2">
+            <div className="sticky top-0 z-10 bg-white dark:bg-black border-b border-[var(--color-border)] px-3 py-2.5 flex items-center justify-between gap-2">
               <p className="text-xs pl-3.5 sm:text-sm text-[var(--color-text)] font-medium whitespace-nowrap flex-shrink-0">
                 {filtered.length} listing{filtered.length !== 1 ? "s" : ""}
               </p>
@@ -509,7 +509,7 @@ useEffect(() => {
                   {sortOpen && (
                     <>
                       <div className="fixed inset-0 z-20" onClick={() => setSortOpen(false)} />
-                      <div className="absolute right-0 mt-1.5 w-56 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-xl shadow-lg z-30 overflow-hidden">
+                      <div className="absolute right-0 mt-1.5 w-56 bg-white dark:bg-black border border-[var(--color-border)] rounded-xl shadow-lg z-30 overflow-hidden">
                         {sortOptions.map((opt) => (
                           <button
                             key={opt}
@@ -627,7 +627,7 @@ useEffect(() => {
                   {sortOpen && (
                     <>
                       <div className="fixed inset-0 z-20" onClick={() => setSortOpen(false)} />
-                      <div className="absolute right-0 mt-1.5 w-56 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-xl shadow-lg z-30 overflow-hidden">
+                      <div className="absolute right-0 mt-1.5 w-56 bg-white dark:bg-black border border-[var(--color-border)] rounded-xl shadow-lg z-30 overflow-hidden">
                         {sortOptions.map((opt) => (
                           <button
                             key={opt}

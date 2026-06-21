@@ -499,7 +499,7 @@ const PNRStep = ({ onVerified }) => {
   return (
     <div className="rail-ticket-card font-mono p-4 sm:p-6">
       <h2 className="text-base sm:text-lg font-bold text-[var(--color-text)]">Verify your ticket</h2>
-      <p className="text-xs sm:text-sm text-[var(--color-text-subtle)] mt-1 mb-4 sm:mb-6">
+      <p className="text-xs sm:text-sm text-[#c9c9c9] dark:text-[var(--color-text-subtle)] mt-1 mb-4 sm:mb-6">
         Enter your 10-digit PNR number to auto-fill journey details. Each PNR can only be listed once.
       </p>
 
@@ -565,7 +565,7 @@ const PNRStep = ({ onVerified }) => {
               ["Passengers", pnrData.numberOfpassenger],
             ].map(([label, val]) => (
               <div key={label}>
-                <p className="text-xs text-[var(--color-text-subtle)] mb-0.5">{label}</p>
+                <p className="text-xs text-[#c9c9c9] dark:text-[var(--color-text-subtle)] mb-0.5">{label}</p>
                 <p className="font-semibold text-[var(--color-text)] text-xs break-words">{val}</p>
               </div>
             ))}
@@ -648,7 +648,7 @@ const validateStep = (step, formData) => {
 const Step1 = ({ formData, handleChange, errors }) => (
   <div className="rail-ticket-card font-mono p-4 sm:p-6">
     <h2 className="text-base sm:text-lg font-bold text-[var(--color-text)]">Journey details</h2>
-    <p className="text-xs sm:text-sm text-[var(--color-text-subtle)] mt-1 mb-1 sm:mb-2">
+    <p className="text-xs sm:text-sm text-[#c9c9c9] dark:text-[var(--color-text-subtle)] mt-1 mb-1 sm:mb-2">
       Journey details have been auto-filled from your PNR and are locked.
     </p>
     <div
@@ -698,7 +698,7 @@ const Step2 = ({ formData, handleChange, errors }) => {
   return (
     <div className="rail-ticket-card font-mono p-4 sm:p-6">
       <h2 className="text-base sm:text-lg font-bold text-[var(--color-text)]">Ticket details</h2>
-      <p className="text-xs sm:text-sm text-[var(--color-text-subtle)] mt-1 mb-4 sm:mb-6">
+      <p className="text-xs sm:text-sm text-[#c9c9c9] dark:text-[var(--color-text-subtle)] mt-1 mb-4 sm:mb-6">
         Specify the number of seats and your asking price.
       </p>
 
@@ -706,12 +706,12 @@ const Step2 = ({ formData, handleChange, errors }) => {
         <div>
           <Label required>Train Class</Label>
           <CustomSelect value={formData.trainClass} onChange={() => {}} options={classOptions} disabled />
-          <p className="text-[var(--color-text-subtle)] text-xs mt-1">Auto-filled from PNR, cannot be changed.</p>
+          <p className="text-[#c9c9c9] dark:text-[var(--color-text-subtle)] text-xs mt-1">Auto-filled from PNR, cannot be changed.</p>
         </div>
         <div>
           <Label required>Number of Seats</Label>
           <CustomSelect value={formData.seats} onChange={() => {}} options={seatOptions} disabled />
-          <p className="text-[var(--color-text-subtle)] text-xs mt-1">Auto-filled from PNR, cannot be changed.</p>
+          <p className="text-[#c9c9c9] dark:text-[var(--color-text-subtle)] text-xs mt-1">Auto-filled from PNR, cannot be changed.</p>
         </div>
       </div>
 
@@ -749,17 +749,18 @@ const Step2 = ({ formData, handleChange, errors }) => {
 const Step3 = ({ formData, handleChange, errors }) => (
   <div className="rail-ticket-card font-mono p-4 sm:p-6">
     <h2 className="text-base sm:text-lg font-bold text-[var(--color-text)]">Contact info</h2>
-    <p className="text-xs sm:text-sm text-[var(--color-text-subtle)] mt-1 mb-4 sm:mb-6">
+    <p className="text-xs sm:text-sm text-[#c9c9c9] dark:text-[var(--color-text-subtle)] mt-1 mb-4 sm:mb-6">
       How should buyers reach you?
     </p>
 
-    <div className="mb-3 sm:mb-4">
+    <div className="mb-3 sm:mb-4 ">
       <Label required>Full Name</Label>
       <Input
-        placeholder="e.g. Rahul Sharma"
+        placeholder="e.g. Abhinav Maurya"
         value={formData.fullName}
         onChange={handleChange("fullName")}
         error={errors.fullName}
+        
       />
     </div>
 
@@ -767,7 +768,7 @@ const Step3 = ({ formData, handleChange, errors }) => (
       <Label required>Email</Label>
       <Input
         type="email"
-        placeholder="e.g. rahul@email.com"
+        placeholder="e.g. thisisabhi@gmail.com"
         value={formData.email}
         readOnly
         error={errors.email}
@@ -779,7 +780,7 @@ const Step3 = ({ formData, handleChange, errors }) => (
       <Label required>Phone</Label>
       <Input
         type="tel"
-        placeholder="e.g. 9876543210"
+        placeholder="e.g. 97951076XX"
         value={formData.phone}
         onChange={handleChange("phone")}
         error={errors.phone}
@@ -792,7 +793,7 @@ const Step3 = ({ formData, handleChange, errors }) => (
 const ReviewRow = ({ label, value, muted = false }) => (
   <div className="flex items-start justify-between gap-3 py-2.5
                   border-b border-[var(--color-border)] last:border-b-0">
-    <span className="text-sm text-[var(--color-text-subtle)] flex-shrink-0">{label}</span>
+    <span className="text-sm text-sm text-[#c9c9c9] dark:text-[var(--color-text-subtle)] flex-shrink-0">{label}</span>
     <span className={`text-sm text-right break-all sm:break-words
       ${muted ? "text-[var(--color-text)]" : "font-semibold text-[var(--color-text)]"}`}>
       {value}
@@ -803,7 +804,7 @@ const ReviewRow = ({ label, value, muted = false }) => (
 const Step4 = ({ formData }) => (
   <div className="rail-ticket-card font-mono p-4 sm:p-6">
     <h2 className="text-base  sm:text-lg font-bold text-[var(--color-text)]">Review your listing</h2>
-    <p className="text-xs sm:text-sm text-[var(--color-text-subtle)] mt-1 mb-4 sm:mb-6">
+    <p className="text-xs sm:text-sm text-[#c9c9c9] dark:text-[var(--color-text-subtle)] mt-1 mb-4 sm:mb-6">
       Confirm all details before publishing.
     </p>
 

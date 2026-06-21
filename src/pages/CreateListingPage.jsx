@@ -583,7 +583,7 @@ const PNRStep = ({ onVerified }) => {
       )}
 
       {!pnrData && !error && (
-        <p className="text-xs text-[var(--color-text-subtle)] mt-2">
+        <p className="text-xs text-[#c9c9c9] dark:text-[var(--color-text-subtle)] mt-2">
           Your PNR number can be found on your train booking confirmation or ticket.
         </p>
       )}

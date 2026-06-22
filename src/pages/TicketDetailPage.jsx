@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 import { db } from "../firebase";
-import { doc, collection, addDoc,onSnapshot, serverTimestamp, query, where, getDocs } from "firebase/firestore";
+import { doc, collection, addDoc, onSnapshot, serverTimestamp, query, where } from "firebase/firestore";
 import {
   
   Train, Calendar, Clock, MapPin, Users,
@@ -80,17 +80,27 @@ const TicketDetailPage = () => {
 }, [id]);
 
   useEffect(() => {
-    if (!isAuthenticated || !user?.email || !id) return;
-    const checkExisting = async () => {
-      const q = query(
-        collection(db, "contactRequests"),
-        where("ticketId", "==", id),
-        where("buyerEmail", "==", user.email.toLowerCase())
-      );
-      const snap = await getDocs(q);
-      if (!snap.empty) setAlreadyRequested(true);
-    };
-    checkExisting();
+    if (!isAuthenticated || !user?.email || !id) {
+      setAlreadyRequested(false);
+      return;
+    }
+    const q = query(
+      collection(db, "contactRequests"),
+      where("ticketId", "==", id),
+      where("buyerEmail", "==", user.email.toLowerCase())
+    );
+
+    const unsubscribe = onSnapshot(
+      q,
+      (snap) => {
+        setAlreadyRequested(!snap.empty);
+      },
+      (err) => {
+        console.error("Error checking existing request:", err);
+      }
+    );
+
+    return () => unsubscribe();
   }, [isAuthenticated, user, id]);
 
   const getDuration = (dep, arr) => {
@@ -222,7 +232,7 @@ const TicketDetailPage = () => {
         <div className="max-w-5xl mx-auto">
 
           {/* Breadcrumb */}
-          <div className="flex items-center gap-1.5 text-sm text-[#c9c9c9] dark:text-[var(--color-text-subtle)] mb-6 flex-wrap font-mono">
+          <div className="flex items-center gap-1.5 text-sm text-[var(--color-text-subtle)] mb-6 flex-wrap font-mono">
             <Link to="/" className="hover:text-[var(--rail-orange)] transition">Home</Link>
             <ChevronRight size={14} />
             <Link to="/browse" className="hover:text-[var(--rail-orange)] transition">Browse Tickets</Link>
@@ -249,7 +259,7 @@ const TicketDetailPage = () => {
               )}
 
               {/* Main ticket card */}
-              <div className={`border rounded-2xl p-5 md:p-6 font-mono ${
+              <div className={`border rounded-2xl p-5 md:p-6 ${
                 isSold
                   ? "bg-yellow-50 border-2 border-yellow-300"
                   : "rail-card rounded-2xl"
@@ -263,7 +273,7 @@ const TicketDetailPage = () => {
                     }`}>
                       {ticket.trainName || "—"}
                     </h1>
-                    <div className="flex items-center gap-1.5 mt-1 text-xs text-[#c9c9c9] dark:text-[var(--color-text-subtle)] font-mono">
+                    <div className="flex items-center gap-1.5 mt-1 text-xs text-[var(--color-text-subtle)] font-mono">
                       <Train size={13} />
                       <span>{ticket.trainNumber || "—"}</span>
                     </div>
@@ -302,7 +312,7 @@ const TicketDetailPage = () => {
                       <p className={`text-sm font-medium mt-1 ${
                         isSold ? "text-yellow-700" : "text-[var(--color-text)]"
                       }`}>{ticket.from || "—"}</p>
-                      <p className="text-xs text-[#c9c9c9] dark:text-[var(--color-text-subtle)]">Departure</p>
+                      <p className="text-xs text-[var(--color-text-subtle)]">Departure</p>
                     </div>
                     <div className="flex-1 flex flex-col items-center gap-1 px-2">
                       {duration && (
@@ -323,7 +333,7 @@ const TicketDetailPage = () => {
                       <p className={`text-sm font-medium mt-1 ${
                         isSold ? "text-yellow-700" : "text-[var(--color-text)]"
                       }`}>{ticket.to || "—"}</p>
-                      <p className="text-xs text-[#c9c9c9] dark:text-[var(--color-text-subtle)]">Arrival</p>
+                      <p className="text-xs text-[var(--color-text-subtle)]">Arrival</p>
                     </div>
                   </div>
                 </div>
@@ -331,7 +341,7 @@ const TicketDetailPage = () => {
                 {/* Details grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-5">
                   <div>
-                    <div className="flex items-center gap-1.5 text-xs text-[#c9c9c9] dark:text-[var(--color-text-subtle)] mb-1">
+                    <div className="flex items-center gap-1.5 text-xs text-[var(--color-text-subtle)] mb-1">
                       <Calendar size={12} /> Journey Date
                     </div>
                     <p className={`text-sm font-semibold ${isSold ? "text-yellow-800" : "text-[var(--color-text)]"}`}>
@@ -339,7 +349,7 @@ const TicketDetailPage = () => {
                     </p>
                   </div>
                   <div>
-                    <div className="flex items-center gap-1.5 text-xs text-[#c9c9c9] dark:text-[var(--color-text-subtle)] mb-1">
+                    <div className="flex items-center gap-1.5 text-xs text-[var(--color-text-subtle)] mb-1">
                       <Clock size={12} /> Duration
                     </div>
                     <p className={`text-sm font-semibold ${isSold ? "text-yellow-800" : "text-[var(--color-text)]"}`}>
@@ -347,7 +357,7 @@ const TicketDetailPage = () => {
                     </p>
                   </div>
                   <div>
-                    <div className="flex items-center gap-1.5 text-xs text-[#c9c9c9] dark:text-[var(--color-text-subtle)] mb-1">
+                    <div className="flex items-center gap-1.5 text-xs text-[var(--color-text-subtle)] mb-1">
                       <Users size={12} /> Seats Available
                     </div>
                     <p className={`text-sm font-semibold ${isSold ? "text-yellow-800" : "text-[var(--color-text)]"}`}>
@@ -355,7 +365,7 @@ const TicketDetailPage = () => {
                     </p>
                   </div>
                   <div>
-                    <div className="flex items-center gap-1.5 text-xs text-[#c9c9c9] dark:text-[var(--color-text-subtle)] mb-1">
+                    <div className="flex items-center gap-1.5 text-xs text-[var(--color-text-subtle)] mb-1">
                       <MapPin size={12} /> From
                     </div>
                     <p className={`text-sm font-semibold ${isSold ? "text-yellow-800" : "text-[var(--color-text)]"}`}>
@@ -363,7 +373,7 @@ const TicketDetailPage = () => {
                     </p>
                   </div>
                   <div>
-                    <div className="flex items-center gap-1.5 text-xs text-[#c9c9c9] dark:text-[var(--color-text-subtle)] mb-1">
+                    <div className="flex items-center gap-1.5 text-xs text-[var(--color-text-subtle)] mb-1">
                       <MapPin size={12} /> To
                     </div>
                     <p className={`text-sm font-semibold ${isSold ? "text-yellow-800" : "text-[var(--color-text)]"}`}>
@@ -371,7 +381,7 @@ const TicketDetailPage = () => {
                     </p>
                   </div>
                   <div>
-                    <div className="flex items-center gap-1.5 text-xs text-[#c9c9c9] dark:text-[var(--color-text-subtle)] mb-1">
+                    <div className="flex items-center gap-1.5 text-xs text-[var(--color-text-subtle)] mb-1">
                       <Train size={12} /> Class
                     </div>
                     <p className={`text-sm font-semibold ${isSold ? "text-yellow-800" : "text-[var(--color-text)]"}`}>
@@ -399,23 +409,23 @@ const TicketDetailPage = () => {
             {/* ── Right column ── */}
             <div className="w-full lg:w-72 flex-shrink-0">
               <div className="lg:sticky flex flex-col gap-4" style={{ top: "calc(var(--navbar-height, 64px) + 1.5rem)" }}>
-                <div className={`border rounded-2xl font-mono p-5 ${
+                <div className={`border rounded-2xl p-5 ${
                   isSold
                     ? "bg-yellow-50 border-2 border-yellow-300"
                     : "rail-card rounded-2xl"
                 }`}>
 
-                  <p className="text-xs text-[#c9c9c9] dark:text-[var(--color-text-subtle)] mb-1">Price per seat</p>
+                  <p className="text-xs text-[var(--color-text-subtle)] mb-1">Price per seat</p>
                   <p className={`text-3xl font-bold mb-1 font-mono ${isSold ? "text-yellow-800" : "text-[var(--color-text)]"}`}>
                     ₹{ticket.price}
                   </p>
-                  <p className="text-xs text-[#c9c9c9] dark:text-[var(--color-text-subtle)] mb-5">
+                  <p className="text-xs text-[var(--color-text-subtle)] mb-5">
                     Total for {ticket.seats}: ₹{Number(ticket.price) * parseInt(ticket.seats)}
                   </p>
 
                   <div className={`border-t mb-4 ${isSold ? "border-yellow-200" : "border-[var(--color-border)]"}`} />
 
-                  <p className="text-xs text-[#c9c9c9] dark:text-[var(--color-text-subtle)] mb-2">Listed by</p>
+                  <p className="text-xs text-[var(--color-text-subtle)] mb-2">Listed by</p>
                   <div className="flex items-center gap-2.5 mb-5">
     {ticket.listerPhoto ? (
     <img
@@ -444,7 +454,7 @@ const TicketDetailPage = () => {
                         <BadgeCheck size={16} />
                         Ticket Sold
                       </div>
-                      <p className="text-[11px] text-[#c9c9c9] dark:text-[var(--color-text-subtle)] text-center leading-relaxed">
+                      <p className="text-[11px] text-[var(--color-text-subtle)] text-center leading-relaxed">
                         This ticket is no longer available. Browse other listings to find a similar route.
                       </p>
                       <button
@@ -460,7 +470,7 @@ const TicketDetailPage = () => {
                         <CheckCircle size={16} />
                         Request Sent
                       </div>
-                      <p className="text-[11px] text-[#c9c9c9] dark:text-[var(--color-text-subtle)] text-center leading-relaxed">
+                      <p className="text-[11px] text-[var(--color-text-subtle)] text-center leading-relaxed">
                         The seller will review your request. You'll be able to see their contact details once approved.
                       </p>
                       <Link

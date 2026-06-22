@@ -38,7 +38,7 @@ function Home() {
               text="Wanna Sell Tickets? Or Buy Tickets?"
               className="text-[2.25rem] sm:text-[3.25rem] md:text-[4.5rem] tracking-[-5%] leading-tight flex items-center justify-center text-center"
             />
-            <h1 className="text-[#969696] font-figtree text-sm sm:text-base max-w-xl">
+            <h1 className="text-[#969696] font-geist text-sm sm:text-base max-w-xl">
               Can't make your journey? List your train ticket and connect with
               travelers who need it. Simple, safe, and community-driven.
             </h1>

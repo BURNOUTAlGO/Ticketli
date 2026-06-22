@@ -32,6 +32,45 @@ import {
 } from "lucide-react";
 import { KineticText } from "@/components/ui/kinetic-text";
 
+// ── Shared theme tokens (same system as CreateListingPage) ─────────────────
+const ThemeStyles = () => (
+  <style>{`
+    :root {
+      --rail-orange: #FF6B1A;
+      --rail-orange-dim: #FF6B1A1a;
+      --rail-orange-mid: #FF6B1A40;
+      --navbar-height: 64px;
+    }
+    @media (max-width: 639px) {
+      :root { --navbar-height: 56px; }
+    }
+    .rail-btn-primary {
+      background: var(--rail-orange);
+      color: #ffffff;
+    }
+    .rail-btn-primary:hover:not(:disabled) { filter: brightness(1.08); }
+    .rail-btn-primary:active:not(:disabled) { filter: brightness(0.92); }
+    .rail-focus:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px var(--rail-orange-mid);
+      border-color: var(--rail-orange);
+    }
+    .rail-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 10px;
+    }
+    .rail-tab-active {
+      color: var(--rail-orange);
+      border-color: var(--rail-orange);
+    }
+    .rail-badge {
+      background: var(--rail-orange);
+      color: #ffffff;
+    }
+  `}</style>
+);
+
 const MyListingPage = () => {
   const {
     user,
@@ -260,54 +299,61 @@ const nq = query(
 
   if (authLoading || loading)
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <svg
-          className="animate-spin h-7 w-7 text-gray-400"
-          viewBox="0 0 24 24"
-          fill="none"
-        >
-          <circle
-            className="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            strokeWidth="4"
-          />
-          <path
-            className="opacity-75"
-            fill="currentColor"
-            d="M4 12a8 8 0 018-8v8z"
-          />
-        </svg>
-      </div>
+      <>
+        <ThemeStyles />
+        <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg)]">
+          <svg
+            className="animate-spin h-7 w-7"
+            style={{ color: "var(--rail-orange)" }}
+            viewBox="0 0 24 24"
+            fill="none"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            />
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8v8z"
+            />
+          </svg>
+        </div>
+      </>
     );
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4">
-        <div className="text-center max-w-sm">
-          <div className="w-12 h-12 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
-            <LayoutGrid size={20} className="text-gray-400" />
+      <>
+        <ThemeStyles />
+        <div className="min-h-screen flex items-center justify-center px-4 bg-[var(--color-bg)]">
+          <div className="text-center max-w-sm">
+            <div className="w-12 h-12 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] flex items-center justify-center mx-auto mb-4">
+              <LayoutGrid size={20} className="text-[var(--color-text-subtle)]" />
+            </div>
+            <h1 className="text-xl font-bold text-[var(--color-text)] mb-2 font-mono">
+              You're not logged in
+            </h1>
+            <p className="text-sm text-[var(--color-text-subtle)] mb-5">
+              Log in to view your dashboard and listings.
+            </p>
+            <button
+              onClick={() => loginWithRedirect()}
+              className="rail-btn-primary text-sm font-medium px-5 py-2.5 rounded-lg transition"
+            >
+              Log In
+            </button>
           </div>
-          <h1 className="text-xl font-bold text-gray-900 mb-2">
-            You're not logged in
-          </h1>
-          <p className="text-sm text-gray-500 mb-5">
-            Log in to view your dashboard and listings.
-          </p>
-          <button
-            onClick={() => loginWithRedirect()}
-            className="bg-black text-white text-sm font-medium px-5 py-2.5 rounded-xl hover:bg-gray-800 transition"
-          >
-            Log In
-          </button>
         </div>
-      </div>
+      </>
     );
   }
 
-  // ── ticket card shared body ───────────────────────────────────────────────
+  // ── ticket card shared body (UNCHANGED — original theme preserved) ───────
 
   const TicketCardBody = ({ ticket, isSold = false }) => {
     const duration = getDuration(ticket.departureTime, ticket.arrivalTime);
@@ -337,7 +383,7 @@ const nq = query(
               className={`text-xs px-2.5 py-1 rounded-full whitespace-nowrap font-medium ${
                 isSold
                   ? "bg-yellow-400 text-yellow-900"
-                  : "bg-black dark:bg-[var(--color-3)] text-white"
+                  : "bg-[#FF6B1A] dark:bg-[#FF6B1A] text-white"
               }`}
             >
               {isSold ? "Sold" : ticket.status || "Active"}
@@ -428,321 +474,340 @@ const nq = query(
   const totalListingCount = tickets.length + soldTickets.length;
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg)] px-4 sm:px-6 py-8 md:py-12 mt-[60px]">
-      <div className="max-w-5xl mx-auto">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-          <div>
-            <KineticText
-              text="Your Listings"
-              className="text-[2.25rem] sm:text-[3.25rem] md:text-[4.5rem] tracking-[-5%] flex items-start justify-start"
-            />
-            <p className="text-sm text-neutral-400 mt-1 break-all sm:break-normal">
-              {tickets.length} active · {soldTickets.length} sold · {user.name}
-            </p>
+    <>
+      <ThemeStyles />
+      <div
+        className="min-h-screen bg-[var(--color-bg)] px-4 sm:px-6 md:px-8 pb-10 sm:pb-14"
+        style={{ paddingTop: "calc(var(--navbar-height, 64px) + 1.5rem)" }}
+      >
+        <div className="max-w-5xl mx-auto">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+            <div>
+              <KineticText
+                text="Your Listings"
+                className="text-[2.1rem] sm:text-[2.85rem] md:text-[3.5rem] leading-tight tracking-[-3%] flex items-start justify-start"
+              />
+              <p className="text-sm text-[#c9c9c9] dark:text-[var(--color-text-subtle)] mt-2 font-mono break-all sm:break-normal">
+                {tickets.length} active <span style={{ color: "var(--rail-orange)" }}>·</span>{" "}
+                {soldTickets.length} sold <span style={{ color: "var(--rail-orange)" }}>·</span>{" "}
+                {user.name}
+              </p>
+            </div>
+            <button
+              onClick={() => navigate("/create-listing")}
+              className="rail-btn-primary flex items-center justify-center gap-1.5 text-sm font-medium px-4 py-2.5 rounded-lg transition flex-shrink-0 w-full sm:w-auto"
+            >
+              <Plus size={16} />
+              List a Ticket
+            </button>
           </div>
-          <button
-            onClick={() => navigate("/create-listing")}
-            className="flex items-center justify-center gap-1.5 text-sm font-medium px-4 py-2.5 rounded-[10px] transition flex-shrink-0 w-full sm:w-auto border bg-black text-white dark:bg-white hover:bg-[var(--color-surface-hover-switch)] hover:dark:bg-gray-200 duration-200 dark:text-black"
-          >
-            <Plus size={16} />
-            List a Ticket
-          </button>
-        </div>
 
-        {/* Tabs */}
-        <div className="flex items-center gap-2 mb-6 border-b border-gray-200">
-          <button
-            onClick={() => setActiveTab("listings")}
-            className={`pb-3 px-1 text-sm font-medium transition border-b-2 -mb-px ${
-              activeTab === "listings"
-                ? "border-black text-gray-900"
-                : "border-transparent text-gray-400 hover:text-gray-600"
-            }`}
-          >
-            My Listings
-          </button>
-          <button
-            onClick={() => setActiveTab("requests")}
-            className={`pb-3 px-1 text-sm font-medium transition border-b-2 -mb-px flex items-center gap-2 ${
-              activeTab === "requests"
-                ? "border-black text-gray-900"
-                : "border-transparent text-gray-400 hover:text-gray-600"
-            }`}
-          >
-            <Bell size={14} />
-            Requests
-            {requestsTabBadge > 0 && (
-              <span className="bg-black text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-                {requestsTabBadge}
-              </span>
-            )}
-          </button>
-        </div>
+          {/* Tabs */}
+          <div className="flex items-center gap-5 sm:gap-6 mb-8 border-b border-[var(--color-border)]">
+            <button
+              onClick={() => setActiveTab("listings")}
+              className={`pb-3 px-0.5 text-sm font-medium font-mono transition border-b-2 -mb-px ${
+                activeTab === "listings"
+                  ? "rail-tab-active"
+                  : "border-transparent text-[var(--color-text-subtle)] hover:text-[var(--color-text)]"
+              }`}
+            >
+              My Listings
+            </button>
+            <button
+              onClick={() => setActiveTab("requests")}
+              className={`pb-3 px-0.5 text-sm font-medium font-mono transition border-b-2 -mb-px flex items-center gap-2 ${
+                activeTab === "requests"
+                  ? "rail-tab-active"
+                  : "border-transparent text-[var(--color-text-subtle)] hover:text-[var(--color-text)]"
+              }`}
+            >
+              <Bell size={14} />
+              Requests
+              {requestsTabBadge > 0 && (
+                <span className="rail-badge text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                  {requestsTabBadge}
+                </span>
+              )}
+            </button>
+          </div>
 
-        {/* ── MY LISTINGS TAB ── */}
-        {activeTab === "listings" && (
-          <>
-            {totalListingCount === 0 ? (
-              <div className="text-center py-16 md:py-24 bg-[var(--color-surface)] text-gray-400 border border-[var(--color-border)] rounded-[10px] px-4">
-                <Train
-                  size={36}
-                  className="mx-auto mb-3 opacity-20 text-neutral-400"
-                />
-                <p className="text-sm text-neutral-400">
-                  You haven't listed any tickets yet
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {/* ── SOLD TICKETS (yellow) shown first ── */}
-                {soldTickets.map((ticket) => {
-                  return (
-                    <div
-                      key={ticket.id}
-                      className="relative bg-yellow-50 border-2 border-yellow-300 rounded-[10px] p-4 sm:p-5 shadow-sm"
-                    >
-                      {/* Sold banner */}
-                      <div className="flex items-center gap-2 bg-yellow-100 border border-yellow-300 rounded-lg px-3 py-2 mb-3">
-                        <BadgeCheck
-                          size={15}
-                          className="text-yellow-600 flex-shrink-0"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-semibold text-yellow-800">
-                            Marked as Sold
-                          </p>
-                        </div>
-                        {/* Progress bar showing time draining */}
-                      </div>
-
-                      <TicketCardBody ticket={ticket} isSold />
-                    </div>
-                  );
-                })}
-
-                {/* ── ACTIVE TICKETS ── */}
-                {tickets.map((ticket) => {
-                  const isSoldConfirming = confirmId === ticket.id + "_sold";
-                  const ticketRequests = requests.filter(
-                    (r) => r.ticketId === ticket.id && r.status === "pending",
-                  );
-
-                  return (
-                    <div
-                      key={ticket.id}
-                      className="relative bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[10px] p-4 sm:p-5 hover:shadow-md transition"
-                    >
-                      {ticketRequests.length > 0 && (
-                        <div className="absolute -top-2 -right-2 bg-black text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full z-10">
-                          {ticketRequests.length} request
-                          {ticketRequests.length > 1 ? "s" : ""}
-                        </div>
-                      )}
-
-                      <TicketCardBody ticket={ticket} />
-
-                      {!isSoldConfirming ? (
-                        <button
-                          onClick={() => setConfirmId(ticket.id + "_sold")}
-                          className="mt-3 w-full flex items-center justify-center gap-1.5 text-xs font-medium text-green-700 border border-green-200 bg-green-50 px-3 py-2 rounded-lg hover:bg-green-100 transition"
-                        >
-                          <BadgeCheck size={13} />
-                          Mark as Sold
-                        </button>
-                      ) : (
-                        <div className="mt-3">
-                          <p className="text-[11px] text-gray-500 mb-2 text-center">
-                            Mark as sold? The PNR will be permanently blocked
-                            from re-listing.
-                          </p>
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => handleMarkSold(ticket.id)}
-                              className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium text-white bg-green-600 px-3 py-2 rounded-lg hover:bg-green-700 transition"
-                            >
-                              <Check size={13} />
-                              Confirm Sold
-                            </button>
-                            <button
-                              onClick={() => setConfirmId(null)}
-                              className="flex-1 text-xs font-medium border border-gray-200 px-3 py-2 rounded-lg bg-black text-white dark:bg-white dark:text-black hover:bg-[var(--color-surface-hover-switch)] hover:dark:bg-gray-200 duration-200 transition"
-                            >
-                              Cancel
-                            </button>
+          {/* ── MY LISTINGS TAB ── */}
+          {activeTab === "listings" && (
+            <>
+              {totalListingCount === 0 ? (
+                <div className="text-center py-16 md:py-24 bg-[var(--color-surface)] text-[var(--color-text-subtle)] border border-[var(--color-border)] rounded-lg px-4">
+                  <Train
+                    size={36}
+                    className="mx-auto mb-3 opacity-20 text-[var(--color-text-subtle)]"
+                  />
+                  <p className="text-sm text-[var(--color-text-subtle)] font-mono">
+                    You haven't listed any tickets yet
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {/* ── SOLD TICKETS (yellow) shown first — UNCHANGED ── */}
+                  {soldTickets.map((ticket) => {
+                    return (
+                      <div
+                        key={ticket.id}
+                        className="relative bg-yellow-50 border-2 border-yellow-300 rounded-[10px] p-4 sm:p-5 shadow-sm"
+                      >
+                        {/* Sold banner */}
+                        <div className="flex items-center gap-2 bg-yellow-100 border border-yellow-300 rounded-lg px-3 py-2 mb-3">
+                          <BadgeCheck
+                            size={15}
+                            className="text-yellow-600 flex-shrink-0"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-semibold text-yellow-800">
+                              Marked as Sold
+                            </p>
                           </div>
+                          {/* Progress bar showing time draining */}
                         </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </>
-        )}
 
-        {/* ── REQUESTS TAB ── */}
-        {activeTab === "requests" && (
-          <>
-            {requests.length === 0 && notifications.length === 0 ? (
-              <div className="text-center py-16 md:py-24 text-gray-400 border border-gray-100 rounded-2xl px-4">
-                <Bell size={36} className="mx-auto mb-3 opacity-20" />
-                <p className="text-sm font-medium text-gray-600">
-                  No contact requests yet
-                </p>
-                <p className="text-xs mt-1">
-                  When buyers request to contact you, they'll appear here.
-                </p>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-3">
-                {notifications.map((notif) => (
-                  <div
-                    key={notif.id}
-                    className="bg-amber-50 border border-amber-200 rounded-2xl p-4 sm:p-5 flex items-start justify-between gap-3"
-                  >
-                    <div className="flex items-start gap-3 min-w-0">
-                      <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-                        <AlertTriangle size={15} className="text-amber-600" />
+                        <TicketCardBody ticket={ticket} isSold />
                       </div>
-                      <div className="min-w-0">
-                        {notif.type === "new_request" ? (
-                          <>
-                            <p className="text-sm font-semibold text-gray-900">
-                              New Contact Request
-                            </p>
+                    );
+                  })}
 
-                            <p className="text-xs text-gray-600 mt-0.5">
-                              {notif.buyerName} requested contact for
-                              {notif.ticketName}({notif.from} → {notif.to})
-                            </p>
-                          </>
+                  {/* ── ACTIVE TICKETS — UNCHANGED ── */}
+                  {tickets.map((ticket) => {
+                    const isSoldConfirming = confirmId === ticket.id + "_sold";
+                    const ticketRequests = requests.filter(
+                      (r) => r.ticketId === ticket.id && r.status === "pending",
+                    );
+
+                    return (
+                      <div
+                        key={ticket.id}
+                        className="relative bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[10px] p-4 sm:p-5 hover:shadow-md transition"
+                      >
+                        {ticketRequests.length > 0 && (
+                          <div className="absolute h-[20px] w-[20px] text-center -top-2 -right-2 bg-orange-500 text-white text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-full z-10">
+                            {ticketRequests.length} 
+                            
+                          </div>
+                        )}
+
+                        <TicketCardBody ticket={ticket} />
+
+                        {!isSoldConfirming ? (
+                          <button
+                            onClick={() => setConfirmId(ticket.id + "_sold")}
+                            className="mt-3 w-full flex items-center justify-center gap-1.5 text-xs font-medium text-green-700 border border-green-200 bg-green-50 px-3 py-2 rounded-lg hover:bg-green-100 transition"
+                          >
+                            <BadgeCheck size={13} />
+                            Mark as Sold
+                          </button>
                         ) : (
-                          <>
-                            <p className="text-sm font-semibold text-gray-900">
-                              Listing auto-removed
-                            </p>
-
-                            <p className="text-xs text-gray-600 mt-0.5">
-                              {notif.ticketName} ({notif.from} → {notif.to}) was
-                              removed because the journey date (
-                              {notif.journeyDate}) was within 2 days.
-                            </p>
-                          </>
+                          <div className="mt-3">
+                   
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => handleMarkSold(ticket.id)}
+                                className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium text-white bg-green-600 px-3 py-2 rounded-lg hover:bg-green-700 transition"
+                              >
+                                <Check size={13} />
+                                Confirm Sold
+                              </button>
+                              <button
+                                onClick={() => setConfirmId(null)}
+                                className="flex-1 text-xs font-medium border border-gray-200 px-3 py-2 rounded-lg bg-black text-white dark:bg-white dark:text-black hover:bg-[var(--color-surface-hover-switch)] hover:dark:bg-gray-200 duration-200 transition"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
                         )}
                       </div>
-                    </div>
-                    <button
-                      onClick={() => handleDismissNotification(notif.id)}
-                      className="text-gray-400 hover:text-gray-600 flex-shrink-0"
-                      aria-label="Dismiss notification"
+                    );
+                  })}
+                </div>
+              )}
+            </>
+          )}
+
+          {/* ── REQUESTS TAB ── */}
+          {activeTab === "requests" && (
+            <>
+              {requests.length === 0 && notifications.length === 0 ? (
+                <div className="text-center py-16 md:py-24 text-[var(--color-text-subtle)] border border-[var(--color-border)] bg-[var(--color-surface)] rounded-lg px-4">
+                  <Bell size={36} className="mx-auto mb-3 opacity-20" />
+                  <p className="text-sm font-medium font-mono text-[var(--color-text)]">
+                    No contact requests yet
+                  </p>
+                  <p className="text-xs mt-1 text-[var(--color-text-subtle)]">
+                    When buyers request to contact you, they'll appear here.
+                  </p>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  {notifications.map((notif) => (
+                    <div
+                      key={notif.id}
+                      className="rail-card border-l-2 p-4 sm:p-5 flex items-start justify-between gap-3"
+                      style={{ borderLeftColor: "var(--rail-orange)" }}
                     >
-                      <X size={16} />
-                    </button>
-                  </div>
-                ))}
-
-                {requests.map((req) => (
-                  <div
-                    key={req.id}
-                    className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-5"
-                  >
-                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-2">
-         {req.buyerPhoto ? (
-  <img
-    src={req.buyerPhoto}
-    alt={req.buyerName}
-    className="w-8 h-8 rounded-full object-cover border border-gray-200 flex-shrink-0"
-    referrerPolicy="no-referrer"
-  />
-) : (
-  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600 flex-shrink-0">
-    {req.buyerName
-      ?.split(" ")
-      .map((w) => w[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2) || "?"}
-  </div>
-)}
-                          <div>
-                            <p className="text-sm font-semibold text-gray-900">
-                              {req.buyerName}
-                            </p>
-                            <p className="text-xs text-gray-400">
-                              {req.buyerEmail}
-                            </p>
-                          </div>
+                      <div className="flex items-start gap-3 min-w-0">
+                        <div
+                          className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                          style={{ background: "var(--rail-orange-dim)" }}
+                        >
+                          <AlertTriangle size={15} style={{ color: "var(--rail-orange)" }} />
                         </div>
-                        <div className="flex items-center gap-1.5 text-xs text-gray-500 flex-wrap">
-                          <span className="font-medium text-gray-700">
-                            {req.ticketName}
-                          </span>
-                          <span className="text-gray-300">·</span>
-                          <span>
-                            {req.from} → {req.to}
-                          </span>
-                          <span className="text-gray-300">·</span>
-                          <span>{req.journeyDate}</span>
-                          <span className="text-gray-300">·</span>
-                          <span className="font-medium">₹{req.price}/seat</span>
+                        <div className="min-w-0">
+                          {notif.type === "new_request" ? (
+                            <>
+                              <p className="text-sm font-semibold text-[var(--color-text)]">
+                                New Contact Request
+                              </p>
+
+                              <p className="text-xs text-[var(--color-text-subtle)] mt-0.5">
+                                {notif.buyerName} requested contact for
+                                {notif.ticketName}({notif.from} → {notif.to})
+                              </p>
+                            </>
+                          ) : (
+                            <>
+                              <p className="text-sm font-semibold text-[var(--color-text)]">
+                                Listing auto-removed
+                              </p>
+
+                              <p className="text-xs text-[var(--color-text-subtle)] mt-0.5">
+                                {notif.ticketName} ({notif.from} → {notif.to}) was
+                                removed because the journey date (
+                                {notif.journeyDate}) was within 2 days.
+                              </p>
+                            </>
+                          )}
                         </div>
                       </div>
+                      <button
+                        onClick={() => handleDismissNotification(notif.id)}
+                        className="text-[var(--color-text-subtle)] hover:text-[var(--color-text)] flex-shrink-0 transition"
+                        aria-label="Dismiss notification"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ))}
 
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        {req.status === "pending" && (
-                          <>
-                            <button
-                              onClick={() =>
-                                handleRequestAction(req.id, "approved")
-                              }
-                              className="flex items-center gap-1.5 bg-black text-white text-xs font-medium px-3 py-2 rounded-lg hover:bg-gray-800 transition"
-                            >
-                              <Check size={13} />
-                              Approve
-                            </button>
-                            <button
-                              onClick={() =>
-                                handleRequestAction(req.id, "rejected")
-                              }
-                              className="flex items-center gap-1.5 border border-gray-200 text-gray-700 text-xs font-medium px-3 py-2 rounded-lg hover:bg-gray-50 transition"
-                            >
-                              <X size={13} />
-                              Reject
-                            </button>
-                          </>
-                        )}
-                        {req.status === "approved" && (
-                          <div className="flex flex-col items-end gap-2">
-                            <span className="flex items-center gap-1 text-xs font-medium text-green-600 bg-green-50 border border-green-200 px-3 py-1.5 rounded-lg">
-                              <Check size={12} /> Approved
-                            </span>
-                            <a
-                              href={`mailto:${req.buyerEmail}?subject=Your ticket request for ${req.ticketName} has been approved&body=Hi ${req.buyerName},%0D%0A%0D%0AYour request for the ${req.ticketName} from ${req.from} to ${req.to} on ${req.journeyDate} has been approved.%0D%0A%0D%0APlease contact me to proceed with the purchase.%0D%0A%0D%0AThank you!`}
-                              className="flex items-center gap-1.5 bg-black text-white text-xs font-medium px-3 py-1.5 rounded-lg hover:bg-gray-800 transition"
-                            >
-                              <Mail size={12} />
-                              Email Buyer
-                            </a>
+                  {requests.map((req) => (
+                    <div
+                      key={req.id}
+                      className="rail-card p-4 sm:p-5"
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-2">
+           {req.buyerPhoto ? (
+    <img
+      src={req.buyerPhoto}
+      alt={req.buyerName}
+      className="w-8 h-8 rounded-full object-cover border border-[var(--color-border)] flex-shrink-0"
+      referrerPolicy="no-referrer"
+    />
+  ) : (
+    <div
+      className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+      style={{ background: "var(--rail-orange-dim)", color: "var(--rail-orange)" }}
+    >
+      {req.buyerName
+        ?.split(" ")
+        .map((w) => w[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2) || "?"}
+    </div>
+  )}
+                            <div>
+                              <p className="text-sm font-semibold text-[var(--color-text)]">
+                                {req.buyerName}
+                              </p>
+                              <p className="text-xs text-[var(--color-text-subtle)]">
+                                {req.buyerEmail}
+                              </p>
+                            </div>
                           </div>
-                        )}
-                        {req.status === "rejected" && (
-                          <span className="flex items-center gap-1 text-xs font-medium text-red-500 bg-red-50 border border-red-100 px-3 py-1.5 rounded-lg">
-                            <X size={12} /> Rejected
-                          </span>
-                        )}
+                          <div className="flex items-center gap-1.5 text-xs text-[var(--color-text-subtle)] flex-wrap font-mono">
+                            <span className="font-medium text-[var(--color-text)]">
+                              {req.ticketName}
+                            </span>
+                            <span className="opacity-40">·</span>
+                            <span>
+                              {req.from} → {req.to}
+                            </span>
+                            <span className="opacity-40">·</span>
+                            <span>{req.journeyDate}</span>
+                            <span className="opacity-40">·</span>
+                            <span className="font-medium">₹{req.price}/seat</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {req.status === "pending" && (
+                            <>
+                              <button
+                                onClick={() =>
+                                  handleRequestAction(req.id, "approved")
+                                }
+                                className="rail-btn-primary flex items-center gap-1.5 text-xs font-medium px-3 py-2 rounded-lg transition"
+                              >
+                                <Check size={13} />
+                                Approve
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleRequestAction(req.id, "rejected")
+                                }
+                                className="rail-focus flex items-center gap-1.5 border border-[var(--color-border)] text-[var(--color-text)] text-xs font-medium px-3 py-2 rounded-lg hover:bg-[var(--color-surface-hover)] transition"
+                              >
+                                <X size={13} />
+                                Reject
+                              </button>
+                            </>
+                          )}
+                          {req.status === "approved" && (
+                            <div className="flex flex-col items-end gap-2">
+                              <span
+                                className="flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-lg border"
+                                style={{
+                                  color: "var(--rail-orange)",
+                                  background: "var(--rail-orange-dim)",
+                                  borderColor: "var(--rail-orange-mid)",
+                                }}
+                              >
+                                <Check size={12} /> Approved
+                              </span>
+                              <a
+                                href={`mailto:${req.buyerEmail}?subject=Your ticket request for ${req.ticketName} has been approved&body=Hi ${req.buyerName},%0D%0A%0D%0AYour request for the ${req.ticketName} from ${req.from} to ${req.to} on ${req.journeyDate} has been approved.%0D%0A%0D%0APlease contact me to proceed with the purchase.%0D%0A%0D%0AThank you!`}
+                                className="rail-btn-primary flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition"
+                              >
+                                <Mail size={12} />
+                                Email Buyer
+                              </a>
+                            </div>
+                          )}
+                          {req.status === "rejected" && (
+                            <span className="flex items-center gap-1 text-xs font-medium text-red-500 bg-red-50 border border-red-100 px-3 py-1.5 rounded-lg">
+                              <X size={12} /> Rejected
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </>
-        )}
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

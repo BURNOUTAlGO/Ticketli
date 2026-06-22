@@ -41,7 +41,7 @@ const Input = ({ error, hint, ...props }) => (
   </div>
 );
 
-// ── Shared styles (theme tokens + animations) ──────────────────────────────
+// ── Shared styles (theme tokens) ───────────────────────────────────────────
 const ThemeStyles = () => (
   <style>{`
     :root {
@@ -52,44 +52,6 @@ const ThemeStyles = () => (
     }
     @media (max-width: 639px) {
       :root { --navbar-height: 56px; }
-    }
-    @keyframes stampIn {
-      0%   { transform: scale(2.2) rotate(-14deg); opacity: 0; }
-      60%  { transform: scale(0.92) rotate(-4deg); opacity: 1; }
-      100% { transform: scale(1) rotate(-4deg); opacity: 1; }
-    }
-    @keyframes checkPop {
-      0%   { transform: scale(0); opacity: 0; }
-      70%  { transform: scale(1.15); opacity: 1; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-    @keyframes slideInRight {
-      from { opacity: 0; transform: translateX(24px); }
-      to   { opacity: 1; transform: translateX(0); }
-    }
-    @keyframes slideInLeft {
-      from { opacity: 0; transform: translateX(-24px); }
-      to   { opacity: 1; transform: translateX(0); }
-    }
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(8px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes dashTravel {
-      to { stroke-dashoffset: -16; }
-    }
-    @keyframes pulseRing {
-      0%   { box-shadow: 0 0 0 0 var(--rail-orange-mid); }
-      100% { box-shadow: 0 0 0 8px transparent; }
-    }
-    .rail-step-fwd  { animation: slideInRight 0.32s cubic-bezier(0.22, 1, 0.36, 1); }
-    .rail-step-back { animation: slideInLeft 0.32s cubic-bezier(0.22, 1, 0.36, 1); }
-    .rail-fade-up   { animation: fadeUp 0.35s ease both; }
-    .rail-stamp     { animation: stampIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
-    .rail-check-pop { animation: checkPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
-    .rail-route-dash {
-      stroke-dasharray: 4 4;
-      animation: dashTravel 0.8s linear infinite;
     }
     .rail-btn-primary {
       background: var(--rail-orange);
@@ -131,13 +93,6 @@ const ThemeStyles = () => (
     }
     .rail-progress-fill {
       background: var(--rail-orange);
-      transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .rail-step-fwd, .rail-step-back, .rail-fade-up, .rail-stamp, .rail-check-pop {
-        animation: none !important;
-      }
-      .rail-route-dash { animation: none !important; }
     }
   `}</style>
 );
@@ -281,7 +236,7 @@ const TicketStub = ({ formData, step }) => {
   const verified = !!formData.pnrNumber;
 
   return (
-    <div className="rail-ticket-card rail-fade-up">
+    <div className="rail-ticket-card">
       {/* Header strip */}
       <div
         className="px-4 py-2.5 flex items-center justify-between"
@@ -292,7 +247,7 @@ const TicketStub = ({ formData, step }) => {
           <span className="text-xs font-bold text-white tracking-wide">E-TICKET PREVIEW</span>
         </div>
         {verified && (
-          <div className="rail-check-pop flex items-center gap-1 bg-white/20 rounded-full px-2 py-0.5">
+          <div className="flex items-center gap-1 bg-white/20 rounded-full px-2 py-0.5">
             <Check size={11} className="text-white" />
             <span className="text-[10px] font-semibold text-white">VERIFIED</span>
           </div>
@@ -310,7 +265,7 @@ const TicketStub = ({ formData, step }) => {
           </div>
           {verified && (
             <div
-              className="rail-stamp flex items-center justify-center w-12 h-12 rounded-full border-2 flex-shrink-0"
+              className="flex items-center justify-center w-12 h-12 rounded-full border-2 flex-shrink-0"
               style={{ borderColor: "var(--rail-orange)", color: "var(--rail-orange)", transform: "rotate(-4deg)" }}
             >
               <Check size={20} strokeWidth={3} />
@@ -339,19 +294,19 @@ const TicketStub = ({ formData, step }) => {
               x1="2" y1="6" x2="52" y2="6"
               stroke={hasRoute ? "var(--rail-orange)" : "var(--color-border)"}
               strokeWidth="1.5"
-              className={hasRoute ? "rail-route-dash" : ""}
               strokeDasharray={hasRoute ? "4 4" : "0"}
             />
-            
+
             <path
               d="M52 2 L58 6 L52 10"
               fill="none"
               stroke={hasRoute ? "var(--rail-orange)" : "var(--color-border)"}
               strokeWidth="1"
               strokeLinecap="round"
-              
+
+
            
-             
+
             />
           </svg>
           <div className="min-w-0 flex-shrink-0 max-w-[40%] text-right">
@@ -537,7 +492,7 @@ const PNRStep = ({ onVerified }) => {
       </div>
 
       {error && (
-        <div className="rail-fade-up flex items-start gap-2 text-red-600 bg-red-50 border border-red-200
+        <div className="flex items-start gap-2 text-red-600 bg-red-50 border border-red-200
                         rounded-lg px-3 py-2.5 mb-4">
           <AlertCircle size={15} className="flex-shrink-0 mt-0.5" />
           <p className="text-xs">{error}</p>
@@ -545,9 +500,9 @@ const PNRStep = ({ onVerified }) => {
       )}
 
       {pnrData && (
-        <div className="rail-fade-up border border-[var(--color-border)] rounded-xl p-4 mb-4 bg-[var(--color-surface)]">
+        <div className="border border-[var(--color-border)] rounded-xl p-4 mb-4 bg-[var(--color-surface)]">
           <div className="flex items-center gap-2 mb-3">
-            <div className="rail-check-pop flex items-center justify-center w-5 h-5 rounded-full"
+            <div className="flex items-center justify-center w-5 h-5 rounded-full"
                  style={{ background: "var(--rail-orange)" }}>
               <Check size={12} className="text-white" strokeWidth={3} />
             </div>
@@ -760,7 +715,7 @@ const Step3 = ({ formData, handleChange, errors }) => (
         value={formData.fullName}
         onChange={handleChange("fullName")}
         error={errors.fullName}
-        
+
       />
     </div>
 
@@ -1020,10 +975,7 @@ const CreateListingPage = () => {
 
             {/* Form column */}
             <div className="w-full lg:flex-1 lg:max-w-2xl min-w-0">
-              <div
-                key={step}
-                className={direction === "fwd" ? "rail-step-fwd" : "rail-step-back"}
-              >
+              <div key={step}>
                 {step === 0 && <PNRStep onVerified={handlePNRVerified} />}
                 {step === 1 && <Step1  formData={formData} handleChange={handleChange} errors={errors} />}
                 {step === 2 && <Step2  formData={formData} handleChange={handleChange} errors={errors} />}

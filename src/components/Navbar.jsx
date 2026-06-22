@@ -39,7 +39,7 @@ function Navbar() {
     { to: "/", label: "Home", icon: House },
     { to: "/browse", label: "Browse", icon: Ticket },
     { to: "/create-listing", label: "List", icon: PlusSquare },
-    { to: "/my-listings", label: "My Listings", icon: List },
+    { to: "/my-listings", label: "Dashboard", icon: List },
     { to: "/my-requests", label: "Notification", icon: Bell},
   ];
 
@@ -72,7 +72,7 @@ function Navbar() {
               <Link
                 key={link.to}
                 to={link.to}
-                className="transition-colors duration-200 text-[var(--color-text)] hover:dark:text-[var(--color-text-hover)] rounded-2xl hover:dark:text-[var(--color-bg-secondary)]"
+                className="transition-colors duration-200 font-mono text-[var(--color-text)] hover:dark:text-[var(--color-text-hover)] rounded-2xl hover:dark:text-[var(--color-bg-secondary)]"
               >
                 {link.label}
               </Link>

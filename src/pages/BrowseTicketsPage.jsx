@@ -396,9 +396,9 @@ useEffect(() => {
               </div>
               <button
                 onClick={handleSwap}
-                className="flex items-center justify-center w-9 h-9 rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] flex-shrink-0"
+                className="flex items-center justify-center w-9 h-9 rounded-full border border-[var(--color-border)] bg-[var(--color-bg) flex-shrink-0"
               >
-                <ArrowLeftRight size={14} className="text-[var(--color-text-muted)]" />
+                <ArrowLeftRight size={14} className="text-black dark:text-white" />
               </button>
               <div className="relative flex-1">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-subtle)]">
@@ -421,7 +421,7 @@ useEffect(() => {
               />
               <button
                 onClick={handleSearch}
-                className="flex items-center justify-center gap-1.5 bg-[var(--color-3)] text-white text-sm font-medium px-5 py-2.5 rounded-xl hover:brightness-90 active:brightness-75 transition flex-shrink-0"
+                className="flex items-center justify-center gap-1.5 bg-[#FF6B1A] text-white text-sm font-medium px-5 py-2.5 rounded-xl hover:brightness-90 active:brightness-75 transition flex-shrink-0 "
               >
                 <Search size={14} />
                 Search
@@ -446,7 +446,7 @@ useEffect(() => {
               onClick={handleSwap}
               className="flex items-center justify-center w-9 h-9 rounded-full border border-[var(--color-border)] hover:bg-[var(--color-surface-hover)] transition flex-shrink-0"
             >
-              <ArrowLeftRight size={15} className="text-[var(--color-text-muted)]" />
+              <ArrowLeftRight size={15} className="text-black dark:text-white" />
             </button>
             <div className="relative flex-1">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-subtle)]">
@@ -469,7 +469,7 @@ useEffect(() => {
             </div>
             <button
               onClick={handleSearch}
-              className="flex items-center justify-center gap-2 bg-[var(--color-3)] text-white text-sm font-medium px-6 py-2.5 rounded-xl hover:brightness-90 active:brightness-75 transition flex-shrink-0"
+              className="flex items-center justify-center gap-2 bg-[#FF6B1A] text-white text-sm font-medium px-6 py-2.5 rounded-xl hover:brightness-90 active:brightness-75 transition flex-shrink-0"
             >
               <Search size={15} />
               Search
@@ -559,7 +559,7 @@ useEffect(() => {
                   <div className="flex-shrink-0 px-5 py-4 border-t border-[var(--color-border)]">
                     <button
                       onClick={() => setShowFilters(false)}
-                      className="w-full bg-[var(--color-3)] text-white text-sm font-semibold py-3 rounded-xl hover:brightness-90 active:brightness-75 transition"
+                      className="w-full bg-[#FF6B1A] text-white text-sm font-semibold py-3 rounded-xl hover:brightness-90 active:brightness-75 transition"
                     >
                       Apply Filters ({filtered.length} result{filtered.length !== 1 ? "s" : ""})
                     </button>

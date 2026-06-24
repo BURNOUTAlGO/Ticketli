@@ -49,6 +49,13 @@ const ThemeStyles = () => (
       color: var(--color-text);
       border-color: var(--color-text-subtle);
     }
+    @keyframes skeleton-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    .skeleton-pulse {
+      animation: skeleton-pulse 1.5s ease-in-out infinite;
+    }
   `}</style>
 );
 
@@ -58,6 +65,22 @@ const FILTERS = [
   { key: "approved", label: "Approved" },
   { key: "rejected", label: "Rejected" },
 ];
+
+// ── Request card skeleton (mirrors the card layout below) ──────────────────
+const RequestCardSkeleton = () => (
+  <div className="rail-card rounded-xl p-4 sm:p-5 border-l-[3px] border-l-[var(--color-border)] skeleton-pulse">
+    <div className="flex items-start justify-between gap-3">
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-1.5 mb-2">
+          <div className="h-3.5 w-3.5 rounded bg-[var(--color-surface-hover)] flex-shrink-0" />
+          <div className="h-3.5 w-32 rounded bg-[var(--color-surface-hover)]" />
+        </div>
+        <div className="h-2.5 w-44 rounded bg-[var(--color-surface-hover)]" />
+      </div>
+      <div className="h-7 w-24 rounded-lg bg-[var(--color-surface-hover)] flex-shrink-0" />
+    </div>
+  </div>
+);
 
 const MyRequestsPage = () => {
   const { user, isAuthenticated, isLoading: authLoading, loginWithRedirect } = useAuth0();
@@ -152,7 +175,7 @@ const MyRequestsPage = () => {
     return requests.filter((r) => r.status === filter);
   }, [requests, filter]);
 
-  if (authLoading || loading)
+  if (authLoading)
     return (
       <>
         <ThemeStyles />
@@ -207,7 +230,7 @@ const MyRequestsPage = () => {
             <h1 className="text-2xl font-bold text-[var(--color-text)] font-mono">My Requests</h1>
           </div>
           <p className="text-sm font-mono text-[#c9c9c9] dark:text-[var(--color-text-subtle)] mb-6 ml-12">
-            {requests.length} request{requests.length !== 1 ? "s" : ""} sent
+            {loading ? "Loading…" : `${requests.length} request${requests.length !== 1 ? "s" : ""} sent`}
           </p>
 
           {/* Filter tabs */}
@@ -216,7 +239,8 @@ const MyRequestsPage = () => {
               <button
                 key={key}
                 onClick={() => setFilter(key)}
-                className={`rail-focus flex items-center justify-center gap-1.5 text-xs font-medium font-mono px-3.5 py-2.5 sm:py-2 rounded-full border transition ${
+                disabled={loading}
+                className={`rail-focus flex items-center justify-center gap-1.5 text-xs font-medium font-mono px-3.5 py-2.5 sm:py-2 rounded-full border transition disabled:opacity-50 ${
                   filter === key ? "rail-filter-active" : "rail-filter-inactive"
                 }`}
               >
@@ -226,13 +250,19 @@ const MyRequestsPage = () => {
                     filter === key ? "bg-white/20" : "bg-[var(--color-surface-hover)]"
                   }`}
                 >
-                  {counts[key]}
+                  {loading ? "–" : counts[key]}
                 </span>
               </button>
             ))}
           </div>
 
-          {requests.length === 0 ? (
+          {loading ? (
+            <div className="flex flex-col gap-3">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <RequestCardSkeleton key={i} />
+              ))}
+            </div>
+          ) : requests.length === 0 ? (
             <div className="text-center py-16 text-[var(--color-text-subtle)] border border-[var(--color-border)] bg-[var(--color-surface)] rounded-xl">
               <Bell size={36} className="mx-auto mb-3 opacity-20" />
               <p className="text-sm">You haven't contacted any sellers yet.</p>

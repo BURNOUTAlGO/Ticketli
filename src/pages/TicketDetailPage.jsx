@@ -36,7 +36,102 @@ const ThemeStyles = () => (
       background: var(--color-surface);
       border: 1px solid var(--color-border);
     }
+    @keyframes skeleton-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    .skeleton-pulse {
+      animation: skeleton-pulse 1.5s ease-in-out infinite;
+    }
   `}</style>
+);
+
+// ── Detail page skeleton (mirrors the two-column layout below) ─────────────
+const TicketDetailSkeleton = () => (
+  <div
+    className="min-h-screen bg-[var(--color-bg)] pb-12 px-4 sm:px-6"
+    style={{ paddingTop: "calc(var(--navbar-height, 64px) + 1.25rem)" }}
+  >
+    <div className="max-w-5xl mx-auto">
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-1.5 mb-6">
+        <div className="h-3 w-10 rounded bg-[var(--color-surface-hover)] skeleton-pulse" />
+        <ChevronRight size={14} className="text-[var(--color-border)]" />
+        <div className="h-3 w-24 rounded bg-[var(--color-surface-hover)] skeleton-pulse" />
+        <ChevronRight size={14} className="text-[var(--color-border)]" />
+        <div className="h-3 w-32 rounded bg-[var(--color-surface-hover)] skeleton-pulse" />
+      </div>
+
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* ── Left column ── */}
+        <div className="flex-1 min-w-0 flex flex-col gap-5">
+          <div className="rail-card rounded-2xl p-5 md:p-6 skeleton-pulse">
+            {/* Header */}
+            <div className="flex items-start justify-between mb-5 gap-3">
+              <div className="min-w-0 flex-1">
+                <div className="h-6 w-48 rounded bg-[var(--color-surface-hover)] mb-2" />
+                <div className="h-3 w-20 rounded bg-[var(--color-surface-hover)]" />
+              </div>
+              <div className="flex items-center gap-1.5 flex-shrink-0">
+                <div className="h-5 w-16 rounded-full bg-[var(--color-surface-hover)]" />
+                <div className="h-5 w-14 rounded-full bg-[var(--color-surface-hover)]" />
+              </div>
+            </div>
+
+            {/* Time box */}
+            <div className="border border-[var(--color-border)] bg-[var(--color-surface-hover)] rounded-xl p-4 md:p-5 mb-5">
+              <div className="flex items-center justify-between gap-2">
+                <div className="text-center flex-1">
+                  <div className="h-7 w-16 rounded bg-[var(--color-border)] mx-auto mb-2" />
+                  <div className="h-3 w-14 rounded bg-[var(--color-border)] mx-auto mb-1" />
+                  <div className="h-2.5 w-12 rounded bg-[var(--color-border)] mx-auto" />
+                </div>
+                <div className="flex-1 flex flex-col items-center gap-1 px-2">
+                  <div className="h-2.5 w-10 rounded bg-[var(--color-border)] mb-1" />
+                  <div className="h-px w-full bg-[var(--color-border)]" />
+                </div>
+                <div className="text-center flex-1">
+                  <div className="h-7 w-16 rounded bg-[var(--color-border)] mx-auto mb-2" />
+                  <div className="h-3 w-14 rounded bg-[var(--color-border)] mx-auto mb-1" />
+                  <div className="h-2.5 w-12 rounded bg-[var(--color-border)] mx-auto" />
+                </div>
+              </div>
+            </div>
+
+            {/* Details grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-5">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i}>
+                  <div className="h-2.5 w-20 rounded bg-[var(--color-surface-hover)] mb-2" />
+                  <div className="h-3.5 w-16 rounded bg-[var(--color-surface-hover)]" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* ── Right column ── */}
+        <div className="w-full lg:w-72 flex-shrink-0">
+          <div className="rail-card rounded-2xl p-5 skeleton-pulse">
+            <div className="h-2.5 w-20 rounded bg-[var(--color-surface-hover)] mb-2" />
+            <div className="h-7 w-24 rounded bg-[var(--color-surface-hover)] mb-2" />
+            <div className="h-2.5 w-32 rounded bg-[var(--color-surface-hover)] mb-5" />
+
+            <div className="border-t border-[var(--color-border)] mb-4" />
+
+            <div className="h-2.5 w-16 rounded bg-[var(--color-surface-hover)] mb-2" />
+            <div className="flex items-center gap-2.5 mb-5">
+              <div className="w-9 h-9 rounded-full bg-[var(--color-surface-hover)] flex-shrink-0" />
+              <div className="h-3.5 w-24 rounded bg-[var(--color-surface-hover)]" />
+            </div>
+
+            <div className="h-11 w-full rounded-xl bg-[var(--color-surface-hover)] mb-3" />
+            <div className="h-9 w-full rounded-xl bg-[var(--color-surface-hover)]" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 );
 
 const TicketDetailPage = () => {
@@ -189,12 +284,7 @@ const TicketDetailPage = () => {
     return (
       <>
         <ThemeStyles />
-        <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg)]">
-          <svg className="animate-spin h-7 w-7" style={{ color: "var(--rail-orange)" }} viewBox="0 0 24 24" fill="none">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-          </svg>
-        </div>
+        <TicketDetailSkeleton />
       </>
     );
 

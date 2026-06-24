@@ -20,9 +20,23 @@ import {
 import { KineticText } from "@/components/ui/kinetic-text";
 import { ThemeToggle } from "../components/ThemeToggle";
 
+// ── Skeleton pulse styles (shared token with the rest of the app) ──────────
+const SkeletonStyles = () => (
+  <style>{`
+    @keyframes skeleton-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    .skeleton-pulse {
+      animation: skeleton-pulse 1.5s ease-in-out infinite;
+    }
+  `}</style>
+);
+
 function Navbar() {
   const {
     isAuthenticated,
+    isLoading: authLoading,
     loginWithRedirect: login,
     logout: auth0Logout,
     user,
@@ -54,6 +68,8 @@ function Navbar() {
 
   return (
     <>
+      <SkeletonStyles />
+
       {/* ── Top Navbar ── */}
       <header className="fixed inset-x-0 top-0 z-50 border-b border-[var(--color-border)] bg-white dark:bg-black">
         <div className="flex h-[60px] font-inter w-full items-center justify-between px-4 sm:px-6">
@@ -82,7 +98,12 @@ function Navbar() {
           {/* Desktop auth */}
           <div className="hidden md:flex items-center gap-3">
             <ThemeToggle />
-            {isAuthenticated ? (
+            {authLoading ? (
+              <>
+                <div className="h-9 w-20 rounded-[8px] bg-[var(--color-surface-hover)] skeleton-pulse" />
+                <div className="h-9 w-9 rounded-full bg-[var(--color-surface-hover)] skeleton-pulse flex-shrink-0" />
+              </>
+            ) : isAuthenticated ? (
               <>
                 <button
                   className="rounded-[8px] h-9 px-4 flex items-center justify-center text-sm transition duration-200 
@@ -127,14 +148,18 @@ function Navbar() {
           {/* Mobile: theme + avatar */}
           <div className="flex md:hidden items-center gap-3">
             <ThemeToggle />
-            {isAuthenticated && (
-              <div className="bg-black h-8 w-8 rounded-full overflow-hidden flex-shrink-0">
-                <img
-                  src={user.picture}
-                  className="w-full h-full object-cover"
-                  alt={user.name || "User"}
-                />
-              </div>
+            {authLoading ? (
+              <div className="h-8 w-8 rounded-full bg-[var(--color-surface-hover)] skeleton-pulse flex-shrink-0" />
+            ) : (
+              isAuthenticated && (
+                <div className="bg-black h-8 w-8 rounded-full overflow-hidden flex-shrink-0">
+                  <img
+                    src={user.picture}
+                    className="w-full h-full object-cover"
+                    alt={user.name || "User"}
+                  />
+                </div>
+              )
             )}
           </div>
         </div>
@@ -190,7 +215,12 @@ function Navbar() {
       >
         {/* Header */}
         <div className="flex items-center  justify-between px-4 h-[52px] flex-shrink-0 border-b border-neutral-800">
-          {isAuthenticated ? (
+          {authLoading ? (
+            <div className="flex items-center gap-2.5">
+              <div className="h-6 w-6 rounded-full bg-neutral-800 skeleton-pulse flex-shrink-0" />
+              <div className="h-3 w-24 rounded bg-neutral-800 skeleton-pulse" />
+            </div>
+          ) : isAuthenticated ? (
             <div className="flex items-center gap-2.5">
               <div className="h-6 w-6 rounded-full overflow-hidden bg-neutral-800 flex-shrink-0">
                 <img
@@ -273,7 +303,11 @@ function Navbar() {
             <div className="my-1.5 mx-1 border-t border-neutral-800" />
 
             {/* Auth rows */}
-            {isAuthenticated ? (
+            {authLoading ? (
+              <div className="flex flex-col gap-1.5 px-3 py-[11px]">
+                <div className="h-3.5 w-24 rounded bg-neutral-800 skeleton-pulse" />
+              </div>
+            ) : isAuthenticated ? (
               <button
                 onClick={() => {
                   closeDrawer();

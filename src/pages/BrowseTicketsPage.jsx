@@ -355,16 +355,6 @@ useEffect(() => {
     filterMinSeats, setFilterMinSeats,
   };
 
-  if (loading)
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg)]">
-        <svg className="animate-spin h-7 w-7 text-[var(--color-text-subtle)]" viewBox="0 0 24 24" fill="none">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-        </svg>
-      </div>
-    );
-
   return (
     <>
       <style>{`
@@ -374,6 +364,13 @@ useEffect(() => {
         .compact-filters > div:last-child { margin-bottom: 0 !important; }
         .compact-filters label { margin-bottom: 0.25rem !important; font-size: 0.65rem !important; }
         .compact-filters input { padding-top: 0.4rem !important; padding-bottom: 0.4rem !important; }
+        @keyframes skeleton-pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+        .skeleton-pulse {
+          animation: skeleton-pulse 1.5s ease-in-out infinite;
+        }
       `}</style>
 
       <div className="h-screen flex flex-col overflow-hidden bg-[var(--color-bg)] text-[var(--color-text)]">
@@ -485,12 +482,13 @@ useEffect(() => {
             {/* Sticky bar */}
             <div className="sticky top-0 z-10 bg-white dark:bg-black border-b border-[var(--color-border)] px-3 sm:px-4 md:px-6 py-2.5 flex items-center justify-between gap-2 max-w-3xl md:max-w-none mx-auto w-full">
               <p className="text-xs pl-1 sm:pl-2 sm:text-sm text-[var(--color-text)] font-medium whitespace-nowrap flex-shrink-0">
-                {filtered.length} listing{filtered.length !== 1 ? "s" : ""}
+                {loading ? "Loading…" : `${filtered.length} listing${filtered.length !== 1 ? "s" : ""}`}
               </p>
               <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
                 <button
                   onClick={() => setShowFilters(true)}
-                  className="flex items-center gap-1.5 border border-[var(--color-border)] rounded-xl px-3 py-2 text-xs sm:text-sm bg-[var(--color-surface)] font-medium text-[var(--color-text)] whitespace-nowrap flex-shrink-0"
+                  disabled={loading}
+                  className="flex items-center gap-1.5 border border-[var(--color-border)] rounded-xl px-3 py-2 text-xs sm:text-sm bg-[var(--color-surface)] font-medium text-[var(--color-text)] whitespace-nowrap flex-shrink-0 disabled:opacity-50"
                 >
                   <SlidersHorizontal size={13} className="text-[var(--color-text-subtle)]" />
                   Filters
@@ -498,7 +496,8 @@ useEffect(() => {
                 <div className="relative flex-shrink-0">
                   <button
                     onClick={() => setSortOpen((v) => !v)}
-                    className="flex items-center gap-2 border border-[var(--color-border)] rounded-xl px-3 py-2 text-xs sm:text-sm bg-[var(--color-surface)] text-[var(--color-text)] font-medium max-w-[130px] sm:max-w-[200px] justify-between"
+                    disabled={loading}
+                    className="flex items-center gap-2 border border-[var(--color-border)] rounded-xl px-3 py-2 text-xs sm:text-sm bg-[var(--color-surface)] text-[var(--color-text)] font-medium max-w-[130px] sm:max-w-[200px] justify-between disabled:opacity-50"
                   >
                     <span className="truncate">{sortBy}</span>
                     <ChevronDown
@@ -570,7 +569,13 @@ useEffect(() => {
 
             {/* Ticket cards */}
             <div className="px-3 sm:px-4 md:px-6 py-4 max-w-3xl md:max-w-none mx-auto w-full">
-              {filtered.length === 0 ? (
+              {loading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-8">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <TicketCardSkeleton key={i} />
+                  ))}
+                </div>
+              ) : filtered.length === 0 ? (
                 <div className="text-center py-16 sm:py-20 text-[var(--color-text-subtle)] border border-[var(--color-border)] rounded-2xl">
                   <Search size={36} className="mx-auto mb-3 opacity-20" />
                   <p className="text-sm font-medium">No tickets match your search</p>
@@ -611,12 +616,13 @@ useEffect(() => {
             <div className="flex-1 min-w-0 overflow-y-auto hide-scrollbar">
               <div className="flex items-center justify-between mb-4">
                 <p className="text-sm text-[var(--color-text)] font-medium">
-                  {filtered.length} listing{filtered.length !== 1 ? "s" : ""}
+                  {loading ? "Loading…" : `${filtered.length} listing${filtered.length !== 1 ? "s" : ""}`}
                 </p>
                 <div className="relative">
                   <button
                     onClick={() => setSortOpen((v) => !v)}
-                    className="flex items-center gap-2 border border-[var(--color-border)] rounded-xl px-4 py-2 text-sm bg-[var(--color-surface)] text-[var(--color-text)] font-medium min-w-[180px] justify-between"
+                    disabled={loading}
+                    className="flex items-center gap-2 border border-[var(--color-border)] rounded-xl px-4 py-2 text-sm bg-[var(--color-surface)] text-[var(--color-text)] font-medium min-w-[180px] justify-between disabled:opacity-50"
                   >
                     <span>{sortBy}</span>
                     <ChevronDown
@@ -646,7 +652,13 @@ useEffect(() => {
                 </div>
               </div>
 
-              {filtered.length === 0 ? (
+              {loading ? (
+                <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-4 pb-6">
+                  {Array.from({ length: 9 }).map((_, i) => (
+                    <TicketCardSkeleton key={i} />
+                  ))}
+                </div>
+              ) : filtered.length === 0 ? (
                 <div className="text-center py-24 text-[var(--color-text-subtle)] border border-[var(--color-border)] rounded-2xl">
                   <Search size={36} className="mx-auto mb-3 opacity-20" />
                   <p className="text-sm font-medium">No tickets match your search</p>
@@ -671,6 +683,60 @@ useEffect(() => {
     </>
   );
 };
+
+// ── Ticket card skeleton ────────────────────────────────────────────────────
+const TicketCardSkeleton = () => (
+  <div className="border-2 border-[var(--color-border)] rounded-2xl p-4 sm:p-5 bg-[var(--color-surface)] skeleton-pulse">
+    {/* Header: train name + class/status pills */}
+    <div className="flex items-start justify-between mb-3 gap-2">
+      <div className="min-w-0 flex-1">
+        <div className="h-3.5 w-28 rounded bg-[var(--color-surface-hover)] mb-2" />
+        <div className="h-2.5 w-16 rounded bg-[var(--color-surface-hover)]" />
+      </div>
+      <div className="flex items-center gap-1.5 flex-shrink-0">
+        <div className="h-5 w-16 rounded-full bg-[var(--color-surface-hover)]" />
+        <div className="h-5 w-12 rounded-full bg-[var(--color-surface-hover)]" />
+      </div>
+    </div>
+
+    {/* Times + route */}
+    <div className="flex items-center gap-2 sm:gap-3 mb-3">
+      <div className="min-w-0">
+        <div className="h-5 w-12 rounded bg-[var(--color-surface-hover)] mb-1.5" />
+        <div className="h-2.5 w-14 rounded bg-[var(--color-surface-hover)]" />
+      </div>
+      <div className="flex-1 flex flex-col items-center gap-0.5 min-w-[40px]">
+        <div className="h-2 w-8 rounded bg-[var(--color-surface-hover)] mb-1" />
+        <div className="h-px w-full bg-[var(--color-surface-hover)]" />
+      </div>
+      <div className="text-right min-w-0">
+        <div className="h-5 w-12 rounded bg-[var(--color-surface-hover)] mb-1.5 ml-auto" />
+        <div className="h-2.5 w-14 rounded bg-[var(--color-surface-hover)] ml-auto" />
+      </div>
+    </div>
+
+    {/* Date + seats row */}
+    <div className="flex items-center gap-3 mb-4">
+      <div className="h-2.5 w-20 rounded bg-[var(--color-surface-hover)]" />
+      <div className="h-2.5 w-16 rounded bg-[var(--color-surface-hover)]" />
+    </div>
+
+    {/* Footer: avatar/name + price/button */}
+    <div className="border-t border-[var(--color-border)] pt-3 flex items-center justify-between gap-2">
+      <div className="flex items-center gap-2 min-w-0">
+        <div className="w-8 h-8 rounded-full bg-[var(--color-surface-hover)] flex-shrink-0" />
+        <div className="h-3 w-20 rounded bg-[var(--color-surface-hover)]" />
+      </div>
+      <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="text-right">
+          <div className="h-3.5 w-14 rounded bg-[var(--color-surface-hover)] mb-1 ml-auto" />
+          <div className="h-2 w-10 rounded bg-[var(--color-surface-hover)] ml-auto" />
+        </div>
+        <div className="h-8 w-16 rounded-lg bg-[var(--color-surface-hover)]" />
+      </div>
+    </div>
+  </div>
+);
 
 // ── Ticket card ────────────────────────────────────────────────────────────
 const TicketCard = ({ ticket, duration, initials }) => {

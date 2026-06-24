@@ -68,7 +68,87 @@ const ThemeStyles = () => (
       background: var(--rail-orange);
       color: #ffffff;
     }
+    @keyframes skeleton-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    .skeleton-pulse {
+      animation: skeleton-pulse 1.5s ease-in-out infinite;
+    }
   `}</style>
+);
+
+// ── Listing card skeleton (mirrors TicketCardBody layout) ──────────────────
+const ListingCardSkeleton = () => (
+  <div className="relative bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[10px] p-4 sm:p-5 skeleton-pulse">
+    {/* Top: train name + class/status pills */}
+    <div className="flex items-start justify-between mb-3 gap-2">
+      <div className="min-w-0 flex-1">
+        <div className="h-3.5 w-28 rounded bg-[var(--color-surface-hover)] mb-2" />
+        <div className="h-2.5 w-16 rounded bg-[var(--color-surface-hover)]" />
+      </div>
+      <div className="flex items-center gap-1.5 flex-shrink-0">
+        <div className="h-5 w-16 rounded-full bg-[var(--color-surface-hover)]" />
+        <div className="h-5 w-12 rounded-full bg-[var(--color-surface-hover)]" />
+      </div>
+    </div>
+
+    {/* Time row */}
+    <div className="flex items-center gap-2 sm:gap-3 mb-3">
+      <div className="min-w-0">
+        <div className="h-5 w-12 rounded bg-[var(--color-surface-hover)] mb-1.5" />
+        <div className="h-2.5 w-14 rounded bg-[var(--color-surface-hover)]" />
+      </div>
+      <div className="flex-1 flex flex-col items-center gap-0.5 min-w-0">
+        <div className="h-2 w-8 rounded bg-[var(--color-surface-hover)] mb-1" />
+        <div className="h-px w-full bg-[var(--color-surface-hover)]" />
+      </div>
+      <div className="text-right min-w-0">
+        <div className="h-5 w-12 rounded bg-[var(--color-surface-hover)] mb-1.5 ml-auto" />
+        <div className="h-2.5 w-14 rounded bg-[var(--color-surface-hover)] ml-auto" />
+      </div>
+    </div>
+
+    {/* Date + seats */}
+    <div className="flex items-center gap-3 mb-4">
+      <div className="h-2.5 w-20 rounded bg-[var(--color-surface-hover)]" />
+      <div className="h-2.5 w-16 rounded bg-[var(--color-surface-hover)]" />
+    </div>
+
+    {/* Footer */}
+    <div className="border-t border-[var(--color-border)] pt-3 flex items-center justify-between gap-2">
+      <div className="h-2.5 w-24 rounded bg-[var(--color-surface-hover)]" />
+      <div className="text-right flex-shrink-0">
+        <div className="h-3.5 w-14 rounded bg-[var(--color-surface-hover)] mb-1 ml-auto" />
+        <div className="h-2 w-10 rounded bg-[var(--color-surface-hover)] ml-auto" />
+      </div>
+    </div>
+
+    {/* Action button placeholder */}
+    <div className="mt-3 h-8 w-full rounded-lg bg-[var(--color-surface-hover)]" />
+  </div>
+);
+
+// ── Request row skeleton ────────────────────────────────────────────────────
+const RequestRowSkeleton = () => (
+  <div className="rail-card p-4 sm:p-5 skeleton-pulse">
+    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-2">
+          <div className="w-8 h-8 rounded-full bg-[var(--color-surface-hover)] flex-shrink-0" />
+          <div>
+            <div className="h-3 w-24 rounded bg-[var(--color-surface-hover)] mb-1.5" />
+            <div className="h-2.5 w-32 rounded bg-[var(--color-surface-hover)]" />
+          </div>
+        </div>
+        <div className="h-2.5 w-48 rounded bg-[var(--color-surface-hover)]" />
+      </div>
+      <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="h-8 w-20 rounded-lg bg-[var(--color-surface-hover)]" />
+        <div className="h-8 w-20 rounded-lg bg-[var(--color-surface-hover)]" />
+      </div>
+    </div>
+  </div>
 );
 
 const MyListingPage = () => {
@@ -295,9 +375,9 @@ const nq = query(
   const unseenNotifCount = notifications.length;
   const requestsTabBadge = pendingCount + unseenNotifCount;
 
-  // ── loading / auth guards ─────────────────────────────────────────────────
+  // ── auth guards ───────────────────────────────────────────────────────────
 
-  if (authLoading || loading)
+  if (authLoading)
     return (
       <>
         <ThemeStyles />
@@ -489,9 +569,15 @@ const nq = query(
                 className="text-[2.1rem] sm:text-[2.85rem] md:text-[3.5rem] leading-tight tracking-[-3%] flex items-start justify-start"
               />
               <p className="text-sm text-[#c9c9c9] dark:text-[var(--color-text-subtle)] mt-2 font-mono break-all sm:break-normal">
-                {tickets.length} active <span style={{ color: "var(--rail-orange)" }}>·</span>{" "}
-                {soldTickets.length} sold <span style={{ color: "var(--rail-orange)" }}>·</span>{" "}
-                {user.name}
+                {loading
+                  ? "Loading your listings…"
+                  : (
+                    <>
+                      {tickets.length} active <span style={{ color: "var(--rail-orange)" }}>·</span>{" "}
+                      {soldTickets.length} sold <span style={{ color: "var(--rail-orange)" }}>·</span>{" "}
+                      {user.name}
+                    </>
+                  )}
               </p>
             </div>
             <button
@@ -525,7 +611,7 @@ const nq = query(
             >
               <Bell size={14} />
               Requests
-              {requestsTabBadge > 0 && (
+              {!loading && requestsTabBadge > 0 && (
                 <span className="rail-badge text-[10px] font-bold px-1.5 py-0.5 rounded-full">
                   {requestsTabBadge}
                 </span>
@@ -536,7 +622,13 @@ const nq = query(
           {/* ── MY LISTINGS TAB ── */}
           {activeTab === "listings" && (
             <>
-              {totalListingCount === 0 ? (
+              {loading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <ListingCardSkeleton key={i} />
+                  ))}
+                </div>
+              ) : totalListingCount === 0 ? (
                 <div className="text-center py-16 md:py-24 bg-[var(--color-surface)] text-[var(--color-text-subtle)] border border-[var(--color-border)] rounded-lg px-4">
                   <Train
                     size={36}
@@ -634,7 +726,13 @@ const nq = query(
           {/* ── REQUESTS TAB ── */}
           {activeTab === "requests" && (
             <>
-              {requests.length === 0 && notifications.length === 0 ? (
+              {loading ? (
+                <div className="flex flex-col gap-3">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <RequestRowSkeleton key={i} />
+                  ))}
+                </div>
+              ) : requests.length === 0 && notifications.length === 0 ? (
                 <div className="text-center py-16 md:py-24 text-[var(--color-text-subtle)] border border-[var(--color-border)] bg-[var(--color-surface)] rounded-lg px-4">
                   <Bell size={36} className="mx-auto mb-3 opacity-20" />
                   <p className="text-sm font-medium font-mono text-[var(--color-text)]">

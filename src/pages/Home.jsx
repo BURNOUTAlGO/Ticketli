@@ -109,7 +109,7 @@ const TiltScene = ({ children, className, maxTilt = 8 }) => {
 function Home() {
   const navigate = useNavigate();
   return (
-    <div className="relative w-full flex justify-center items-center flex-col overflow-hidden">
+    <div className="relative  w-full flex justify-center items-center flex-col overflow-hidden">
       <Scene3DStyles />
 
       <div
@@ -132,7 +132,7 @@ function Home() {
 
           <div className="text-center flex flex-col justify-center items-center gap-3 px-2">
             <KineticText
-              text="Wanna Sell Tickets? Or Buy Tickets?"
+              text="Wanna Sell Tickets ? Or Buy Tickets?"
               className="headline-depth text-[2.25rem] sm:text-[3.25rem] md:text-[4.5rem] tracking-[-5%] leading-tight flex items-center justify-center text-center"
             />
             <h1 className="text-[#969696] font-geist text-sm sm:text-base max-w-xl">

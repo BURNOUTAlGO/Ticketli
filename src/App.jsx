@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 
-
+import Footer from "./components/Footer" ;
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { ThemeProvider } from "./components/ThemeProvider";
@@ -199,6 +199,7 @@ if (data.expiresAt && data.expiresAt <= now) {
             }
           />
         </Routes>
+        <Footer/>
       </BrowserRouter>
     </ThemeProvider>
   );

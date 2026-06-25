@@ -81,7 +81,7 @@ const Footer = () => {
 
         {/* Col 1 — Tagline + Contact */}
         <div className="flex flex-col gap-10">
-          <p className="text-[clamp(1.1rem,1.6vw,1.35rem)] font-medium leading-[1.45] tracking-[-0.01em] max-w-xs  m-0">
+          <p className="text-[clamp(1.1rem,1.6vw,1.35rem)] font-inter font-medium leading-[1.45] tracking-[-0.01em] max-w-xs  m-0">
             RailTicket connects travelers who can't make their journey with the people who need their seat.
           </p>
 
@@ -114,7 +114,7 @@ const Footer = () => {
               <Link
                 key={link.to}
                 to={link.to}
-                className=" no-underline text-[clamp(1.6rem,2.5vw,2.2rem)] font-semibold tracking-[-0.02em] leading-[1.15] transition-colors duration-150 hover:text-[#FF6B1A] block"
+                className=" no-underline text-[clamp(1.6rem,2.5vw,2.2rem)] font-inter font-semibold tracking-[-0.02em] leading-[1.15] transition-colors duration-150 hover:text-[#FF6B1A] block"
               >
                 {link.label}
               </Link>
@@ -179,7 +179,7 @@ const Footer = () => {
         }}
       >
         <p
-          className="text-[clamp(4rem,17vw,13rem)] font-black tracking-[-0.03em] leading-[0.82] text-center m-0 uppercase whitespace-nowrap bg-clip-text text-transparent"
+          className="text-[clamp(4rem,17vw,13rem)] font-black tracking-[-0.03em] leading-[0.82] text-center m-0 uppercase whitespace-nowrap bg-clip-text text-transparent/85"
           style={{
             backgroundImage: isDark
               ? "linear-gradient(to bottom, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.04) 60%, transparent 100%)"

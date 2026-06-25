@@ -21,6 +21,7 @@
     "firebase": "^12.14.0",
     "geist": "^1.7.2",
     "lucide-react": "^1.18.0",
+    "motion": "^12.41.0",
     "postprocessing": "^6.39.1",
     "radix-ui": "^1.5.0",
     "react": "^19.2.6",

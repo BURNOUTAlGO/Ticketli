@@ -197,7 +197,7 @@ const Testimonial = () => {
       className="ticketli-testimonials w-full bg-white dark:bg-black py-14 sm:py-20 lg:py-24 overflow-hidden"
     >
       <ThemeStyles />
-      <div className="max-w-[1400px] mx-auto px-5 sm:px-6 lg:px-2 flex flex-col lg:flex-row gap-12 lg:gap-16 items-start">
+      <div className="max-w-[1400px] mx-auto px-5 sm:px-6 lg:px-3 flex flex-col lg:flex-row gap-12 lg:gap-16 items-start">
 
         {/* Left — text panel */}
         <div

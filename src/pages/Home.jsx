@@ -7,7 +7,21 @@ import { useNavigate } from "react-router";
 import { RainbowButton } from "@/components/ui/rainbow-button";
 import { AnimatedShinyText } from "@/components/ui/animated-shiny-text";
 import { cn } from "@/lib/utils";
-import { KineticText } from "@/components/ui/kinetic-text";
+
+import BlurText from "../components/BlurText"
+
+const handleAnimationComplete = () => {
+  console.log('Animation completed!');
+};
+
+<BlurText
+  text="Isn't this so cool?!"
+  delay={200}
+  animateBy="words"
+  direction="top"
+  onAnimationComplete={handleAnimationComplete}
+  className="text-2xl mb-8"
+/>
 
 // ── 3D depth styles ─────────────────────────────────────────────────────────
 // Pure CSS 3D (perspective + rotateX/Y + translateZ) — no extra dependencies.
@@ -131,11 +145,15 @@ function Home() {
           </div>
 
           <div className="text-center flex flex-col justify-center items-center gap-3 px-2">
-            <KineticText
-              text="Wanna Sell Tickets ? Or Buy Tickets?"
-              className="headline-depth text-[2.25rem] sm:text-[3.25rem] md:text-[4.5rem] tracking-[-5%] leading-tight flex items-center justify-center text-center"
-            />
-            <h1 className="text-[#969696] font-geist text-sm sm:text-base max-w-xl">
+<BlurText
+  text="Need a Ticket? Have One to Sell"
+  delay={200}
+  animateBy="words"
+  direction="top"
+  onAnimationComplete={handleAnimationComplete}
+  className="headline-depth text-[2.25rem] sm:text-[3.25rem] md:text-[4.5rem] tracking-[-5%] leading-tight flex items-center justify-center text-center"
+/>
+            <h1 className="text-[#969696] font-inter text-sm sm:text-base max-w-xl">
               Can't make your journey? List your train ticket and connect with
               travelers who need it. Simple, safe, and community-driven.
             </h1>

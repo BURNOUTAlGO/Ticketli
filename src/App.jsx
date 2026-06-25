@@ -12,6 +12,7 @@ import CreateListing from "./pages/CreateListingPage";
 import MyListingsPage from "./pages/MyListingPage";
 import TicketDetailPage from "./pages/TicketDetailPage";
 import MyRequestsPage from "./pages/MyRequestsPage";
+import Testimonial from "./pages/Testimonial";
 import { db } from "./firebase";
 import {
   collection,
@@ -22,6 +23,7 @@ import {
   where,
   writeBatch,
 } from "firebase/firestore";
+
 
 function App() {
   // Cleanup function for tickets that are unsold and have a journey date within the next 2 days.
@@ -159,7 +161,13 @@ if (data.expiresAt && data.expiresAt <= now) {
         <Navbar />
 
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={
+            <>
+            <Home />
+            <Testimonial/>
+            </>
+            
+            } />
 
           <Route
             path="/browse"
@@ -199,6 +207,7 @@ if (data.expiresAt && data.expiresAt <= now) {
             }
           />
         </Routes>
+        
         <Footer/>
       </BrowserRouter>
     </ThemeProvider>

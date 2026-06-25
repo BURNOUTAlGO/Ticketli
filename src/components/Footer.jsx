@@ -1,44 +1,41 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 
-// ── Theme tokens (consistent with the rest of the app) ──────────────────────
-const FooterStyles = () => (
-  <style>{`
-    .footer-dark {
-      --rail-orange: #FF6B1A;
-      background: #0a0a0a;
-      color: #f5f5f5;
-    }
-    .footer-link {
-      color: #f5f5f5;
-      transition: color 0.2s ease, opacity 0.2s ease;
-    }
-    .footer-link:hover {
-      color: var(--rail-orange);
-    }
-    .footer-nav-link {
-      color: #f5f5f5;
-      transition: color 0.2s ease;
-      line-height: 1.05;
-    }
-    .footer-nav-link:hover {
-      color: var(--rail-orange);
-    }
-    .footer-wordmark-wrap {
-      -webkit-mask-image: linear-gradient(to bottom, black 0%, black 55%, transparent 100%);
-      mask-image: linear-gradient(to bottom, black 0%, black 55%, transparent 100%);
-    }
-    .footer-wordmark {
-      background: linear-gradient(to bottom, #8a8a8a 0%, #4a4a4a 60%, #0a0a0a 100%);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      line-height: 0.78;
-      letter-spacing: -0.02em;
-    }
-  `}</style>
-);
+const useDarkMode = () => {
+  const getIsDark = () =>
+    typeof document !== "undefined" &&
+    document.documentElement.getAttribute("data-theme") === "dark";
+
+  const [isDark, setIsDark] = useState(getIsDark);
+
+  useEffect(() => {
+    setIsDark(getIsDark());
+    const observer = new MutationObserver(() => setIsDark(getIsDark()));
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
+    return () => observer.disconnect();
+  }, []);
+
+  return isDark;
+};
+
+const useLiveClock = (timeZone = "Asia/Kolkata") => {
+  const [time, setTime] = useState("");
+  useEffect(() => {
+    const fmt = new Intl.DateTimeFormat("en-GB", {
+      hour: "2-digit", minute: "2-digit", second: "2-digit",
+      hour12: false, timeZone,
+    });
+    const wkFmt = new Intl.DateTimeFormat("en-US", { weekday: "long", timeZone });
+    const tick = () => setTime(`${wkFmt.format(new Date())} · ${fmt.format(new Date())} IST`);
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [timeZone]);
+  return time;
+};
 
 const navLinks = [
   { to: "/", label: "Home" },
@@ -50,139 +47,144 @@ const navLinks = [
 
 const socialLinks = [
   { label: "Instagram", href: "https://www.instagram.com/maur_yaabhinav" },
-  { label: "Facebook", href: "https://x.com" },
+  { label: "Twitter / X", href: "https://x.com" },
 ];
 
-// Live clock for the timezone shown in the bottom bar. Defaults to India
-// Standard Time since that's RailTicket's home market; adjust timeZone below
-// if you'd like it to follow the visitor's locale instead.
-const useLiveClock = (timeZone = "Asia/Kolkata") => {
-  const [time, setTime] = useState("");
-
-  useEffect(() => {
-    const formatter = new Intl.DateTimeFormat("en-GB", {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: false,
-      timeZone,
-    });
-    const weekdayFormatter = new Intl.DateTimeFormat("en-US", {
-      weekday: "long",
-      timeZone,
-    });
-
-    const tick = () => {
-      setTime(`${weekdayFormatter.format(new Date())} ${formatter.format(new Date())} IST`);
-    };
-
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
-  }, [timeZone]);
-
-  return time;
-};
+const ArrowIcon = () => (
+  <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className="opacity-50">
+    <path d="M1 9L9 1M9 1H3M9 1V7" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
 
 const Footer = () => {
+  const isDark = useDarkMode();
   const clock = useLiveClock();
 
   return (
-    <footer className="footer-dark relative  w-full overflow-hidden font-mono">
-      <FooterStyles />
+    <footer className={`relative overflow-hidden ${isDark ? "bg-white" : "bg-black"} text-white dark:text-black font-['Geist',sans-serif]`}>
 
-      <div className="max-w-[1400px] mx-auto px-6 sm:px-8 pt-16 sm:pt-20 pb-10">
-        {/* ── Top: 3-column grid ── */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8">
-          {/* Col 1 — statement + contact */}
-          <div className="flex flex-col gap-8">
-            <p className="font-sans font-bold text-2xl sm:text-[1.85rem] leading-tight tracking-tight max-w-sm">
-              RailTicket connects travelers who can't make their journey with
-              the people who need their seat.
-            </p>
+      <div className="w-full h-[150px]"></div>
 
-            <div className="flex flex-col  gap-3">
-              <div className="flex items-center gap-1.5 text-sm font-semibold">
-                <ArrowDownRight size={15} style={{ color: "var(--rail-orange)" }} />
-                <span>Contact</span>
-              </div>
-              <a
-                href="mailto:support@railticket.app"
-                className="footer-link text-sm w-fit"
+      {/* Fade from page bg into footer */}
+      <div
+        aria-hidden="true"
+        className={`absolute top-0 left-0 right-0 h-66 pointer-events-none z-10 ${
+          isDark
+            ? "bg-gradient-to-b from-black via-amber-500 to-transparent"
+            : "bg-gradient-to-b from-white  via-amber-500 to-transparent"
+        }`}
+      />
+
+
+      {/* Main grid */}
+      <div className="max-w-[1400px] mx-auto px-10 pt-16 pb-0 grid grid-cols-1 md:grid-cols-3 gap-12">
+
+        {/* Col 1 — Tagline + Contact */}
+        <div className="flex flex-col gap-10">
+          <p className="text-[clamp(1.1rem,1.6vw,1.35rem)] font-medium leading-[1.45] tracking-[-0.01em] max-w-xs  m-0">
+            RailTicket connects travelers who can't make their journey with the people who need their seat.
+          </p>
+
+          <div className="flex flex-col gap-1.5">
+            <span className="text-[11px] tracking-[0.1em] uppercase dark:text-gray-400 mb-2">
+              Contact
+            </span>
+            <a
+              href="mailto:thisisabhimaurya@gmail.com"
+              className=" no-underline text-sm transition-colors duration-200 hover:text-[#FF6B1A] w-fit"
+            >
+              General Enquiries
+            </a>
+            <a
+              href="mailto:thisisabhimaurya@gmail.com"
+              className="text-white/40 dark:text-gray-400 no-underline text-[13px] w-fit"
+            >
+              thisisabhimaurya@gmail.com
+            </a>
+          </div>
+        </div>
+
+        {/* Col 2 — Navigation */}
+        <div className="flex flex-col gap-4">
+          <span className="text-[11px] tracking-[0.1em] uppercase text-white/40 dark:text-gray-400">
+            Navigation
+          </span>
+          <nav className="flex flex-col gap-0.5">
+            {navLinks.map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                className=" no-underline text-[clamp(1.6rem,2.5vw,2.2rem)] font-semibold tracking-[-0.02em] leading-[1.15] transition-colors duration-150 hover:text-[#FF6B1A] block"
               >
-                thisisabhimaurya@gmail.com
-              </a>
-              <p className="text-sm text-neutral-400 leading-relaxed">
-                Built for Indian Railways travelers.
-                <br />
-                Operating nationwide, online only.
-              </p>
-            </div>
-          </div>
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
 
-          {/* Col 2 — navigation */}
-          <div className="flex flex-col gap-4 md:justify-self-center">
-            <p className="text-xs uppercase tracking-wide text-neutral-500">
-              Navigation
-            </p>
-            <nav className="flex flex-col ">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  className="footer-nav-link font-mono font-bold text-3xl sm:text-4xl py-1"
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </nav>
-          </div>
+        {/* Col 3 — Social + Legal */}
+        <div className="flex flex-col gap-8">
 
-          {/* Col 3 — connect */}
-          <div className="flex flex-col gap-4 md:justify-self-end">
-            <p className="text-xs uppercase tracking-wide text-neutral-500">
-              Connect
-            </p>
-            <div className="flex flex-col gap-2">
+          {/* Social */}
+          <div className="flex flex-col gap-4">
+            <span className="text-[11px] tracking-[0.1em] uppercase text-white/40 dark:text-gray-400">
+              Social
+            </span>
+            <div className="flex flex-col gap-1">
               {socialLinks.map((s) => (
                 <a
                   key={s.label}
                   href={s.href}
                   target="_blank"
                   rel="noreferrer"
-                  className="footer-link flex items-center gap-1.5 text-sm"
+                  className=" no-underline text-sm transition-colors duration-200 hover:text-[#FF6B1A] flex items-center gap-1 w-fit"
                 >
                   {s.label}
-                  <ArrowUpRight size={13} />
+                  <ArrowIcon />
                 </a>
               ))}
             </div>
           </div>
-        </div>
 
-        {/* ── Disclaimer ── */}
-        <p className="text-xs text-neutral-500 leading-relaxed max-w-sm mt-20 sm:mt-28">
-          RailTicket is an independent peer-to-peer listing platform and is
-          not affiliated with, endorsed by, or operated by Indian Railways or
-          IRCTC. Always verify ticket and ID details directly with your
-          counterpart before traveling.
-        </p>
-
-        {/* ── Bottom bar ── */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mt-10 text-[11px] text-neutral-500 tracking-wide">
-          <span>©{new Date().getFullYear()} TICKETLI</span>
-          <Link to="/legal" className="footer-link hover:text-neutral-300">
-            LEGAL NOTICE
-          </Link>
-          <span suppressHydrationWarning>{clock}</span>
+          {/* Legal */}
+          <div className="flex flex-col gap-3">
+            <span className="text-[11px] tracking-[0.1em] uppercase text-white/40 dark:text-gray-400">
+              Legal
+            </span>
+            <Link
+              to="/legal"
+              className=" no-underline text-sm transition-colors duration-200 hover:text-[#FF6B1A] w-fit"
+            >
+              Legal Notice
+            </Link>
+            <p className="text-xs text-white/40 dark:text-gray-400 m-0 leading-relaxed max-w-[260px]">
+              Independent platform. Not affiliated with Indian Railways or IRCTC.
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* ── Giant bleeding wordmark ── */}
-      <div className="footer-wordmark-wrap w-full pointer-events-none select-none -mt-2 sm:-mt-4">
+      {/* Bottom bar */}
+      <div className="max-w-[1400px] mx-auto mt-12 px-10 py-5 border-t border-white/[0.08] flex items-center justify-between text-[11px] text-white/40 dark:text-gray-400 tracking-[0.04em]">
+        <span>© {new Date().getFullYear()} TICKETLI</span>
+        <span suppressHydrationWarning>{clock}</span>
+      </div>
+
+      {/* Giant wordmark */}
+      <div
+        className="w-full overflow-hidden pointer-events-none select-none -mt-2"
+        style={{
+          WebkitMaskImage: "linear-gradient(to bottom, black 0%, black 50%, transparent 100%)",
+          maskImage: "linear-gradient(to bottom, black 0%, black 50%, transparent 100%)",
+        }}
+      >
         <p
-          className="footer-wordmark font-sans font-black uppercase whitespace-nowrap text-center"
-          style={{ fontSize: "clamp(4rem, 17vw, 13rem)" }}
+          className="text-[clamp(4rem,17vw,13rem)] font-black tracking-[-0.03em] leading-[0.82] text-center m-0 uppercase whitespace-nowrap bg-clip-text text-transparent"
+          style={{
+            backgroundImage: isDark
+              ? "linear-gradient(to bottom, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.04) 60%, transparent 100%)"
+              : "linear-gradient(to bottom, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 60%, transparent 100%)",
+          }}
         >
           TICKETLI
         </p>

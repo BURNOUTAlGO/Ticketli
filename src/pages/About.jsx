@@ -52,15 +52,19 @@ const About = () => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          el.classList.remove('opacity-0', 'translate-y-12')
-          el.classList.add('opacity-100', 'translate-y-0')
-          observer.disconnect()
+          requestAnimationFrame(() => {
+            el.classList.remove("opacity-0", "translate-y-6");
+            el.classList.add("opacity-100", "translate-y-0");
+          });
+          observer.disconnect();
         }
       },
-      { threshold: 0.08 }
-    )
-    observer.observe(el)
-    return () => observer.disconnect()
+      {
+        threshold: 0.01,
+        rootMargin: "0px 0px -80px 0px",
+      }
+    );
+    observer.observe(el);
   }, [])
 
   const loopCards = [...cities, ...cities]
@@ -73,7 +77,14 @@ const About = () => {
       <section
         id="places"
         ref={sectionRef}
-        className="w-full py-20 overflow-hidden opacity-0 translate-y-12 transition-[opacity,transform] duration-[900ms] ease-[cubic-bezier(.22,1,.36,1)]"
+        className="w-full py-20 overflow-hidden opacity-0
+translate-y-6
+transform-gpu
+will-change-transform
+will-change-opacity
+transition-all
+duration-500
+ease-out "
       >
         {/* Heading */}
         <div className="text-start max-w-[90%]  mx-auto mb-12 md:text-center">
@@ -108,6 +119,8 @@ const About = () => {
                   src={c.image}
                   alt={c.city}
                   loading="lazy"
+                      decoding="async"
+    fetchPriority="low"
                   className="w-full h-full object-cover grayscale contrast-105 scale-100 transition-all duration-500 ease-out group-hover:grayscale-0 group-hover:contrast-100 group-hover:scale-105"
                 />
 
@@ -146,4 +159,4 @@ const About = () => {
   )
 }
 
-export default About
+export default About;

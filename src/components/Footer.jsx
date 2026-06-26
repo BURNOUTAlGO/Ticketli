@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+
 
 const useDarkMode = () => {
   const getIsDark = () =>
@@ -37,12 +38,13 @@ const useLiveClock = (timeZone = "Asia/Kolkata") => {
   return time;
 };
 
+// Map label → section element ID on your page
 const navLinks = [
-  { to: "/", label: "Home" },
-  { to: "/browse", label: "Browse" },
-  { to: "/create-listing", label: "List" },
-  { to: "/my-listings", label: "Dashboard" },
-  { to: "/my-requests", label: "Requests" },
+  { label: "Home", route: "/", sectionId: "home" },
+  { label: "Places", route: "/places", sectionId: "places" },
+  { label: "Testimonial", route: "/testimonial", sectionId: "testimonial" },
+  { label: "Dashboard", route: "/my-listings" },
+  { label: "Requests", route: "/my-requests" },
 ];
 
 const socialLinks = [
@@ -56,9 +58,35 @@ const ArrowIcon = () => (
   </svg>
 );
 
+const scrollToSection = (sectionId) => {
+  const el = document.getElementById(sectionId);
+  if (el) {
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+  } else {
+    // Fallback: if on a different route, navigate then scroll
+    window.location.hash = sectionId;
+  }
+};
+
 const Footer = () => {
   const isDark = useDarkMode();
   const clock = useLiveClock();
+  const navigate = useNavigate();
+  
+  const handleNavigation = (link) => {
+  if (link.sectionId) {
+    if (window.location.pathname === "/") {
+      document
+        .getElementById(link.sectionId)
+        ?.scrollIntoView({ behavior: "smooth" });
+    } else {
+      navigate(`/${link.sectionId ? `#${link.sectionId}` : ""}`);
+    }
+  } else {
+    navigate(link.route);
+  }
+};
+
 
   return (
     <footer className={`relative overflow-hidden ${isDark ? "bg-white" : "bg-black"} text-white dark:text-black font-['Geist',sans-serif]`}>
@@ -71,17 +99,16 @@ const Footer = () => {
         className={`absolute top-0 left-0 right-0 h-66 pointer-events-none z-10 ${
           isDark
             ? "bg-gradient-to-b from-black via-amber-500 to-transparent"
-            : "bg-gradient-to-b from-white  via-amber-500 to-transparent"
+            : "bg-gradient-to-b from-white via-amber-500 to-transparent"
         }`}
       />
-
 
       {/* Main grid */}
       <div className="max-w-[1400px] mx-auto px-10 pt-16 pb-0 grid grid-cols-1 md:grid-cols-3 gap-12">
 
         {/* Col 1 — Tagline + Contact */}
         <div className="flex flex-col gap-10">
-          <p className="text-[clamp(1.1rem,1.6vw,1.35rem)] font-inter font-medium leading-[1.45] tracking-[-0.01em] max-w-xs  m-0">
+          <p className="text-[clamp(1.1rem,1.6vw,1.35rem)] font-inter font-medium leading-[1.45] tracking-[-0.01em] max-w-xs m-0">
             RailTicket connects travelers who can't make their journey with the people who need their seat.
           </p>
 
@@ -91,10 +118,11 @@ const Footer = () => {
             </span>
             <a
               href="mailto:thisisabhimaurya@gmail.com"
-              className=" no-underline text-sm transition-colors duration-200 hover:text-[#FF6B1A] w-fit"
+              className="no-underline text-sm transition-colors duration-200 hover:text-[#FF6B1A] w-fit"
             >
               General Enquiries
             </a>
+
             <a
               href="mailto:thisisabhimaurya@gmail.com"
               className="text-white/40 dark:text-gray-400 no-underline text-[13px] w-fit"
@@ -111,13 +139,13 @@ const Footer = () => {
           </span>
           <nav className="flex flex-col gap-0.5">
             {navLinks.map((link) => (
-              <Link
-                key={link.to}
-                to={link.to}
-                className=" no-underline text-[clamp(1.6rem,2.5vw,2.2rem)] font-inter font-semibold tracking-[-0.02em] leading-[1.15] transition-colors duration-150 hover:text-[#FF6B1A] block"
+              <button
+                key={link.label}
+                onClick={() => handleNavigation(link)}
+                className="text-left bg-transparent border-none cursor-pointer no-underline text-[clamp(1.6rem,2.5vw,2.2rem)] font-inter font-semibold tracking-[-0.02em] leading-[1.15] transition-colors duration-150 hover:text-[#FF6B1A] dark:hover:text-[#FF6B1A] text-white dark:text-black block p-0"
               >
                 {link.label}
-              </Link>
+              </button>
             ))}
           </nav>
         </div>
@@ -137,7 +165,7 @@ const Footer = () => {
                   href={s.href}
                   target="_blank"
                   rel="noreferrer"
-                  className=" no-underline text-sm transition-colors duration-200 hover:text-[#FF6B1A] flex items-center gap-1 w-fit"
+                  className="no-underline text-sm transition-colors duration-200 hover:text-[#FF6B1A] flex items-center gap-1 w-fit"
                 >
                   {s.label}
                   <ArrowIcon />
@@ -151,12 +179,12 @@ const Footer = () => {
             <span className="text-[11px] tracking-[0.1em] uppercase text-white/40 dark:text-gray-400">
               Legal
             </span>
-            <Link
-              to="/legal"
-              className=" no-underline text-sm transition-colors duration-200 hover:text-[#FF6B1A] w-fit"
+            <button
+              onClick={() => scrollToSection("legal")}
+              className="text-left bg-transparent border-none cursor-pointer no-underline text-sm transition-colors duration-200 hover:text-[#FF6B1A] text-white dark:text-black w-fit p-0"
             >
               Legal Notice
-            </Link>
+            </button>
             <p className="text-xs text-white/40 dark:text-gray-400 m-0 leading-relaxed max-w-[260px]">
               Independent platform. Not affiliated with Indian Railways or IRCTC.
             </p>

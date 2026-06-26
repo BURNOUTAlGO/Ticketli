@@ -88,7 +88,7 @@ function Navbar() {
               <Link
                 key={link.to}
                 to={link.to}
-                className="transition-colors duration-200 font-mono text-[var(--color-text)] hover:dark:text-[var(--color-text-hover)] rounded-2xl hover:dark:text-[var(--color-bg-secondary)]"
+                className="transition-colors duration-200 font-inter text-[var(--color-text)] hover:dark:text-[var(--color-text-hover)] rounded-2xl hover:dark:text-[var(--color-bg-secondary)]"
               >
                 {link.label}
               </Link>

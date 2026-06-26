@@ -568,7 +568,7 @@ useEffect(() => {
             )}
 
             {/* Ticket cards */}
-            <div className="px-3 sm:px-4 md:px-6 py-4 max-w-3xl md:max-w-none mx-auto w-full">
+            <div className="px-3  sm:px-4 md:px-6 py-4 max-w-3xl md:max-w-none mx-auto w-full">
               {loading ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-8">
                   {Array.from({ length: 6 }).map((_, i) => (
@@ -576,7 +576,7 @@ useEffect(() => {
                   ))}
                 </div>
               ) : filtered.length === 0 ? (
-                <div className="text-center py-16 sm:py-20 text-[var(--color-text-subtle)] border border-[var(--color-border)] rounded-2xl">
+                <div className="text-center dark:bg-[#0a0a0a]   py-16 sm:py-20 text-[var(--color-text-subtle)] dark:text-gray-400border border-[var(--color-border)] rounded-2xl">
                   <Search size={36} className="mx-auto mb-3 opacity-20" />
                   <p className="text-sm font-medium">No tickets match your search</p>
                   <p className="text-xs mt-1">Try adjusting filters or search terms</p>

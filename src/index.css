@@ -230,7 +230,7 @@ html {
 }
 @keyframes moveTrain {
   from {
-    transform: translateX(100%);
+    transform: translateX(140vw);
   }
   to {
     transform: translateX(-110vw);

@@ -62,7 +62,7 @@ const testimonials = [
 // ── Shared theme tokens (same orange/black system as the rest of the app) ──
 const ThemeStyles = () => (
   <style>{`
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap');
+    
     .ticketli-testimonials {
       --rail-orange: #FF6B1A;
       --rail-orange-dim: #FF6B1A1a;
@@ -192,7 +192,7 @@ const Testimonial = () => {
   const col2 = testimonials.slice(4);
 
   return (
-    <section
+    <section id="testimonial"
       ref={sectionRef}
       className="ticketli-testimonials w-full bg-white dark:bg-black py-14 sm:py-20 lg:py-24 overflow-hidden"
     >
@@ -213,7 +213,7 @@ const Testimonial = () => {
             Testimonials
           </span>
 
-          <h2 className="text-[clamp(2.75rem,4.2vw,6.75rem)]  font-bold leading-[1.12] tracking-tight text-gray-900 dark:text-white mb-4">
+          <h2 className="text-[clamp(2.75rem,4.2vw,6.75rem)] leading-[1.12] tracking-tight text-gray-900 dark:text-white mb-4">
             Trusted by travelers
             <br className="hidden lg:block" />{" "}
             across India

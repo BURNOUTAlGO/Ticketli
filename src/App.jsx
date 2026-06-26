@@ -13,6 +13,7 @@ import MyListingsPage from "./pages/MyListingPage";
 import TicketDetailPage from "./pages/TicketDetailPage";
 import MyRequestsPage from "./pages/MyRequestsPage";
 import Testimonial from "./pages/Testimonial";
+import About from "./pages/About";
 import { db } from "./firebase";
 import {
   collection,
@@ -164,7 +165,9 @@ if (data.expiresAt && data.expiresAt <= now) {
           <Route path="/" element={
             <>
             <Home />
+            <About/>
             <Testimonial/>
+
             </>
             
             } />
@@ -175,6 +178,18 @@ if (data.expiresAt && data.expiresAt <= now) {
               <ProtectedRoute>
                 <BrowseTicketsPage />
               </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/places"
+            element={
+                <About />
+            }
+          />
+                    <Route
+            path="/testimonials"
+            element={
+                <Testimonial />
             }
           />
 

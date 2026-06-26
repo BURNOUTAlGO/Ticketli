@@ -5,56 +5,64 @@ const testimonials = [
     name: "Priya Mehta",
     role: "Frequent Commuter, Mumbai",
     avatar: "https://i.pravatar.cc/80?img=47",
-    quote: "My PNR was waitlisted two days before travel. Found a confirmed ticket on TicketLi within minutes and made my trip.",
+    quote:
+      "My PNR was waitlisted two days before travel. Found a confirmed ticket on TicketLi within minutes and made my trip.",
     rating: 4.9,
   },
   {
     name: "Arjun Sharma",
     role: "Business Traveler",
     avatar: "https://i.pravatar.cc/80?img=59",
-    quote: "Plans changed and I couldn't get a refund in time. Listed my ticket on TicketLi and it sold before the journey date.",
+    quote:
+      "Plans changed and I couldn't get a refund in time. Listed my ticket on TicketLi and it sold before the journey date.",
     rating: 4.9,
   },
   {
     name: "Liam Torres",
     role: "Backpacker",
     avatar: "https://i.pravatar.cc/80?img=11",
-    quote: "Verifying the PNR before buying gave me real peace of mind. Knew exactly what I was getting before I paid.",
+    quote:
+      "Verifying the PNR before buying gave me real peace of mind. Knew exactly what I was getting before I paid.",
     rating: 4.9,
   },
   {
     name: "Sneha Rao",
     role: "Weekend Traveler",
     avatar: "https://i.pravatar.cc/80?img=44",
-    quote: "Listing took less than two minutes — PNR in, details auto-filled, and a buyer reached out the same day.",
+    quote:
+      "Listing took less than two minutes — PNR in, details auto-filled, and a buyer reached out the same day.",
     rating: 4.9,
   },
   {
     name: "Rahul Nair",
     role: "Frequent Flyer, Bengaluru",
     avatar: "https://i.pravatar.cc/80?img=52",
-    quote: "No more wasted tickets when plans fall through. TicketLi turned a sunk cost into a quick recovery.",
+    quote:
+      "No more wasted tickets when plans fall through. TicketLi turned a sunk cost into a quick recovery.",
     rating: 4.9,
   },
   {
     name: "Divya Menon",
     role: "Student Traveler",
     avatar: "https://i.pravatar.cc/80?img=25",
-    quote: "Found a confirmed Sleeper ticket for a route that was sold out everywhere else. Saved my festival trip home.",
+    quote:
+      "Found a confirmed Sleeper ticket for a route that was sold out everywhere else. Saved my festival trip home.",
     rating: 4.9,
   },
   {
     name: "Michael Grant",
     role: "Frequent Commuter",
     avatar: "https://i.pravatar.cc/80?img=33",
-    quote: "The contact-request flow feels safe — no random calls, no spam. Just a clean way to reach the seller.",
+    quote:
+      "The contact-request flow feels safe — no random calls, no spam. Just a clean way to reach the seller.",
     rating: 4.9,
   },
   {
     name: "Emma Rodriguez",
     role: "Business Traveler",
     avatar: "https://i.pravatar.cc/80?img=23",
-    quote: "Sold a ticket I couldn't use and got my money back the same evening. Wish I'd known about this sooner.",
+    quote:
+      "Sold a ticket I couldn't use and got my money back the same evening. Wish I'd known about this sooner.",
     rating: 4.9,
   },
 ];
@@ -78,17 +86,24 @@ const ThemeStyles = () => (
 );
 
 const Card = ({ t }) => (
-  <div className="
+  <div
+    className="
     rounded-xl sm:rounded-2xl p-3 sm:p-5 flex flex-col justify-between gap-2.5 sm:gap-4 w-full flex-shrink-0
     bg-gray-100 dark:bg-[#1a1a1a]
     border border-gray-200 dark:border-white/[0.06]
-  ">
+  "
+  >
     {/* Rating — tabular mono "readout" */}
     <div className="flex items-center gap-1 sm:gap-1.5">
       <span className="font-mono text-xs sm:text-sm font-semibold tabular-nums text-gray-800 dark:text-gray-200">
         {t.rating.toFixed(1)}
       </span>
-      <span style={{ color: "var(--rail-orange)" }} className="text-xs sm:text-sm leading-none">★</span>
+      <span
+        style={{ color: "var(--rail-orange)" }}
+        className="text-xs sm:text-sm leading-none"
+      >
+        ★
+      </span>
       <span className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-500 font-mono uppercase tracking-wide">
         Rating
       </span>
@@ -139,7 +154,8 @@ const MarqueeColumn = ({ items, direction = "down", speed = 0.4 }) => {
       if (!paused) {
         posRef.current += direction === "down" ? speed : -speed;
         const halfH = track.scrollHeight / 2;
-        if (direction === "down" && posRef.current >= 0) posRef.current = -halfH;
+        if (direction === "down" && posRef.current >= 0)
+          posRef.current = -halfH;
         if (direction === "up" && posRef.current <= -halfH) posRef.current = 0;
         track.style.transform = `translateY(${posRef.current}px)`;
       }
@@ -181,8 +197,13 @@ const Testimonial = () => {
 
   useEffect(() => {
     const obs = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); } },
-      { threshold: 0.1 }
+      ([e]) => {
+        if (e.isIntersecting) {
+          setVisible(true);
+          obs.disconnect();
+        }
+      },
+      { threshold: 0.1 },
     );
     if (sectionRef.current) obs.observe(sectionRef.current);
     return () => obs.disconnect();
@@ -192,13 +213,13 @@ const Testimonial = () => {
   const col2 = testimonials.slice(4);
 
   return (
-    <section id="testimonial"
+    <section
+      id="testimonial"
       ref={sectionRef}
       className="ticketli-testimonials w-full bg-white dark:bg-black py-14 sm:py-20 lg:py-24 overflow-hidden"
     >
       <ThemeStyles />
       <div className="max-w-[1400px] mx-auto px-5 sm:px-6 lg:px-3 flex flex-col lg:flex-row gap-12 lg:gap-16 items-start">
-
         {/* Left — text panel */}
         <div
           className={`w-full lg:w-[320px] xl:w-[360px] flex-shrink-0 lg:sticky lg:top-0 text-left  transition-all duration-700 ease-out ${
@@ -207,16 +228,21 @@ const Testimonial = () => {
         >
           <span
             className="inline-flex items-center justify-start gap-1.5 border rounded-full px-3 py-1 text-[11px] font-mono uppercase tracking-wider mb-5"
-            style={{ borderColor: "var(--rail-orange-mid)", color: "var(--rail-orange)" }}
+            style={{
+              borderColor: "var(--rail-orange-mid)",
+              color: "var(--rail-orange)",
+            }}
           >
-            <span className="w-1.5 h-1.5 rounded-full" style={{ background: "var(--rail-orange)" }} />
+            <span
+              className="w-1.5 h-1.5 rounded-full"
+              style={{ background: "var(--rail-orange)" }}
+            />
             Testimonials
           </span>
 
           <h2 className="text-[clamp(2.75rem,4.2vw,6.75rem)] leading-[1.12] tracking-tight text-gray-900 dark:text-white mb-4">
             Trusted by travelers
-            <br className="hidden lg:block" />{" "}
-            across India
+            <br className="hidden lg:block" /> across India
           </h2>
 
           <p className="text-[15px] text-gray-600 font-inter dark:text-gray-400 leading-relaxed mb-7 max-w-sm">

@@ -54,7 +54,7 @@ function Navbar() {
     { to: "/browse", label: "Browse", icon: Ticket },
     { to: "/create-listing", label: "List", icon: PlusSquare },
     { to: "/my-listings", label: "Dashboard", icon: List },
-    { to: "/my-requests", label: "Notification", icon: Bell},
+    { to: "/my-requests", label: "Notification", icon: Bell },
   ];
 
   const filteredLinks = navLinks.filter((l) =>

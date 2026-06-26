@@ -4,13 +4,27 @@ import { useNavigate } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 import { db } from "../firebase";
 import {
-  collection, addDoc, serverTimestamp,
-  query, where, getDocs, doc, getDoc,
+  collection,
+  addDoc,
+  serverTimestamp,
+  query,
+  where,
+  getDocs,
+  doc,
+  getDoc,
 } from "firebase/firestore";
 
 import {
-  ChevronLeft, ChevronRight,  Train, Ticket,
-  User, ChevronDown, Check, Search, CheckCircle, AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+  Train,
+  Ticket,
+  User,
+  ChevronDown,
+  Check,
+  Search,
+  CheckCircle,
+  AlertCircle,
 } from "lucide-react";
 import { KineticText } from "@/components/ui/kinetic-text";
 
@@ -18,7 +32,11 @@ import { KineticText } from "@/components/ui/kinetic-text";
 const Label = ({ children, required }) => (
   <label className="block text-sm font-semibold text-[var(--color-text)] mb-1.5">
     {children}
-    {required && <span className="ml-1" style={{ color: "var(--rail-orange)" }}>*</span>}
+    {required && (
+      <span className="ml-1" style={{ color: "var(--rail-orange)" }}>
+        *
+      </span>
+    )}
   </label>
 );
 
@@ -30,14 +48,18 @@ const Input = ({ error, hint, ...props }) => (
         placeholder:text-[var(--color-text-subtle)]
         transition-colors
         ${error ? "border-red-400" : "border-[var(--color-border)]"}
-        ${props.readOnly || props.disabled
-          ? "bg-[var(--color-surface-hover)] text-[var(--color-text-subtle)] cursor-not-allowed"
-          : ""}
+        ${
+          props.readOnly || props.disabled
+            ? "bg-[var(--color-surface-hover)] text-[var(--color-text-subtle)] cursor-not-allowed"
+            : ""
+        }
       `}
       {...props}
     />
     {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
-    {hint  && <p className="text-[var(--color-text-subtle)] text-xs mt-1">{hint}</p>}
+    {hint && (
+      <p className="text-[var(--color-text-subtle)] text-xs mt-1">{hint}</p>
+    )}
   </div>
 );
 
@@ -101,21 +123,21 @@ const ThemeStyles = () => (
 const CustomSelect = ({ value, onChange, options, disabled }) => {
   const [open, setOpen] = useState(false);
   const [menuStyle, setMenuStyle] = useState({});
-  const btnRef  = useRef(null);
+  const btnRef = useRef(null);
   const menuRef = useRef(null);
 
   const calcPosition = useCallback(() => {
     if (!btnRef.current) return;
-    const rect          = btnRef.current.getBoundingClientRect();
-    const viewportH     = window.innerHeight;
-    const spaceBelow    = viewportH - rect.bottom;
-    const menuHeight    = Math.min(options.length * 38 + 8, 220);
-    const openUpward    = spaceBelow < menuHeight + 8 && rect.top > menuHeight + 8;
+    const rect = btnRef.current.getBoundingClientRect();
+    const viewportH = window.innerHeight;
+    const spaceBelow = viewportH - rect.bottom;
+    const menuHeight = Math.min(options.length * 38 + 8, 220);
+    const openUpward = spaceBelow < menuHeight + 8 && rect.top > menuHeight + 8;
     setMenuStyle({
-      position : "fixed",
-      left     : rect.left,
-      width    : rect.width,
-      zIndex   : 9999,
+      position: "fixed",
+      left: rect.left,
+      width: rect.width,
+      zIndex: 9999,
       ...(openUpward
         ? { bottom: viewportH - rect.top + 5 }
         : { top: rect.bottom + 5 }),
@@ -125,7 +147,7 @@ const CustomSelect = ({ value, onChange, options, disabled }) => {
   const handleOpen = () => {
     if (disabled) return;
     if (!open) calcPosition();
-    setOpen(v => !v);
+    setOpen((v) => !v);
   };
 
   useEffect(() => {
@@ -133,20 +155,23 @@ const CustomSelect = ({ value, onChange, options, disabled }) => {
     const onScroll = () => calcPosition();
     const onResize = () => calcPosition();
     window.addEventListener("scroll", onScroll, true);
-    window.addEventListener("resize",  onResize);
+    window.addEventListener("resize", onResize);
     return () => {
       window.removeEventListener("scroll", onScroll, true);
-      window.removeEventListener("resize",  onResize);
+      window.removeEventListener("resize", onResize);
     };
   }, [open, calcPosition]);
 
   useEffect(() => {
     if (!open) return;
-    const handler = e => {
+    const handler = (e) => {
       if (
-        btnRef.current  && !btnRef.current.contains(e.target)  &&
-        menuRef.current && !menuRef.current.contains(e.target)
-      ) setOpen(false);
+        btnRef.current &&
+        !btnRef.current.contains(e.target) &&
+        menuRef.current &&
+        !menuRef.current.contains(e.target)
+      )
+        setOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -161,9 +186,10 @@ const CustomSelect = ({ value, onChange, options, disabled }) => {
         className={`
           rail-focus w-full flex items-center justify-between gap-2 border rounded-lg
           px-3 py-2.5 text-sm text-left transition-all
-          ${disabled
-            ? "bg-[var(--color-surface-hover)] text-[var(--color-text-subtle)] cursor-not-allowed border-[var(--color-border)]"
-            : `bg-[var(--color-surface)] hover:bg-[var(--color-bg)] hover:border-[var(--color-text-subtle)]
+          ${
+            disabled
+              ? "bg-[var(--color-surface-hover)] text-[var(--color-text-subtle)] cursor-not-allowed border-[var(--color-border)]"
+              : `bg-[var(--color-surface)] hover:bg-[var(--color-bg)] hover:border-[var(--color-text-subtle)]
                ${open ? "border-[var(--color-border)] bg-[var(--color-bg)]" : "border-[var(--color-border)]"}`
           }
         `}
@@ -179,44 +205,63 @@ const CustomSelect = ({ value, onChange, options, disabled }) => {
         )}
       </button>
 
-      {open && !disabled && createPortal(
-        <div
-          ref={menuRef}
-          style={menuStyle}
-          className="bg-white dark:bg-black border border-[var(--color-border)] rounded-xl shadow-xl overflow-hidden py-1"
-        >
-          {options.map(opt => (
-            <button
-              key={opt}
-              type="button"
-              onClick={() => { onChange(opt); setOpen(false); }}
-              className="w-full flex items-center justify-between gap-2 px-3 py-2
+      {open &&
+        !disabled &&
+        createPortal(
+          <div
+            ref={menuRef}
+            style={menuStyle}
+            className="bg-white dark:bg-black border border-[var(--color-border)] rounded-xl shadow-xl overflow-hidden py-1"
+          >
+            {options.map((opt) => (
+              <button
+                key={opt}
+                type="button"
+                onClick={() => {
+                  onChange(opt);
+                  setOpen(false);
+                }}
+                className="w-full flex items-center justify-between gap-2 px-3 py-2
                          text-sm text-left hover:bg-[var(--color-surface-hover)] transition"
-            >
-              <span className={value === opt
-                ? "font-semibold text-[var(--color-text)]"
-                : "text-[var(--color-text-muted)]"}>
-                {opt}
-              </span>
-              {value === opt && (
-                <Check size={13} className="flex-shrink-0" style={{ color: "var(--rail-orange)" }} />
-              )}
-            </button>
-          ))}
-        </div>,
-        document.body
-      )}
+              >
+                <span
+                  className={
+                    value === opt
+                      ? "font-semibold text-[var(--color-text)]"
+                      : "text-[var(--color-text-muted)]"
+                  }
+                >
+                  {opt}
+                </span>
+                {value === opt && (
+                  <Check
+                    size={13}
+                    className="flex-shrink-0"
+                    style={{ color: "var(--rail-orange)" }}
+                  />
+                )}
+              </button>
+            ))}
+          </div>,
+          document.body,
+        )}
     </div>
   );
 };
 
 const classOptions = ["3E", "Sleeper", "AC 3-Tier", "AC 2-Tier", "First AC"];
-const seatOptions  = ["1 seat", "2 seats", "3 seats", "4 seats"];
+const seatOptions = ["1 seat", "2 seats", "3 seats", "4 seats"];
 
-const mapClass = code => {
+const mapClass = (code) => {
   const map = {
-    SL: "Sleeper", "3A": "AC 3-Tier", "2A": "AC 2-Tier",
-    "1A": "First AC", CC: "3E", EC: "3E", "2S": "3E", GN: "3E",
+    SL: "Sleeper",
+    "3A": "AC 3-Tier",
+    "2A": "AC 2-Tier",
+    "1A": "First AC",
+    CC: "3E",
+    EC: "3E",
+    "2S": "3E",
+    GN: "3E",
   };
   return map[code] || "3E";
 };
@@ -224,8 +269,12 @@ const mapClass = code => {
 // ── Ticket Stub: persistent live preview ───────────────────────────────────
 const StubField = ({ label, value, mono = true, className = "" }) => (
   <div className={className}>
-    <p className="text-[9px] uppercase tracking-wider text-[var(--color-text-subtle)] mb-0.5">{label}</p>
-    <p className={`text-xs font-semibold text-[var(--color-text)] truncate ${mono ? "font-mono" : ""}`}>
+    <p className="text-[9px] uppercase tracking-wider text-[var(--color-text-subtle)] mb-0.5">
+      {label}
+    </p>
+    <p
+      className={`text-xs font-semibold text-[var(--color-text)] truncate ${mono ? "font-mono" : ""}`}
+    >
       {value || "—"}
     </p>
   </div>
@@ -244,12 +293,16 @@ const TicketStub = ({ formData, step }) => {
       >
         <div className="flex items-center gap-1.5">
           <Train size={14} className="text-white" />
-          <span className="text-xs font-bold text-white tracking-wide">E-TICKET PREVIEW</span>
+          <span className="text-xs font-bold text-white tracking-wide">
+            E-TICKET PREVIEW
+          </span>
         </div>
         {verified && (
           <div className="flex items-center gap-1 bg-white/20 rounded-full px-2 py-0.5">
             <Check size={11} className="text-white" />
-            <span className="text-[10px] font-semibold text-white">VERIFIED</span>
+            <span className="text-[10px] font-semibold text-white">
+              VERIFIED
+            </span>
           </div>
         )}
       </div>
@@ -258,7 +311,9 @@ const TicketStub = ({ formData, step }) => {
         {/* PNR row */}
         <div className="flex items-center justify-between mb-3">
           <div>
-            <p className="text-[9px] uppercase tracking-wider text-[var(--color-text-subtle)] mb-0.5">PNR Number</p>
+            <p className="text-[9px] uppercase tracking-wider text-[var(--color-text-subtle)] mb-0.5">
+              PNR Number
+            </p>
             <p className="text-sm font-bold font-mono tracking-widest text-[var(--color-text)]">
               {formData.pnrNumber || "0000000000"}
             </p>
@@ -266,7 +321,11 @@ const TicketStub = ({ formData, step }) => {
           {verified && (
             <div
               className="flex items-center justify-center w-12 h-12 rounded-full border-2 flex-shrink-0"
-              style={{ borderColor: "var(--rail-orange)", color: "var(--rail-orange)", transform: "rotate(-4deg)" }}
+              style={{
+                borderColor: "var(--rail-orange)",
+                color: "var(--rail-orange)",
+                transform: "rotate(-4deg)",
+              }}
             >
               <Check size={20} strokeWidth={3} />
             </div>
@@ -275,7 +334,9 @@ const TicketStub = ({ formData, step }) => {
 
         {/* Train name/number */}
         <div className="mb-3">
-          <p className="text-[9px] uppercase tracking-wider text-[var(--color-text-subtle)] mb-0.5">Train</p>
+          <p className="text-[9px] uppercase tracking-wider text-[var(--color-text-subtle)] mb-0.5">
+            Train
+          </p>
           <p className="text-sm font-semibold text-[var(--color-text)] truncate">
             {formData.trainName
               ? `${formData.trainName}${formData.trainNumber ? ` · ${formData.trainNumber}` : ""}`
@@ -286,12 +347,23 @@ const TicketStub = ({ formData, step }) => {
         {/* Route visualization */}
         <div className="flex items-center gap-2 mb-3 ">
           <div className="min-w-0 flex-shrink-0 max-w-[40%] ">
-            <p className="text-[9px] uppercase tracking-wider text-[var(--color-text-subtle)] mb-0.5">From</p>
-            <p className="text-sm font-bold text-[var(--color-text)] truncate">{formData.from || "—"}</p>
+            <p className="text-[9px] uppercase tracking-wider text-[var(--color-text-subtle)] mb-0.5">
+              From
+            </p>
+            <p className="text-sm font-bold text-[var(--color-text)] truncate">
+              {formData.from || "—"}
+            </p>
           </div>
-          <svg viewBox="0 0 60 12" className="h-[12%] flex-1 rounded-2xl  " preserveAspectRatio="none">
+          <svg
+            viewBox="0 0 60 12"
+            className="h-[12%] flex-1 rounded-2xl  "
+            preserveAspectRatio="none"
+          >
             <line
-              x1="2" y1="6" x2="52" y2="6"
+              x1="2"
+              y1="6"
+              x2="52"
+              y2="6"
               stroke={hasRoute ? "var(--rail-orange)" : "var(--color-border)"}
               strokeWidth="1.5"
               strokeDasharray={hasRoute ? "4 4" : "0"}
@@ -303,15 +375,15 @@ const TicketStub = ({ formData, step }) => {
               stroke={hasRoute ? "var(--rail-orange)" : "var(--color-border)"}
               strokeWidth="1"
               strokeLinecap="round"
-
-
-           
-
             />
           </svg>
           <div className="min-w-0 flex-shrink-0 max-w-[40%] text-right">
-            <p className="text-[9px] uppercase tracking-wider text-[var(--color-text-subtle)] mb-0.5">To</p>
-            <p className="text-sm font-bold text-[var(--color-text)] truncate">{formData.to || "—"}</p>
+            <p className="text-[9px] uppercase tracking-wider text-[var(--color-text-subtle)] mb-0.5">
+              To
+            </p>
+            <p className="text-sm font-bold text-[var(--color-text)] truncate">
+              {formData.to || "—"}
+            </p>
           </div>
         </div>
 
@@ -339,7 +411,11 @@ const TicketStub = ({ formData, step }) => {
         {step >= 3 && formData.fullName && (
           <>
             <div className="rail-perforation my-3" />
-            <StubField label="Passenger" value={formData.fullName} mono={false} />
+            <StubField
+              label="Passenger"
+              value={formData.fullName}
+              mono={false}
+            />
           </>
         )}
       </div>
@@ -349,16 +425,21 @@ const TicketStub = ({ formData, step }) => {
 
 // ── PNR Verification Step ──────────────────────────────────────────────────
 const PNRStep = ({ onVerified }) => {
-  const [pnr,     setPnr]     = useState("");
+  const [pnr, setPnr] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error,   setError]   = useState("");
+  const [error, setError] = useState("");
   const [pnrData, setPnrData] = useState(null);
 
   const verifyPNR = async () => {
     const trimmed = pnr.trim();
-    if (!/^\d{10}$/.test(trimmed)) { setError("PNR must be exactly 10 digits"); return; }
+    if (!/^\d{10}$/.test(trimmed)) {
+      setError("PNR must be exactly 10 digits");
+      return;
+    }
 
-    setLoading(true); setError(""); setPnrData(null);
+    setLoading(true);
+    setError("");
+    setPnrData(null);
 
     try {
       const soldSnap = await getDoc(doc(db, "soldPnrs", trimmed));
@@ -368,31 +449,35 @@ const PNRStep = ({ onVerified }) => {
       }
 
       const existingSnap = await getDocs(
-        query(collection(db, "tickets"), where("pnrNumber", "==", trimmed))
+        query(collection(db, "tickets"), where("pnrNumber", "==", trimmed)),
       );
       if (!existingSnap.empty) {
         const isSold = existingSnap.docs[0].data().sold === true;
-        setError(isSold
-          ? "This ticket has already been marked as sold and cannot be re-listed."
-          : "This PNR has already been listed. Each ticket can only be listed once.");
+        setError(
+          isSold
+            ? "This ticket has already been marked as sold and cannot be re-listed."
+            : "This PNR has already been listed. Each ticket can only be listed once.",
+        );
         return;
       }
 
-      const res  = await fetch(
+      const res = await fetch(
         `https://irctc-indian-railway-pnr-status.p.rapidapi.com/getPNRStatus/${trimmed}`,
         {
-          method  : "GET",
-          headers : {
-            "x-rapidapi-key"  : import.meta.env.VITE_RAPIDAPI_KEY,
-            "x-rapidapi-host" : "irctc-indian-railway-pnr-status.p.rapidapi.com",
-            "Content-Type"    : "application/json",
+          method: "GET",
+          headers: {
+            "x-rapidapi-key": import.meta.env.VITE_RAPIDAPI_KEY,
+            "x-rapidapi-host": "irctc-indian-railway-pnr-status.p.rapidapi.com",
+            "Content-Type": "application/json",
           },
-        }
+        },
       );
       const json = await res.json();
 
       if (!json.success || !json.data) {
-        setError("Invalid PNR or ticket not found. Please check and try again.");
+        setError(
+          "Invalid PNR or ticket not found. Please check and try again.",
+        );
         return;
       }
 
@@ -400,9 +485,12 @@ const PNRStep = ({ onVerified }) => {
       const isCancelled =
         Array.isArray(data.passengerList) &&
         data.passengerList.length > 0 &&
-        data.passengerList.every(p => p.currentStatus === "CAN");
+        data.passengerList.every((p) => p.currentStatus === "CAN");
 
-      if (isCancelled) { setError("This ticket has been cancelled and cannot be listed."); return; }
+      if (isCancelled) {
+        setError("This ticket has been cancelled and cannot be listed.");
+        return;
+      }
 
       setPnrData(data);
     } catch (err) {
@@ -416,11 +504,12 @@ const PNRStep = ({ onVerified }) => {
   const handleConfirm = () => {
     if (!pnrData) return;
 
-    let journeyDate = "", departureTime = "";
+    let journeyDate = "",
+      departureTime = "";
     try {
       const parsed = new Date(pnrData.dateOfJourney || "");
       if (!isNaN(parsed)) {
-        journeyDate   = parsed.toISOString().split("T")[0];
+        journeyDate = parsed.toISOString().split("T")[0];
         departureTime = parsed.toTimeString().slice(0, 5);
       }
     } catch {}
@@ -431,31 +520,34 @@ const PNRStep = ({ onVerified }) => {
       if (!isNaN(parsed)) arrivalTime = parsed.toTimeString().slice(0, 5);
     } catch {}
 
-    const numSeats   = pnrData.numberOfpassenger || 1;
-    const seatsStr   = `${numSeats} seat${numSeats > 1 ? "s" : ""}`;
+    const numSeats = pnrData.numberOfpassenger || 1;
+    const seatsStr = `${numSeats} seat${numSeats > 1 ? "s" : ""}`;
     const clampedSeats = seatOptions.includes(seatsStr) ? seatsStr : "1 seat";
 
     onVerified({
-      pnrNumber          : pnrData.pnrNumber || pnr.trim(),
-      trainName          : pnrData.trainName  || "",
-      trainNumber        : pnrData.trainNumber || "",
-      from               : pnrData.sourceStation || "",
-      to                 : pnrData.destinationStation || "",
+      pnrNumber: pnrData.pnrNumber || pnr.trim(),
+      trainName: pnrData.trainName || "",
+      trainNumber: pnrData.trainNumber || "",
+      from: pnrData.sourceStation || "",
+      to: pnrData.destinationStation || "",
       journeyDate,
       departureTime,
       arrivalTime,
-      trainClass         : mapClass(pnrData.journeyClass),
-      seats              : clampedSeats,
-      bookingFare        : pnrData.bookingFare || 0,
-      numberOfPassengers : pnrData.numberOfpassenger || 1,
+      trainClass: mapClass(pnrData.journeyClass),
+      seats: clampedSeats,
+      bookingFare: pnrData.bookingFare || 0,
+      numberOfPassengers: pnrData.numberOfpassenger || 1,
     });
   };
 
   return (
     <div className="rail-ticket-card font-mono p-4 sm:p-6">
-      <h2 className="text-base sm:text-lg font-bold text-[var(--color-text)]">Verify your ticket</h2>
+      <h2 className="text-base sm:text-lg font-bold text-[var(--color-text)]">
+        Verify your ticket
+      </h2>
       <p className="text-xs sm:text-sm text-[#c9c9c9] dark:text-[var(--color-text-subtle)] mt-1 mb-4 sm:mb-6">
-        Enter your 10-digit PNR number to auto-fill journey details. Each PNR can only be listed once.
+        Enter your 10-digit PNR number to auto-fill journey details. Each PNR
+        can only be listed once.
       </p>
 
       <Label required>PNR Number</Label>
@@ -465,7 +557,11 @@ const PNRStep = ({ onVerified }) => {
         <input
           placeholder="e.g. 8524877966"
           value={pnr}
-          onChange={e => { setPnr(e.target.value.replace(/\D/g, "")); setError(""); setPnrData(null); }}
+          onChange={(e) => {
+            setPnr(e.target.value.replace(/\D/g, ""));
+            setError("");
+            setPnrData(null);
+          }}
           maxLength={10}
           className={`
             rail-focus flex-1 min-w-0 border rounded-lg px-3 py-2.5 text-sm bg-[var(--color-surface)] text-[var(--color-text)]
@@ -481,19 +577,38 @@ const PNRStep = ({ onVerified }) => {
                      text-sm font-medium px-4 py-2.5 rounded-lg
                      disabled:opacity-50 transition flex-shrink-0 w-full xs:w-auto"
         >
-          {loading
-            ? <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
-              </svg>
-            : <Search size={15} />}
+          {loading ? (
+            <svg
+              className="animate-spin h-4 w-4"
+              viewBox="0 0 24 24"
+              fill="none"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v8z"
+              />
+            </svg>
+          ) : (
+            <Search size={15} />
+          )}
           {loading ? "Checking…" : "Verify"}
         </button>
       </div>
 
       {error && (
-        <div className="flex items-start gap-2 text-red-600 bg-red-50 border border-red-200
-                        rounded-lg px-3 py-2.5 mb-4">
+        <div
+          className="flex items-start gap-2 text-red-600 bg-red-50 border border-red-200
+                        rounded-lg px-3 py-2.5 mb-4"
+        >
           <AlertCircle size={15} className="flex-shrink-0 mt-0.5" />
           <p className="text-xs">{error}</p>
         </div>
@@ -502,26 +617,37 @@ const PNRStep = ({ onVerified }) => {
       {pnrData && (
         <div className="border border-[var(--color-border)] rounded-xl p-4 mb-4 bg-[var(--color-surface)]">
           <div className="flex items-center gap-2 mb-3">
-            <div className="flex items-center justify-center w-5 h-5 rounded-full"
-                 style={{ background: "var(--rail-orange)" }}>
+            <div
+              className="flex items-center justify-center w-5 h-5 rounded-full"
+              style={{ background: "var(--rail-orange)" }}
+            >
               <Check size={12} className="text-white" strokeWidth={3} />
             </div>
-            <p className="text-sm font-semibold text-[var(--color-text)]">PNR verified successfully</p>
+            <p className="text-sm font-semibold text-[var(--color-text)]">
+              PNR verified successfully
+            </p>
           </div>
 
           <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 text-sm mb-4">
             {[
-              ["Train",      `${pnrData.trainName} (${pnrData.trainNumber})`],
-              ["Class",      `${pnrData.journeyClass} → ${mapClass(pnrData.journeyClass)}`],
-              ["From",       pnrData.sourceStation],
-              ["To",         pnrData.destinationStation],
-              ["Departure",  pnrData.dateOfJourney],
-              ["Arrival",    pnrData.arrivalDate || "—"],
+              ["Train", `${pnrData.trainName} (${pnrData.trainNumber})`],
+              [
+                "Class",
+                `${pnrData.journeyClass} → ${mapClass(pnrData.journeyClass)}`,
+              ],
+              ["From", pnrData.sourceStation],
+              ["To", pnrData.destinationStation],
+              ["Departure", pnrData.dateOfJourney],
+              ["Arrival", pnrData.arrivalDate || "—"],
               ["Passengers", pnrData.numberOfpassenger],
             ].map(([label, val]) => (
               <div key={label}>
-                <p className="text-xs text-[#c9c9c9] dark:text-[var(--color-text-subtle)] mb-0.5">{label}</p>
-                <p className="font-semibold text-[var(--color-text)] text-xs break-words">{val}</p>
+                <p className="text-xs text-[#c9c9c9] dark:text-[var(--color-text-subtle)] mb-0.5">
+                  {label}
+                </p>
+                <p className="font-semibold text-[var(--color-text)] text-xs break-words">
+                  {val}
+                </p>
               </div>
             ))}
           </div>
@@ -539,7 +665,8 @@ const PNRStep = ({ onVerified }) => {
 
       {!pnrData && !error && (
         <p className="text-xs text-[#c9c9c9] dark:text-[var(--color-text-subtle)] mt-2">
-          Your PNR number can be found on your train booking confirmation or ticket.
+          Your PNR number can be found on your train booking confirmation or
+          ticket.
         </p>
       )}
     </div>
@@ -551,49 +678,67 @@ const validateStep = (step, formData) => {
   const errors = {};
 
   if (step === 1) {
-    if (!formData.from.trim())  errors.from = "Starting city is required";
-    if (!formData.to.trim())    errors.to   = "Destination city is required";
+    if (!formData.from.trim()) errors.from = "Starting city is required";
+    if (!formData.to.trim()) errors.to = "Destination city is required";
     if (
-      formData.from.trim() && formData.to.trim() &&
+      formData.from.trim() &&
+      formData.to.trim() &&
       formData.from.trim().toLowerCase() === formData.to.trim().toLowerCase()
-    ) errors.to = "Destination must be different from starting city";
+    )
+      errors.to = "Destination must be different from starting city";
 
-    if (!formData.trainName.trim())   errors.trainName   = "Train name is required";
-    if (!formData.trainNumber.trim()) errors.trainNumber = "Train number is required";
+    if (!formData.trainName.trim()) errors.trainName = "Train name is required";
+    if (!formData.trainNumber.trim())
+      errors.trainNumber = "Train number is required";
 
     if (!formData.journeyDate) {
       errors.journeyDate = "Journey date is required";
     } else {
-      const today = new Date(); today.setHours(0,0,0,0);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
       const selected = new Date(formData.journeyDate);
-      const minDate  = new Date(today); minDate.setDate(minDate.getDate() + 2);
-      if (selected < today)   errors.journeyDate = "Journey date cannot be in the past";
-      else if (selected < minDate) errors.journeyDate = "Journey date must be at least 2 days from today";
+      const minDate = new Date(today);
+      minDate.setDate(minDate.getDate() + 2);
+      if (selected < today)
+        errors.journeyDate = "Journey date cannot be in the past";
+      else if (selected < minDate)
+        errors.journeyDate = "Journey date must be at least 2 days from today";
     }
 
-    if (!formData.departureTime) errors.departureTime = "Departure time is required";
-    if (!formData.arrivalTime)   errors.arrivalTime   = "Arrival time is required";
+    if (!formData.departureTime)
+      errors.departureTime = "Departure time is required";
+    if (!formData.arrivalTime) errors.arrivalTime = "Arrival time is required";
   }
 
   if (step === 2) {
-    const perSeat   = Math.round((Number(formData.bookingFare) || 0) / (Number(formData.numberOfPassengers) || 1));
-    const maxPrice  = perSeat + 250;
-    if (!formData.price)                                errors.price = "Price is required";
-    else if (!/^\d+$/.test(formData.price.toString().trim())) errors.price = "Price should be a whole number";
-    else if (Number(formData.price) <= 0)               errors.price = "Price must be greater than 0";
-    else if (Number(formData.price) > maxPrice)         errors.price = `Price cannot exceed ₹${maxPrice} (booking fare + ₹250)`;
+    const perSeat = Math.round(
+      (Number(formData.bookingFare) || 0) /
+        (Number(formData.numberOfPassengers) || 1),
+    );
+    const maxPrice = perSeat + 250;
+    if (!formData.price) errors.price = "Price is required";
+    else if (!/^\d+$/.test(formData.price.toString().trim()))
+      errors.price = "Price should be a whole number";
+    else if (Number(formData.price) <= 0)
+      errors.price = "Price must be greater than 0";
+    else if (Number(formData.price) > maxPrice)
+      errors.price = `Price cannot exceed ₹${maxPrice} (booking fare + ₹250)`;
   }
 
   if (step === 3) {
-    if (!formData.fullName.trim())                          errors.fullName = "Full name is required";
-    else if (!/^[a-zA-Z\s]+$/.test(formData.fullName.trim())) errors.fullName = "Name should contain only letters";
-    else if (formData.fullName.trim().length < 3)           errors.fullName = "Name must be at least 3 characters";
+    if (!formData.fullName.trim()) errors.fullName = "Full name is required";
+    else if (!/^[a-zA-Z\s]+$/.test(formData.fullName.trim()))
+      errors.fullName = "Name should contain only letters";
+    else if (formData.fullName.trim().length < 3)
+      errors.fullName = "Name must be at least 3 characters";
 
-    if (!formData.email.trim())                       errors.email = "Email is required";
-    else if (!/\S+@\S+\.\S+/.test(formData.email))   errors.email = "Enter a valid email";
+    if (!formData.email.trim()) errors.email = "Email is required";
+    else if (!/\S+@\S+\.\S+/.test(formData.email))
+      errors.email = "Enter a valid email";
 
-    if (!formData.phone.trim())                       errors.phone = "Phone number is required";
-    else if (!/^\d{10}$/.test(formData.phone.trim())) errors.phone = "Phone number must be exactly 10 digits";
+    if (!formData.phone.trim()) errors.phone = "Phone number is required";
+    else if (!/^\d{10}$/.test(formData.phone.trim()))
+      errors.phone = "Phone number must be exactly 10 digits";
   }
 
   return errors;
@@ -602,32 +747,64 @@ const validateStep = (step, formData) => {
 // ── Step 1 ─────────────────────────────────────────────────────────────────
 const Step1 = ({ formData, handleChange, errors }) => (
   <div className="rail-ticket-card font-mono p-4 sm:p-6">
-    <h2 className="text-base sm:text-lg font-bold text-[var(--color-text)]">Journey details</h2>
+    <h2 className="text-base sm:text-lg font-bold text-[var(--color-text)]">
+      Journey details
+    </h2>
     <p className="text-xs sm:text-sm text-[#c9c9c9] dark:text-[var(--color-text-subtle)] mt-1 mb-1 sm:mb-2">
       Journey details have been auto-filled from your PNR and are locked.
     </p>
     <div
       className="flex items-center gap-1.5 rounded-lg px-3 py-2 mb-4 sm:mb-5 border"
-      style={{ background: "var(--rail-orange-dim)", borderColor: "var(--rail-orange-mid)" }}
+      style={{
+        background: "var(--rail-orange-dim)",
+        borderColor: "var(--rail-orange-mid)",
+      }}
     >
-      <CheckCircle size={13} className="flex-shrink-0" style={{ color: "var(--rail-orange)" }} />
-      <p className="text-xs" style={{ color: "var(--rail-orange)" }}>Fields below are auto-filled from PNR and cannot be edited.</p>
+      <CheckCircle
+        size={13}
+        className="flex-shrink-0"
+        style={{ color: "var(--rail-orange)" }}
+      />
+      <p className="text-xs" style={{ color: "var(--rail-orange)" }}>
+        Fields below are auto-filled from PNR and cannot be edited.
+      </p>
     </div>
 
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
-      <div><Label required>From</Label><Input value={formData.from} readOnly error={errors.from} /></div>
-      <div><Label required>To</Label>  <Input value={formData.to}   readOnly error={errors.to}   /></div>
+      <div>
+        <Label required>From</Label>
+        <Input value={formData.from} readOnly error={errors.from} />
+      </div>
+      <div>
+        <Label required>To</Label>{" "}
+        <Input value={formData.to} readOnly error={errors.to} />
+      </div>
     </div>
 
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
-      <div><Label required>Train Name</Label>  <Input value={formData.trainName}   readOnly error={errors.trainName}   /></div>
-      <div><Label required>Train Number</Label><Input value={formData.trainNumber} readOnly error={errors.trainNumber} /></div>
+      <div>
+        <Label required>Train Name</Label>{" "}
+        <Input value={formData.trainName} readOnly error={errors.trainName} />
+      </div>
+      <div>
+        <Label required>Train Number</Label>
+        <Input
+          value={formData.trainNumber}
+          readOnly
+          error={errors.trainNumber}
+        />
+      </div>
     </div>
 
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
       <div>
         <Label required>Journey Date</Label>
-        <Input type="date" value={formData.journeyDate} readOnly error={errors.journeyDate} />
+        <Input
+          type="date"
+          value={formData.journeyDate}
+          readOnly
+          error={errors.journeyDate}
+        />
       </div>
       <div className="hidden sm:block" />
     </div>
@@ -635,11 +812,21 @@ const Step1 = ({ formData, handleChange, errors }) => (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
       <div>
         <Label required>Departure Time</Label>
-        <Input type="time" value={formData.departureTime} readOnly error={errors.departureTime} />
+        <Input
+          type="time"
+          value={formData.departureTime}
+          readOnly
+          error={errors.departureTime}
+        />
       </div>
       <div>
         <Label required>Arrival Time</Label>
-        <Input type="time" value={formData.arrivalTime} readOnly error={errors.arrivalTime} />
+        <Input
+          type="time"
+          value={formData.arrivalTime}
+          readOnly
+          error={errors.arrivalTime}
+        />
       </div>
     </div>
   </div>
@@ -647,12 +834,17 @@ const Step1 = ({ formData, handleChange, errors }) => (
 
 // ── Step 2 ─────────────────────────────────────────────────────────────────
 const Step2 = ({ formData, handleChange, errors }) => {
-  const perSeat  = Math.round((Number(formData.bookingFare) || 0) / (Number(formData.numberOfPassengers) || 1));
+  const perSeat = Math.round(
+    (Number(formData.bookingFare) || 0) /
+      (Number(formData.numberOfPassengers) || 1),
+  );
   const maxPrice = perSeat + 250;
 
   return (
     <div className="rail-ticket-card font-mono p-4 sm:p-6">
-      <h2 className="text-base sm:text-lg font-bold text-[var(--color-text)]">Ticket details</h2>
+      <h2 className="text-base sm:text-lg font-bold text-[var(--color-text)]">
+        Ticket details
+      </h2>
       <p className="text-xs sm:text-sm text-[#c9c9c9] dark:text-[var(--color-text-subtle)] mt-1 mb-4 sm:mb-6">
         Specify the number of seats and your asking price.
       </p>
@@ -660,13 +852,27 @@ const Step2 = ({ formData, handleChange, errors }) => {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-5">
         <div>
           <Label required>Train Class</Label>
-          <CustomSelect value={formData.trainClass} onChange={() => {}} options={classOptions} disabled />
-          <p className="text-[#c9c9c9] dark:text-[var(--color-text-subtle)] text-xs mt-1">Auto-filled from PNR, cannot be changed.</p>
+          <CustomSelect
+            value={formData.trainClass}
+            onChange={() => {}}
+            options={classOptions}
+            disabled
+          />
+          <p className="text-[#c9c9c9] dark:text-[var(--color-text-subtle)] text-xs mt-1">
+            Auto-filled from PNR, cannot be changed.
+          </p>
         </div>
         <div>
           <Label required>Number of Seats</Label>
-          <CustomSelect value={formData.seats} onChange={() => {}} options={seatOptions} disabled />
-          <p className="text-[#c9c9c9] dark:text-[var(--color-text-subtle)] text-xs mt-1">Auto-filled from PNR, cannot be changed.</p>
+          <CustomSelect
+            value={formData.seats}
+            onChange={() => {}}
+            options={seatOptions}
+            disabled
+          />
+          <p className="text-[#c9c9c9] dark:text-[var(--color-text-subtle)] text-xs mt-1">
+            Auto-filled from PNR, cannot be changed.
+          </p>
         </div>
       </div>
 
@@ -678,9 +884,13 @@ const Step2 = ({ formData, handleChange, errors }) => {
           value={formData.price}
           onChange={handleChange("price")}
           error={errors.price}
-          hint={!errors.price && formData.bookingFare
-            ? `Max allowed: ₹${maxPrice} (₹${perSeat} per seat + ₹250)`
-            : !errors.price ? "Set a fair price based on the original booking fare." : undefined}
+          hint={
+            !errors.price && formData.bookingFare
+              ? `Max allowed: ₹${maxPrice} (₹${perSeat} per seat + ₹250)`
+              : !errors.price
+                ? "Set a fair price based on the original booking fare."
+                : undefined
+          }
         />
       </div>
 
@@ -703,7 +913,9 @@ const Step2 = ({ formData, handleChange, errors }) => {
 // ── Step 3 ─────────────────────────────────────────────────────────────────
 const Step3 = ({ formData, handleChange, errors }) => (
   <div className="rail-ticket-card font-mono p-4 sm:p-6">
-    <h2 className="text-base sm:text-lg font-bold text-[var(--color-text)]">Contact info</h2>
+    <h2 className="text-base sm:text-lg font-bold text-[var(--color-text)]">
+      Contact info
+    </h2>
     <p className="text-xs sm:text-sm text-[#c9c9c9] dark:text-[var(--color-text-subtle)] mt-1 mb-4 sm:mb-6">
       How should buyers reach you?
     </p>
@@ -715,7 +927,6 @@ const Step3 = ({ formData, handleChange, errors }) => (
         value={formData.fullName}
         onChange={handleChange("fullName")}
         error={errors.fullName}
-
       />
     </div>
 
@@ -746,11 +957,17 @@ const Step3 = ({ formData, handleChange, errors }) => (
 
 // ── Step 4: Review ─────────────────────────────────────────────────────────
 const ReviewRow = ({ label, value, muted = false }) => (
-  <div className="flex items-start justify-between gap-3 py-2.5
-                  border-b border-[var(--color-border)] last:border-b-0">
-    <span className="text-sm text-sm text-[#c9c9c9] dark:text-[var(--color-text-subtle)] flex-shrink-0">{label}</span>
-    <span className={`text-sm text-right break-all sm:break-words
-      ${muted ? "text-[var(--color-text)]" : "font-semibold text-[var(--color-text)]"}`}>
+  <div
+    className="flex items-start justify-between gap-3 py-2.5
+                  border-b border-[var(--color-border)] last:border-b-0"
+  >
+    <span className="text-sm text-sm text-[#c9c9c9] dark:text-[var(--color-text-subtle)] flex-shrink-0">
+      {label}
+    </span>
+    <span
+      className={`text-sm text-right break-all sm:break-words
+      ${muted ? "text-[var(--color-text)]" : "font-semibold text-[var(--color-text)]"}`}
+    >
       {value}
     </span>
   </div>
@@ -758,7 +975,9 @@ const ReviewRow = ({ label, value, muted = false }) => (
 
 const Step4 = ({ formData }) => (
   <div className="rail-ticket-card font-mono p-4 sm:p-6">
-    <h2 className="text-base  sm:text-lg font-bold text-[var(--color-text)]">Review your listing</h2>
+    <h2 className="text-base  sm:text-lg font-bold text-[var(--color-text)]">
+      Review your listing
+    </h2>
     <p className="text-xs sm:text-sm text-[#c9c9c9] dark:text-[var(--color-text-subtle)] mt-1 mb-4 sm:mb-6">
       Confirm all details before publishing.
     </p>
@@ -766,10 +985,20 @@ const Step4 = ({ formData }) => (
     {formData.pnrNumber && (
       <div
         className="flex items-center gap-2 rounded-lg px-3 py-2 mb-4 flex-wrap border"
-        style={{ background: "var(--rail-orange-dim)", borderColor: "var(--rail-orange-mid)" }}
+        style={{
+          background: "var(--rail-orange-dim)",
+          borderColor: "var(--rail-orange-mid)",
+        }}
       >
-        <CheckCircle size={14} className="flex-shrink-0" style={{ color: "var(--rail-orange)" }} />
-        <p className="text-xs font-medium" style={{ color: "var(--rail-orange)" }}>
+        <CheckCircle
+          size={14}
+          className="flex-shrink-0"
+          style={{ color: "var(--rail-orange)" }}
+        />
+        <p
+          className="text-xs font-medium"
+          style={{ color: "var(--rail-orange)" }}
+        >
           PNR Verified: <span className="font-mono">{formData.pnrNumber}</span>
         </p>
       </div>
@@ -778,45 +1007,79 @@ const Step4 = ({ formData }) => (
     {/* Journey */}
     <div className="mb-5">
       <div className="flex items-center gap-2 mb-2">
-        <Train size={16} className="text-[var(--color-text-muted)] flex-shrink-0" />
-        <h3 className="text-sm font-bold text-[var(--color-text)]">Journey Details</h3>
+        <Train
+          size={16}
+          className="text-[var(--color-text-muted)] flex-shrink-0"
+        />
+        <h3 className="text-sm font-bold text-[var(--color-text)]">
+          Journey Details
+        </h3>
       </div>
       <div className="border border-[var(--color-border)] rounded-lg px-3 sm:px-4">
-        <ReviewRow label="Train"  value={
-          formData.trainName || formData.trainNumber
-            ? `${formData.trainName || "—"}${formData.trainNumber ? ` (${formData.trainNumber})` : ""}`
-            : "—"} />
-        <ReviewRow label="Route"  value={`${formData.from || "—"} → ${formData.to || "—"}`} />
-        <ReviewRow label="Date"   value={formData.journeyDate || "—"} />
-        <ReviewRow label="Timing" value={`${formData.departureTime || "—"} → ${formData.arrivalTime || "—"}`} />
+        <ReviewRow
+          label="Train"
+          value={
+            formData.trainName || formData.trainNumber
+              ? `${formData.trainName || "—"}${formData.trainNumber ? ` (${formData.trainNumber})` : ""}`
+              : "—"
+          }
+        />
+        <ReviewRow
+          label="Route"
+          value={`${formData.from || "—"} → ${formData.to || "—"}`}
+        />
+        <ReviewRow label="Date" value={formData.journeyDate || "—"} />
+        <ReviewRow
+          label="Timing"
+          value={`${formData.departureTime || "—"} → ${formData.arrivalTime || "—"}`}
+        />
       </div>
     </div>
 
     {/* Ticket */}
     <div className="mb-5">
       <div className="flex items-center gap-2 mb-2">
-        <Ticket size={16} className="text-[var(--color-text-muted)] flex-shrink-0" />
-        <h3 className="text-sm font-bold text-[var(--color-text)]">Ticket Details</h3>
+        <Ticket
+          size={16}
+          className="text-[var(--color-text-muted)] flex-shrink-0"
+        />
+        <h3 className="text-sm font-bold text-[var(--color-text)]">
+          Ticket Details
+        </h3>
       </div>
       <div className="border border-[var(--color-border)] rounded-lg px-3 sm:px-4">
         <ReviewRow label="Class" value={formData.trainClass || "—"} />
-        <ReviewRow label="Seats" value={formData.seats      || "—"} />
-        <ReviewRow label="Price" value={formData.price ? `₹${formData.price} / seat` : "—"} />
+        <ReviewRow label="Seats" value={formData.seats || "—"} />
+        <ReviewRow
+          label="Price"
+          value={formData.price ? `₹${formData.price} / seat` : "—"}
+        />
       </div>
       {formData.description && (
-        <p className="text-sm text-[var(--color-text-muted)] mt-2">{formData.description}</p>
+        <p className="text-sm text-[var(--color-text-muted)] mt-2">
+          {formData.description}
+        </p>
       )}
     </div>
 
     {/* Contact */}
     <div>
       <div className="flex items-center gap-2 mb-2">
-        <User size={16} className="text-[var(--color-text-muted)] flex-shrink-0" />
-        <h3 className="text-sm font-bold text-[var(--color-text)]">Contact Info</h3>
+        <User
+          size={16}
+          className="text-[var(--color-text-muted)] flex-shrink-0"
+        />
+        <h3 className="text-sm font-bold text-[var(--color-text)]">
+          Contact Info
+        </h3>
       </div>
       <div className="border border-[var(--color-border)] rounded-lg px-3 sm:px-4">
-        <ReviewRow label="Name"  value={formData.fullName || "—"} />
-        <ReviewRow label="Phone" value={formData.phone    || "Not provided"} muted={!formData.phone} />
+        <ReviewRow label="Name" value={formData.fullName || "—"} />
+        <ReviewRow
+          label="Phone"
+          value={formData.phone || "Not provided"}
+          muted={!formData.phone}
+        />
       </div>
     </div>
   </div>
@@ -826,54 +1089,72 @@ const Step4 = ({ formData }) => (
 const STEP_LABELS = ["Verify", "Journey", "Pricing", "Contact", "Review"];
 
 const CreateListingPage = () => {
-  const { user }                    = useAuth0();
-  const [step,       setStep]       = useState(0);
-  const [direction,  setDirection]  = useState("fwd");
+  const { user } = useAuth0();
+  const [step, setStep] = useState(0);
+  const [direction, setDirection] = useState("fwd");
   const [publishing, setPublishing] = useState(false);
-  const [errors,     setErrors]     = useState({});
-  const navigate                    = useNavigate();
+  const [errors, setErrors] = useState({});
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     pnrNumber: "",
-    from: "", to: "", trainName: "", trainNumber: "", journeyDate: "",
-    departureTime: "", arrivalTime: "",
-    trainClass: "3E", seats: "1 seat",
-    price: "", description: "",
+    from: "",
+    to: "",
+    trainName: "",
+    trainNumber: "",
+    journeyDate: "",
+    departureTime: "",
+    arrivalTime: "",
+    trainClass: "3E",
+    seats: "1 seat",
+    price: "",
+    description: "",
     bookingFare: 0,
     numberOfPassengers: 1,
-    fullName: "", email: "", phone: "",
+    fullName: "",
+    email: "",
+    phone: "",
   });
 
   useEffect(() => {
     if (user) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        email       : user.email   ? user.email.toLowerCase() : prev.email,
-        listerPhoto : user.picture || prev.listerPhoto || null,
+        email: user.email ? user.email.toLowerCase() : prev.email,
+        listerPhoto: user.picture || prev.listerPhoto || null,
       }));
     }
   }, [user]);
 
-  const handlePNRVerified = useCallback(pnrFields => {
-    setFormData(prev => ({ ...prev, ...pnrFields }));
+  const handlePNRVerified = useCallback((pnrFields) => {
+    setFormData((prev) => ({ ...prev, ...pnrFields }));
     setDirection("fwd");
     setStep(1);
   }, []);
 
-  const handleChange = useCallback(field => e => {
-    const value = e.target.value;
-    setFormData(prev  => ({ ...prev,   [field]: value }));
-    setErrors  (prev  => ({ ...prev,   [field]: undefined }));
-  }, []);
+  const handleChange = useCallback(
+    (field) => (e) => {
+      const value = e.target.value;
+      setFormData((prev) => ({ ...prev, [field]: value }));
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
+    },
+    [],
+  );
 
-  const goBack = () => { setDirection("back"); setStep(s => s - 1); };
+  const goBack = () => {
+    setDirection("back");
+    setStep((s) => s - 1);
+  };
 
   const handleNext = () => {
     const stepErrors = validateStep(step, formData);
-    if (Object.keys(stepErrors).length > 0) { setErrors(stepErrors); return; }
+    if (Object.keys(stepErrors).length > 0) {
+      setErrors(stepErrors);
+      return;
+    }
     setErrors({});
     setDirection("fwd");
-    setStep(s => s + 1);
+    setStep((s) => s + 1);
   };
 
   const handlePublish = async () => {
@@ -885,7 +1166,7 @@ const CreateListingPage = () => {
 
     if (Object.keys(allErrors).length > 0) {
       setErrors(allErrors);
-      if      (Object.keys(validateStep(1, formData)).length > 0) setStep(1);
+      if (Object.keys(validateStep(1, formData)).length > 0) setStep(1);
       else if (Object.keys(validateStep(2, formData)).length > 0) setStep(2);
       else setStep(3);
       return;
@@ -897,24 +1178,31 @@ const CreateListingPage = () => {
         const soldSnap = await getDoc(doc(db, "soldPnrs", formData.pnrNumber));
         if (soldSnap.exists()) {
           alert("This ticket has already been sold. Please start over.");
-          setPublishing(false); navigate("/create-listing"); return;
+          setPublishing(false);
+          navigate("/create-listing");
+          return;
         }
         const dupSnap = await getDocs(
-          query(collection(db, "tickets"), where("pnrNumber", "==", formData.pnrNumber))
+          query(
+            collection(db, "tickets"),
+            where("pnrNumber", "==", formData.pnrNumber),
+          ),
         );
         if (!dupSnap.empty) {
           alert("This PNR has already been listed. Please start over.");
-          setPublishing(false); navigate("/create-listing"); return;
+          setPublishing(false);
+          navigate("/create-listing");
+          return;
         }
       }
 
       await addDoc(collection(db, "tickets"), {
         ...formData,
-        uid         : user?.sub     || null,
-        listerPhoto : user?.picture || null,
-        createdAt   : serverTimestamp(),
-        status      : "active",
-        sold        : false,
+        uid: user?.sub || null,
+        listerPhoto: user?.picture || null,
+        createdAt: serverTimestamp(),
+        status: "active",
+        sold: false,
       });
       navigate("/browse");
     } catch (err) {
@@ -932,18 +1220,17 @@ const CreateListingPage = () => {
       <ThemeStyles />
       <div
         className="min-h-screen flex justify-center px-3 sm:px-4 md:px-6
-                   pb-10 sm:pb-14 bg-[var(--color-bg)] text-[var(--color-text)]"
+                   pb-10 sm:pb-14 bg-[var(--color-bg)] text-[var(--color-text)] "
         style={{ paddingTop: "calc(var(--navbar-height, 64px) + 1.25rem)" }}
       >
         <div className="w-full max-w-5xl">
-
           {/* Heading */}
           <KineticText
             text="List Your Ticket"
-            className="text-[2.41rem]  sm:text-[3.75rem] md:text-[4.5rem] lg:text-[6.25rem]
+            className="text-[2.41rem]  sm:text-[3.75rem] md:text-[4.5rem] lg:text-[4.25rem]
                        leading-tight tracking-[-2%] sm:tracking-[-3%] [font-optical-sizing:auto]
                        flex items-center justify-center text-center
-                       mt-2 sm:mt-4 mb-5 sm:mb-8 md:mb-9"
+                       mt-5 sm:mt-4 mb-5 sm:mb-8 md:mb-9 font-sans "
           />
 
           {/* Custom orange progress bar */}
@@ -952,12 +1239,16 @@ const CreateListingPage = () => {
               <div className="flex items-center justify-between mb-2">
                 {STEP_LABELS.slice(1).map((label, i) => {
                   const stepNum = i + 1;
-                  const active  = stepNum <= step;
+                  const active = stepNum <= step;
                   return (
                     <span
                       key={label}
                       className="text-[9px] xs:text-[10px] sm:text-xs font-mono font-semibold transition-colors text-center flex-1"
-                      style={{ color: active ? "var(--rail-orange)" : "var(--color-text-subtle)" }}
+                      style={{
+                        color: active
+                          ? "var(--rail-orange)"
+                          : "var(--color-text-subtle)",
+                      }}
                     >
                       {label}
                     </span>
@@ -965,22 +1256,42 @@ const CreateListingPage = () => {
                 })}
               </div>
               <div className="rail-progress-track h-1 rounded-full overflow-hidden">
-                <div className="rail-progress-fill h-full rounded-full" style={{ width: `${progressPct}%` }} />
+                <div
+                  className="rail-progress-fill h-full rounded-full"
+                  style={{ width: `${progressPct}%` }}
+                />
               </div>
             </div>
           )}
 
           {/* Two-column layout: form + persistent ticket stub */}
-          <div className="flex flex-col lg:flex-row gap-5 sm:gap-8 max-w-5xl mx-auto items-start">
-
+          <div className="flex flex-col lg:flex-row gap-5 sm:gap-8 max-w-5xl mx-auto items-center justify-center">
             {/* Form column */}
             <div className="w-full lg:flex-1 lg:max-w-2xl min-w-0">
               <div key={step}>
                 {step === 0 && <PNRStep onVerified={handlePNRVerified} />}
-                {step === 1 && <Step1  formData={formData} handleChange={handleChange} errors={errors} />}
-                {step === 2 && <Step2  formData={formData} handleChange={handleChange} errors={errors} />}
-                {step === 3 && <Step3  formData={formData} handleChange={handleChange} errors={errors} />}
-                {step === 4 && <Step4  formData={formData} />}
+                {step === 1 && (
+                  <Step1
+                    formData={formData}
+                    handleChange={handleChange}
+                    errors={errors}
+                  />
+                )}
+                {step === 2 && (
+                  <Step2
+                    formData={formData}
+                    handleChange={handleChange}
+                    errors={errors}
+                  />
+                )}
+                {step === 3 && (
+                  <Step3
+                    formData={formData}
+                    handleChange={handleChange}
+                    errors={errors}
+                  />
+                )}
+                {step === 4 && <Step4 formData={formData} />}
               </div>
 
               {step > 0 && (
@@ -1000,7 +1311,6 @@ const CreateListingPage = () => {
 
                   {/* Right side */}
                   <div className="order-1 xs:order-2 flex items-center gap-2 sm:gap-3">
-
                     {step < 4 ? (
                       <button
                         onClick={handleNext}
@@ -1020,15 +1330,30 @@ const CreateListingPage = () => {
                       >
                         {publishing ? (
                           <>
-                            <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                              <circle className="opacity-25" cx="12" cy="12" r="10"
-                                      stroke="currentColor" strokeWidth="4"/>
-                              <path className="opacity-75" fill="currentColor"
-                                    d="M4 12a8 8 0 018-8v8z"/>
+                            <svg
+                              className="animate-spin h-4 w-4"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              />
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8v8z"
+                              />
                             </svg>
                             Publishing…
                           </>
-                        ) : "Publish Listing"}
+                        ) : (
+                          "Publish Listing"
+                        )}
                       </button>
                     )}
                   </div>
@@ -1036,11 +1361,10 @@ const CreateListingPage = () => {
               )}
             </div>
 
-            {/* Ticket stub column — persistent live preview */}
+            {/* Ticket stub column — persistent live preview
             <div className="w-full lg:w-[340px] lg:flex-shrink-0 lg:sticky lg:top-6">
               <TicketStub formData={formData} step={step} />
-            </div>
-
+            </div> */}
           </div>
         </div>
       </div>

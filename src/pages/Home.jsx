@@ -3,15 +3,14 @@ import train from "../assets/train.png";
 
 import { useNavigate } from "react-router";
 
-
 import { RainbowButton } from "@/components/ui/rainbow-button";
 import { AnimatedShinyText } from "@/components/ui/animated-shiny-text";
 import { cn } from "@/lib/utils";
 
-import BlurText from "../components/BlurText"
+import BlurText from "../components/BlurText";
 
 const handleAnimationComplete = () => {
-  console.log('Animation completed!');
+  console.log("Animation completed!");
 };
 
 <BlurText
@@ -21,7 +20,7 @@ const handleAnimationComplete = () => {
   direction="top"
   onAnimationComplete={handleAnimationComplete}
   className="text-2xl mb-8"
-/>
+/>;
 
 // ── 3D depth styles ─────────────────────────────────────────────────────────
 // Pure CSS 3D (perspective + rotateX/Y + translateZ) — no extra dependencies.
@@ -123,7 +122,10 @@ const TiltScene = ({ children, className, maxTilt = 8 }) => {
 function Home() {
   const navigate = useNavigate();
   return (
-    <div id="home" className="relative  w-full flex justify-center items-center flex-col overflow-hidden">
+    <div
+      id="home"
+      className="relative  w-full flex justify-center items-center flex-col overflow-hidden"
+    >
       <Scene3DStyles />
 
       <div
@@ -145,17 +147,17 @@ function Home() {
           </div>
 
           <div className="text-center flex flex-col justify-center items-center gap-3 px-2">
-<BlurText
-  text="Need a Ticket? Have One to Sell"
-  delay={200}
-  animateBy="words"
-  direction="top"
-  onAnimationComplete={handleAnimationComplete}
-  className="headline-depth text-[2.25rem] sm:text-[3.25rem] md:text-[4.5rem] tracking-[-5%] leading-tight flex items-center justify-center text-center"
-/>
+            <BlurText
+              text="Need a Ticket? Have One to Sell"
+              delay={200}
+              animateBy="words"
+              direction="top"
+              onAnimationComplete={handleAnimationComplete}
+              className="headline-depth text-[2.25rem] sm:text-[3.25rem] md:text-[4.5rem] tracking-[-5%] leading-tight flex items-center justify-center text-center"
+            />
             <h1 className="text-[#969696] font-inter text-sm sm:text-base max-w-xl">
-              List your train ticket and connect with
-              travelers who need it. Simple, safe, and community-driven.
+              List your train ticket and connect with travelers who need it.
+              Simple, safe, and community-driven.
             </h1>
           </div>
           <div className="flex flex-col sm:flex-row justify-center items-center gap-3 mt-5 w-full sm:w-auto px-6 sm:px-0">

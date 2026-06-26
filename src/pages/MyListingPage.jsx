@@ -179,45 +179,37 @@ const MyListingPage = () => {
 
     const fetchAll = async () => {
       try {
-const ticketsQuery = query(
-  collection(db, "tickets"),
-  where("email", "==", user.email.toLowerCase()),
-  orderBy("createdAt", "desc")
-);
+        const ticketsQuery = query(
+          collection(db, "tickets"),
+          where("email", "==", user.email.toLowerCase()),
+          orderBy("createdAt", "desc"),
+        );
 
-const unsubscribeTickets = onSnapshot(
-  ticketsQuery,
-  (snapshot) => {
-    const allTickets = snapshot.docs.map((d) => ({
-      id: d.id,
-      ...d.data(),
-    }));
+        const unsubscribeTickets = onSnapshot(ticketsQuery, (snapshot) => {
+          const allTickets = snapshot.docs.map((d) => ({
+            id: d.id,
+            ...d.data(),
+          }));
 
-    const activeTickets = allTickets.filter(
-      (t) => !t.sold
-    );
+          const activeTickets = allTickets.filter((t) => !t.sold);
 
-    setTickets(activeTickets);
-  }
-);
+          setTickets(activeTickets);
+        });
 
-const soldQuery = query(
-  collection(db, "soldTickets"),
-  where("sellerEmail", "==", user.email.toLowerCase()),
-  orderBy("soldAt", "desc"),
-);
+        const soldQuery = query(
+          collection(db, "soldTickets"),
+          where("sellerEmail", "==", user.email.toLowerCase()),
+          orderBy("soldAt", "desc"),
+        );
 
-const unsubscribeSoldTickets = onSnapshot(
-  soldQuery,
-  (snapshot) => {
-    setSoldTickets(
-      snapshot.docs.map((d) => ({
-        id: d.id,
-        ...d.data(),
-      }))
-    );
-  }
-);
+        const unsubscribeSoldTickets = onSnapshot(soldQuery, (snapshot) => {
+          setSoldTickets(
+            snapshot.docs.map((d) => ({
+              id: d.id,
+              ...d.data(),
+            })),
+          );
+        });
 
         const rq = query(
           collection(db, "contactRequests"),
@@ -261,7 +253,6 @@ const unsubscribeSoldTickets = onSnapshot(
           unsubscribeRequests();
           unsubscribeNotifications();
           unsubscribeSoldTickets();
-          
         };
       } catch (err) {
         console.error("Error fetching data:", err);
@@ -300,10 +291,10 @@ const unsubscribeSoldTickets = onSnapshot(
 
       const rsnap = await getDocs(rq);
 
-const nq = query(
-  collection(db, "notifications"),
-  where("ticketId", "==", ticketId),
-);
+      const nq = query(
+        collection(db, "notifications"),
+        where("ticketId", "==", ticketId),
+      );
       const nsnap = await getDocs(nq);
 
       const batch = writeBatch(db);
@@ -344,8 +335,6 @@ const nq = query(
         });
       }
 
-
-
       setConfirmId(null);
     } catch (err) {
       console.error("Error marking ticket as sold:", err);
@@ -356,8 +345,8 @@ const nq = query(
   const handleRequestAction = async (requestId, action) => {
     try {
       await updateDoc(doc(db, "contactRequests", requestId), {
-  status: action,
-});
+        status: action,
+      });
     } catch (err) {
       console.error("Failed to update request:", err);
     }
@@ -413,7 +402,10 @@ const nq = query(
         <div className="min-h-screen flex items-center justify-center px-4 bg-[var(--color-bg)]">
           <div className="text-center max-w-sm">
             <div className="w-12 h-12 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] flex items-center justify-center mx-auto mb-4">
-              <LayoutGrid size={20} className="text-[var(--color-text-subtle)]" />
+              <LayoutGrid
+                size={20}
+                className="text-[var(--color-text-subtle)]"
+              />
             </div>
             <h1 className="text-xl font-bold text-[var(--color-text)] mb-2 font-mono">
               You're not logged in
@@ -569,15 +561,17 @@ const nq = query(
                 className="text-[2.1rem] sm:text-[2.85rem] md:text-[3.5rem] leading-tight tracking-[-3%] flex items-start justify-start"
               />
               <p className="text-sm text-[#c9c9c9] dark:text-[var(--color-text-subtle)] mt-2 font-mono break-all sm:break-normal">
-                {loading
-                  ? "Loading your listings…"
-                  : (
-                    <>
-                      {tickets.length} active <span style={{ color: "var(--rail-orange)" }}>·</span>{" "}
-                      {soldTickets.length} sold <span style={{ color: "var(--rail-orange)" }}>·</span>{" "}
-                      {user.name}
-                    </>
-                  )}
+                {loading ? (
+                  "Loading your listings…"
+                ) : (
+                  <>
+                    {tickets.length} active{" "}
+                    <span style={{ color: "var(--rail-orange)" }}>·</span>{" "}
+                    {soldTickets.length} sold{" "}
+                    <span style={{ color: "var(--rail-orange)" }}>·</span>{" "}
+                    {user.name}
+                  </>
+                )}
               </p>
             </div>
             <button
@@ -680,8 +674,7 @@ const nq = query(
                       >
                         {ticketRequests.length > 0 && (
                           <div className="absolute h-[20px] w-[20px] text-center -top-2 -right-2 bg-orange-500 text-white text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-full z-10">
-                            {ticketRequests.length} 
-                            
+                            {ticketRequests.length}
                           </div>
                         )}
 
@@ -697,7 +690,6 @@ const nq = query(
                           </button>
                         ) : (
                           <div className="mt-3">
-                   
                             <div className="flex items-center gap-2">
                               <button
                                 onClick={() => handleMarkSold(ticket.id)}
@@ -755,7 +747,10 @@ const nq = query(
                           className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
                           style={{ background: "var(--rail-orange-dim)" }}
                         >
-                          <AlertTriangle size={15} style={{ color: "var(--rail-orange)" }} />
+                          <AlertTriangle
+                            size={15}
+                            style={{ color: "var(--rail-orange)" }}
+                          />
                         </div>
                         <div className="min-w-0">
                           {notif.type === "new_request" ? (
@@ -776,8 +771,8 @@ const nq = query(
                               </p>
 
                               <p className="text-xs text-[var(--color-text-subtle)] mt-0.5">
-                                {notif.ticketName} ({notif.from} → {notif.to}) was
-                                removed because the journey date (
+                                {notif.ticketName} ({notif.from} → {notif.to})
+                                was removed because the journey date (
                                 {notif.journeyDate}) was within 2 days.
                               </p>
                             </>
@@ -795,33 +790,33 @@ const nq = query(
                   ))}
 
                   {requests.map((req) => (
-                    <div
-                      key={req.id}
-                      className="rail-card p-4 sm:p-5"
-                    >
+                    <div key={req.id} className="rail-card p-4 sm:p-5">
                       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-2">
-           {req.buyerPhoto ? (
-    <img
-      src={req.buyerPhoto}
-      alt={req.buyerName}
-      className="w-8 h-8 rounded-full object-cover border border-[var(--color-border)] flex-shrink-0"
-      referrerPolicy="no-referrer"
-    />
-  ) : (
-    <div
-      className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
-      style={{ background: "var(--rail-orange-dim)", color: "var(--rail-orange)" }}
-    >
-      {req.buyerName
-        ?.split(" ")
-        .map((w) => w[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2) || "?"}
-    </div>
-  )}
+                            {req.buyerPhoto ? (
+                              <img
+                                src={req.buyerPhoto}
+                                alt={req.buyerName}
+                                className="w-8 h-8 rounded-full object-cover border border-[var(--color-border)] flex-shrink-0"
+                                referrerPolicy="no-referrer"
+                              />
+                            ) : (
+                              <div
+                                className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+                                style={{
+                                  background: "var(--rail-orange-dim)",
+                                  color: "var(--rail-orange)",
+                                }}
+                              >
+                                {req.buyerName
+                                  ?.split(" ")
+                                  .map((w) => w[0])
+                                  .join("")
+                                  .toUpperCase()
+                                  .slice(0, 2) || "?"}
+                              </div>
+                            )}
                             <div>
                               <p className="text-sm font-semibold text-[var(--color-text)]">
                                 {req.buyerName}
@@ -842,7 +837,9 @@ const nq = query(
                             <span className="opacity-40">·</span>
                             <span>{req.journeyDate}</span>
                             <span className="opacity-40">·</span>
-                            <span className="font-medium">₹{req.price}/seat</span>
+                            <span className="font-medium">
+                              ₹{req.price}/seat
+                            </span>
                           </div>
                         </div>
 

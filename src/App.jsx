@@ -157,7 +157,8 @@ function App() {
               <>
                 <Home />
                 <About />
-                <Testimonial />
+                <Testimonial/>
+                <Footer />
               </>
             }
           />
@@ -167,18 +168,22 @@ function App() {
             element={
               <ProtectedRoute>
                 <BrowseTicketsPage />
+                <Footer />
               </ProtectedRoute>
             }
           />
-          <Route path="/places" element={<About />} />
-          <Route path="/testimonials" element={<Testimonial />} />
+          <Route path="/places" element={<><About /><Footer /></>} />
+          <Route path="/testimonials" element={<><Testimonial /><Footer /></>} />
 
           <Route
             path="/create-listing"
             element={
               <ProtectedRoute>
                 <CreateListing />
+                <Footer/>
               </ProtectedRoute>
+              
+              
             }
           />
 
@@ -187,23 +192,24 @@ function App() {
             element={
               <ProtectedRoute>
                 <MyListingsPage />
+                <Footer/>
               </ProtectedRoute>
             }
           />
 
-          <Route path="/ticket/:id" element={<TicketDetailPage />} />
+          <Route path="/ticket/:id" element={<><TicketDetailPage /><Footer/></>} />
 
           <Route
             path="/my-requests"
             element={
               <ProtectedRoute>
                 <MyRequestsPage />
+                <Footer/>
               </ProtectedRoute>
             }
           />
         </Routes>
-
-        <Footer />
+        
       </BrowserRouter>
     </ThemeProvider>
   );

@@ -132,8 +132,7 @@ ease-out "
                   src={c.image}
                   alt={c.city}
                   loading="lazy"
-                  decoding="async"
-                  fetchPriority="low"
+                
                   className="w-full h-full object-cover grayscale contrast-105 scale-100 transition-all duration-500 ease-out group-hover:grayscale-0 group-hover:contrast-100 group-hover:scale-105"
                 />
 

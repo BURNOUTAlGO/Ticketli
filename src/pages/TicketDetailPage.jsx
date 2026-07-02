@@ -17,6 +17,7 @@ import {
   Clock,
   MapPin,
   Users,
+  User,
   MessageCircle,
   Share2,
   Info,
@@ -117,7 +118,7 @@ const TicketDetailSkeleton = () => (
 
             {/* Details grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-5">
-              {Array.from({ length: 6 }).map((_, i) => (
+              {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i}>
                   <div className="h-2.5 w-20 rounded bg-[var(--color-surface-hover)] mb-2" />
                   <div className="h-3.5 w-16 rounded bg-[var(--color-surface-hover)]" />
@@ -582,6 +583,26 @@ const TicketDetailPage = () => {
                       {ticket.trainClass || "—"}
                     </p>
                   </div>
+                  <div>
+                    <div className="flex items-center gap-1.5 text-xs text-[var(--color-text-subtle)] mb-1">
+                      <User size={12} /> Passenger Age
+                    </div>
+                    <p
+                      className={`text-sm font-semibold ${isSold ? "text-yellow-800" : "text-[var(--color-text)]"}`}
+                    >
+                      {ticket.age || "—"}
+                    </p>
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-1.5 text-xs text-[var(--color-text-subtle)] mb-1">
+                      <User size={12} /> Gender
+                    </div>
+                    <p
+                      className={`text-sm font-semibold ${isSold ? "text-yellow-800" : "text-[var(--color-text)]"}`}
+                    >
+                      {ticket.gender || "—"}
+                    </p>
+                  </div>
                 </div>
               </div>
 
@@ -660,6 +681,13 @@ const TicketDetailPage = () => {
                       <p className="text-sm font-semibold text-[var(--color-text)]">
                         {ticket.fullName || "—"}
                       </p>
+                      {(ticket.age || ticket.gender) && (
+                        <p className="text-xs text-[var(--color-text-subtle)]">
+                          {[ticket.age && `${ticket.age} yrs`, ticket.gender]
+                            .filter(Boolean)
+                            .join(" · ")}
+                        </p>
+                      )}
                     </div>
                   </div>
 

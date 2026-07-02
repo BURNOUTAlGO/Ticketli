@@ -251,6 +251,7 @@ const CustomSelect = ({ value, onChange, options, disabled }) => {
 
 const classOptions = ["3E", "Sleeper", "AC 3-Tier", "AC 2-Tier", "First AC"];
 const seatOptions = ["1 seat", "2 seats", "3 seats", "4 seats"];
+const genderOptions = ["Male", "Female", "Other"];
 
 const mapClass = (code) => {
   const map = {
@@ -411,11 +412,15 @@ const TicketStub = ({ formData, step }) => {
         {step >= 3 && formData.fullName && (
           <>
             <div className="rail-perforation my-3" />
-            <StubField
-              label="Passenger"
-              value={formData.fullName}
-              mono={false}
-            />
+            <div className="grid grid-cols-3 gap-2">
+              <StubField
+                label="Passenger"
+                value={formData.fullName}
+                mono={false}
+              />
+              <StubField label="Age" value={formData.age} mono={false} />
+              <StubField label="Gender" value={formData.gender} mono={false} />
+            </div>
           </>
         )}
       </div>
@@ -524,6 +529,24 @@ const PNRStep = ({ onVerified }) => {
     const seatsStr = `${numSeats} seat${numSeats > 1 ? "s" : ""}`;
     const clampedSeats = seatOptions.includes(seatsStr) ? seatsStr : "1 seat";
 
+    // Try to pull age/gender for the primary passenger from the PNR data, if available
+    const primaryPassenger =
+      Array.isArray(pnrData.passengerList) && pnrData.passengerList.length > 0
+        ? pnrData.passengerList[0]
+        : null;
+
+    const rawGender = primaryPassenger?.passengerGender || "";
+    const normalizedGender =
+      rawGender === "M"
+        ? "Male"
+        : rawGender === "F"
+          ? "Female"
+          : rawGender === "O"
+            ? "Other"
+            : genderOptions.includes(rawGender)
+              ? rawGender
+              : "";
+
     onVerified({
       pnrNumber: pnrData.pnrNumber || pnr.trim(),
       trainName: pnrData.trainName || "",
@@ -537,6 +560,8 @@ const PNRStep = ({ onVerified }) => {
       seats: clampedSeats,
       bookingFare: pnrData.bookingFare || 0,
       numberOfPassengers: pnrData.numberOfpassenger || 1,
+      age: primaryPassenger?.passengerAge?.toString() || "",
+      gender: normalizedGender,
     });
   };
 
@@ -731,6 +756,17 @@ const validateStep = (step, formData) => {
       errors.fullName = "Name should contain only letters";
     else if (formData.fullName.trim().length < 3)
       errors.fullName = "Name must be at least 3 characters";
+
+    if (!formData.age || !formData.age.toString().trim()) {
+      errors.age = "Age is required";
+    } else if (!/^\d+$/.test(formData.age.toString().trim())) {
+      errors.age = "Age should be a whole number";
+    } else if (Number(formData.age) < 1 || Number(formData.age) > 120) {
+      errors.age = "Enter a valid age";
+    }
+
+    if (!formData.gender || !formData.gender.trim())
+      errors.gender = "Gender is required";
 
     if (!formData.email.trim()) errors.email = "Email is required";
     else if (!/\S+@\S+\.\S+/.test(formData.email))
@@ -930,6 +966,34 @@ const Step3 = ({ formData, handleChange, errors }) => (
       />
     </div>
 
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
+      <div>
+        <Label required>Age</Label>
+        <Input
+          placeholder="e.g. 29"
+          type="number"
+          min="1"
+          max="120"
+          value={formData.age}
+          onChange={handleChange("age")}
+          error={errors.age}
+        />
+      </div>
+      <div>
+        <Label required>Gender</Label>
+        <CustomSelect
+          value={formData.gender || "Select gender"}
+          onChange={(val) =>
+            handleChange("gender")({ target: { value: val } })
+          }
+          options={genderOptions}
+        />
+        {errors.gender && (
+          <p className="text-red-500 text-xs mt-1">{errors.gender}</p>
+        )}
+      </div>
+    </div>
+
     <div className="mb-3 sm:mb-4">
       <Label required>Email</Label>
       <Input
@@ -1075,6 +1139,8 @@ const Step4 = ({ formData }) => (
       </div>
       <div className="border border-[var(--color-border)] rounded-lg px-3 sm:px-4">
         <ReviewRow label="Name" value={formData.fullName || "—"} />
+        <ReviewRow label="Age" value={formData.age || "—"} />
+        <ReviewRow label="Gender" value={formData.gender || "—"} />
         <ReviewRow
           label="Phone"
           value={formData.phone || "Not provided"}
@@ -1112,6 +1178,8 @@ const CreateListingPage = () => {
     bookingFare: 0,
     numberOfPassengers: 1,
     fullName: "",
+    age: "",
+    gender: "",
     email: "",
     phone: "",
   });
